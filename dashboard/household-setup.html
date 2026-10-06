@@ -50,8 +50,6 @@
     .brand { display: flex; align-items: center; gap: 11px; font-weight: 800; letter-spacing: .02em; }
     .brand-mark { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 9px; color: white; background: var(--green); font: 700 17px Georgia, serif; }
     .top-note { color: var(--muted); font-size: 13px; }
-    .logout-button { border:1px solid var(--line); border-radius:8px; padding:7px 11px; color:var(--green-dark); background:white; font-size:12px; font-weight:700; }
-    .logout-button:hover { background:var(--mint); }
     .layout { width: min(1280px, 100%); margin: 0 auto; padding: 38px clamp(16px, 4vw, 56px) 70px; }
     .intro { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 24px; margin: 6px 0 30px; animation: rise .45s ease-out both; }
     .eyebrow { color: var(--coral); font-size: 11px; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
@@ -664,7 +662,7 @@
       try {
         const response = await fetch('/api/households/setup', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': sessionStorage.getItem('chit_csrf') || '' },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(buildSetupPayload())
         });
         const responseText = await response.text();
@@ -673,11 +671,6 @@
           result = JSON.parse(responseText);
         } catch {
           throw new Error('The save URL returned a web page instead of the Chit API. Open http://127.0.0.1:8765/dashboard/household-setup.html and try again.');
-        }
-        if (response.status === 401) {
-          sessionStorage.removeItem('chit_csrf');
-          location.replace('/login.html?next=%2Fdashboard%2Fhousehold-setup.html');
-          return;
         }
         if (!response.ok) throw new Error(result.error || 'Household setup could not be saved.');
         setupSaved = true;
@@ -703,12 +696,6 @@
     document.querySelector('#add-feed').addEventListener('click', addFeed);
     document.querySelector('#feed-type').addEventListener('change', (event) => {
       choreFields.hidden = event.currentTarget.value !== 'Waste collection';
-    });
-    document.querySelector('#sign-out').addEventListener('click', async () => {
-      const csrf = sessionStorage.getItem('chit_csrf') || '';
-      await fetch('/api/auth/logout', {method:'POST', headers:{'X-CSRF-Token':csrf}}).catch(() => {});
-      sessionStorage.removeItem('chit_csrf');
-      location.replace('/login.html');
     });
     document.querySelector('#household-form').addEventListener('submit', async (event) => {
       event.preventDefault();

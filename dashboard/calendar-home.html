@@ -92,7 +92,7 @@
 <body>
   <header class="topbar">
     <div class="brand"><span class="brand-mark" aria-hidden="true">c</span><span>chit <span style="font-weight:500;color:var(--muted)">/ home</span></span></div>
-    <div class="top-status"><span class="status-dot" id="status-dot"></span><span id="connection-label">Checking calendars</span><button class="sign-out" id="sign-out" type="button">Sign out</button></div>
+    <div class="top-status"><span class="status-dot" id="status-dot"></span><span id="connection-label">Checking calendars</span></div>
   </header>
   <main class="shell">
     <header class="hero">
@@ -242,21 +242,9 @@
       render();
     }));
 
-    document.querySelector('#sign-out').addEventListener('click', async () => {
-      const csrf = sessionStorage.getItem('chit_csrf') || '';
-      await fetch('/api/auth/logout', {method:'POST', headers:{'X-CSRF-Token':csrf}}).catch(() => {});
-      sessionStorage.removeItem('chit_csrf');
-      location.replace('/login.html');
-    });
-
     fetch('/api/home/calendar', {cache:'no-store'})
       .then(async (response) => {
         const payload = await response.json();
-        if (response.status === 401) {
-          sessionStorage.removeItem('chit_csrf');
-          location.replace('/login.html?next=%2Fdashboard%2Fcalendar-home.html');
-          return null;
-        }
         if (!response.ok) throw new Error(payload.error || 'Calendar request failed');
         return payload;
       })

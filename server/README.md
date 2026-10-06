@@ -21,16 +21,6 @@ export CHIT_DB_PATH="$PWD/data/chit.db"
 
 The key must be exactly 32 random bytes encoded as 64 hexadecimal characters. Do not put the value in a checked-in config file, shell script, or `.env` file. For production, inject it from an operating-system secret store or deployment secret mechanism; key rotation, recovery, backups and unattended service startup need deployment-specific design.
 
-## Create the local owner login
-
-After the virtual environment, database key and `CHIT_DB_PATH` are set, and before starting the server, create the one local owner account once:
-
-```sh
-PYTHONPATH=server python server/bootstrap_owner.py
-```
-
-Enter a username and a password of at least 12 characters at the terminal prompts. The password is hashed with Argon2id and stored inside the encrypted database; it is not saved to a config file. Account recovery is not implemented yet.
-
 ## Start the setup page
 
 On macOS, reload the Keychain key into the current terminal and start the loopback-only server:
@@ -42,9 +32,9 @@ export CHIT_DB_PATH="$PWD/data/chit.db"
 PYTHONPATH=server python server/run.py
 ```
 
-Open <http://127.0.0.1:8765/login.html>, sign in, then open <http://127.0.0.1:8765/dashboard/household-setup.html>. The server applies pending encrypted database migrations when it starts. Submit the page once to create the household and save its members, profile settings, calendar mappings, and chore rules in one transaction. The server listens on `127.0.0.1` only; stop it with Ctrl+C.
+Open <http://127.0.0.1:8765/dashboard/household-setup.html> to start the local setup flow. The server applies pending encrypted database migrations when it starts. Submit the page once to create the household and save its members, profile settings, calendar mappings, and chore rules in one transaction. The server listens on `127.0.0.1` only; stop it with Ctrl+C.
 
-Stop any currently running older local server with Ctrl+C before upgrading it. After the owner account has been bootstrapped, start the new server using the command above. Do not run `bootstrap_owner.py` a second time; it refuses to replace the owner account.
+Stop any currently running older local server with Ctrl+C before upgrading it. The setup flow is intentionally public and does not require a username or password.
 
 To preview the latest household's connected calendars on a home-style agenda, open <http://127.0.0.1:8765/dashboard/calendar-home.html>. The server reads each saved feed on page load, parses upcoming events for the next three weeks, and returns event summaries without exposing feed URLs. Calendar occurrences are not persisted; only source health and last-checked time are updated.
 

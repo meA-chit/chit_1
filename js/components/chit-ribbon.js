@@ -9,10 +9,6 @@ class ChitRibbon extends HTMLElement {
     
     try {
       const response = await fetch('/api/home/summary');
-      if (response.status === 401) {
-        window.location.href = '/login.html?next=' + encodeURIComponent(window.location.pathname);
-        return;
-      }
       if (!response.ok) throw new Error('Failed to fetch summary');
       
       const data = await response.json();
@@ -141,15 +137,6 @@ class ChitRibbon extends HTMLElement {
         color: var(--green-dark);
       }
 
-      .icon-btn.logout {
-        border-color: var(--line);
-        font-size: 13px;
-        font-weight: 700;
-        padding: 6px 12px;
-        display: flex;
-        gap: 6px;
-      }
-
       .nav-row {
         display: flex;
         padding: 0 clamp(18px, 4vw, 58px);
@@ -247,9 +234,6 @@ class ChitRibbon extends HTMLElement {
               ⚙️
             </a>
             
-            <button class="icon-btn logout" id="logout-btn" title="Sign out">
-              <span>🚪</span> Sign out
-            </button>
           </div>
         </div>
 
@@ -268,17 +252,6 @@ class ChitRibbon extends HTMLElement {
       </div>
     `;
 
-    // Attach logout event
-    this.shadowRoot.getElementById('logout-btn').addEventListener('click', async () => {
-      const csrf = sessionStorage.getItem('chit_csrf') || '';
-      try {
-        await fetch('/api/auth/logout', { method: 'POST', headers: { 'X-CSRF-Token': csrf } });
-      } catch (e) {
-        console.error('Logout request failed', e);
-      }
-      sessionStorage.removeItem('chit_csrf');
-      window.location.href = '/login.html';
-    });
   }
 
   escapeHtml(unsafe) {

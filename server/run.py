@@ -1,14 +1,12 @@
 from __future__ import annotations
 
-from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from datetime import date, datetime, time, timedelta, timezone
 import json
 from pathlib import Path
-import secrets
 import sys
 from urllib.error import HTTPError, URLError
-from urllib.parse import quote, urlsplit, urlunsplit
+from urllib.parse import urlsplit, urlunsplit
 from urllib.request import Request, urlopen
 from zoneinfo import ZoneInfo
 
@@ -17,7 +15,6 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from chit_store import EncryptedHouseholdStore
-from chit_store.auth import OwnerAuth
 from icalendar import Calendar
 
 
@@ -27,8 +24,6 @@ CALENDAR_LOOKAHEAD_DAYS = 21
 SETUP_PAGE = PROJECT_ROOT / "dashboard" / "household-setup.html"
 CALENDAR_HOME_PAGE = PROJECT_ROOT / "dashboard" / "calendar-home.html"
 HOME_PAGE = PROJECT_ROOT / "dashboard" / "home.html"
-LOGIN_PAGE = PROJECT_ROOT / "dashboard" / "login.html"
-
 # Static directories served without auth (read-only public assets)
 _STATIC_ROOTS = {
     "/js/": PROJECT_ROOT / "js",
@@ -46,11 +41,6 @@ _STATIC_MIME = {
     ".woff2": "font/woff2",
     ".woff": "font/woff",
 }
-SESSION_COOKIE = "chit_session"
-LOGIN_WINDOW_SECONDS = 900
-LOGIN_MAX_ATTEMPTS = 10
-
-
 def read_calendar_events(subscription_url: str, timezone_name: str) -> list[dict[str, str | bool]]:
     local_zone = ZoneInfo(timezone_name)
     parts = urlsplit(subscription_url)
@@ -114,36 +104,22 @@ class ChitHandler(BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:
         path = urlsplit(self.path).path
-        if path == "/login.html":
-            self._send_html(LOGIN_PAGE.read_bytes())
-            return
-        if path == "/api/auth/status":
-            self._send_json(200, {"configured": self.server.auth.is_configured()})
-            return
         if path in {"/", "/dashboard/household-setup.html", "/dashboard/home.html"}:
-            if not self._require_auth():
-                return
             if path == "/dashboard/home.html":
                 self._send_html(HOME_PAGE.read_bytes())
             else:
                 self._send_html(SETUP_PAGE.read_bytes())
             return
         if path == "/dashboard/calendar-home.html":
-            if not self._require_auth():
-                return
             self._send_html(CALENDAR_HOME_PAGE.read_bytes())
             return
         if path == "/api/health":
             self._send_json(200, {"status": "ready", "storage": "encrypted-sqlite"})
             return
         if path == "/api/home/calendar":
-            if not self._require_auth(api=True):
-                return
             self._send_home_calendar()
             return
         if path == "/api/home/summary":
-            if not self._require_auth(api=True):
-                return
             self._send_home_summary()
             return
         # Serve static assets (js/, css/, assets/) without auth
@@ -218,28 +194,8 @@ class ChitHandler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:
         path = urlsplit(self.path).path
-        if path == "/api/auth/login":
-            self._login()
-            return
-        if path == "/api/auth/logout":
-            session = self._current_session()
-            if not self.server.auth.validate_csrf(session, self.headers.get("X-CSRF-Token")):
-                self._send_json(403, {"error": "Session or CSRF token is invalid"})
-                return
-            cookie = SimpleCookie(self.headers.get("Cookie", ""))
-            session_token = cookie[SESSION_COOKIE].value if SESSION_COOKIE in cookie else None
-            self.server.auth.revoke_session(session_token)
-            self._send_json(200, {"ok": True}, clear_session=True)
-            return
         if path != "/api/households/setup":
             self._send_json(404, {"error": "Not found"})
-            return
-        session = self._current_session()
-        if session is None:
-            self._send_json(401, {"error": "Sign in required"})
-            return
-        if not self.server.auth.validate_csrf(session, self.headers.get("X-CSRF-Token")):
-            self._send_json(403, {"error": "CSRF validation failed. Reload and sign in again."})
             return
         content_type = self.headers.get_content_type()
         if content_type != "application/json":
@@ -268,79 +224,6 @@ class ChitHandler(BaseHTTPRequestHandler):
             return
         self._send_json(201, result)
 
-    def _login(self) -> None:
-        if not self._same_origin():
-            self._send_json(403, {"error": "Sign-in must originate from this Chit page"})
-            return
-        now = datetime.now(timezone.utc).timestamp()
-        address = self.client_address[0]
-        attempts = self.server.login_attempts.get(address)
-        if attempts and now - attempts[0] > LOGIN_WINDOW_SECONDS:
-            attempts = None
-        if attempts and attempts[1] >= LOGIN_MAX_ATTEMPTS:
-            self._send_json(429, {"error": "Too many sign-in attempts. Wait 15 minutes and try again."})
-            return
-        if not self.server.auth.is_configured():
-            self._send_json(503, {"error": "Owner account is not initialized. Run the owner bootstrap command first."})
-            return
-        try:
-            length = int(self.headers.get("Content-Length", "0"))
-            if length <= 0 or length > 8192 or self.headers.get_content_type() != "application/json":
-                self._send_json(400, {"error": "Invalid sign-in request"})
-                return
-            payload = json.loads(self.rfile.read(length).decode("utf-8"))
-            username = payload.get("username", "")
-            password = payload.get("password", "")
-            if not isinstance(username, str) or not isinstance(password, str) or len(password) > 1024:
-                raise ValueError("Invalid sign-in request")
-        except (UnicodeDecodeError, json.JSONDecodeError, ValueError):
-            self._send_json(400, {"error": "Invalid sign-in request"})
-            return
-        verified_username = self.server.auth.verify_credentials(username, password)
-        if verified_username is None:
-            start = attempts[0] if attempts else now
-            count = attempts[1] + 1 if attempts else 1
-            self.server.login_attempts[address] = (start, count)
-            self._send_json(401, {"error": "Username or password is incorrect"})
-            return
-        self.server.login_attempts.pop(address, None)
-        session = self.server.auth.create_session(verified_username)
-        self._send_json(200, {
-            "ok": True,
-            "username": verified_username,
-            "csrf_token": session["csrf_token"],
-        }, session_token=session["session_token"], max_age=session["expires_in"])
-
-    def _same_origin(self) -> bool:
-        origin = self.headers.get("Origin")
-        if not origin:
-            return False
-        parsed = urlsplit(origin)
-        host = self.headers.get("Host", "")
-        return parsed.netloc.lower() == host.lower() and parsed.scheme in {"http", "https"}
-
-    def _current_session(self) -> dict[str, str] | None:
-        cookie = SimpleCookie()
-        try:
-            cookie.load(self.headers.get("Cookie", ""))
-        except Exception:
-            return None
-        morsel = cookie.get(SESSION_COOKIE)
-        return self.server.auth.get_session(morsel.value if morsel else None)
-
-    def _require_auth(self, api: bool = False) -> bool:
-        if self._current_session() is not None:
-            return True
-        if api:
-            self._send_json(401, {"error": "Sign in required"})
-            return False
-        path = urlsplit(self.path).path
-        destination = path if path in {"/dashboard/household-setup.html", "/dashboard/calendar-home.html"} else "/dashboard/calendar-home.html"
-        self.send_response(302)
-        self.send_header("Location", "/login.html?next=" + quote(destination, safe="/"))
-        self.send_header("Cache-Control", "no-store")
-        self.end_headers()
-        return False
 
     def log_message(self, format: str, *args: object) -> None:
         message = format % args
@@ -359,21 +242,13 @@ class ChitHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(content)
 
-    def _send_json(self, status: int, content: dict[str, object], session_token: str | None = None,
-                   max_age: int = 0, clear_session: bool = False) -> None:
+    def _send_json(self, status: int, content: dict[str, object]) -> None:
         body = json.dumps(content).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
         self.send_header("Cache-Control", "no-store")
         self.send_header("X-Content-Type-Options", "nosniff")
-        if session_token:
-            secure = "; Secure" if self.headers.get("X-Forwarded-Proto", "").lower() == "https" else ""
-            self.send_header("Set-Cookie", "%s=%s; HttpOnly; SameSite=Strict; Path=/; Max-Age=%s%s" % (
-                SESSION_COOKIE, session_token, max_age, secure
-            ))
-        elif clear_session:
-            self.send_header("Set-Cookie", "%s=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0" % SESSION_COOKIE)
         self.end_headers()
         self.wfile.write(body)
 
@@ -383,8 +258,6 @@ def main() -> None:
     server = ThreadingHTTPServer(("127.0.0.1", 8765), ChitHandler)
     server.daemon_threads = True
     server.store = store
-    server.auth = OwnerAuth(store)
-    server.login_attempts = {}
     print("Chit setup: http://127.0.0.1:8765/dashboard/household-setup.html")
     try:
         server.serve_forever()
