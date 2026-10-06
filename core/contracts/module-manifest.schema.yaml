@@ -1,0 +1,26 @@
+# Draft schema for module.manifest.yaml (informal; convert to JSON Schema when validation is added)
+id: string                  # kebab-case, equals folder name
+title: string
+version: semver
+status: structure-only | in-progress | pilot | stable
+depends_on: [module id]
+privacy_class: normal | sensitive | strict
+audiences: [adult | child | guest]
+surfaces: [tv | tablet | web | mobile-adult | mobile-kid]
+submodules:
+  - id: string
+    depends_on: [submodule id]   # optional
+cards:
+  - id: string
+    submodule: string
+    sizes: [s | m | l | xl]
+    surfaces: [surface]
+    permissions: [string]
+    data_states: [available | stale | partial | unavailable | unconfigured | demo]
+views:
+  - id: string
+    submodule: string
+    surfaces: [surface]
+permissions: [string]
+events_published: [string]      # <entity>.<verb>
+events_consumed: [string]

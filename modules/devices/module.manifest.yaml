@@ -1,0 +1,18 @@
+# Module manifest — read by the module registry (see docs/core/module-contract.md and core/contracts/module-manifest.schema.yaml)
+id: devices
+title: Devices & IoT
+version: 0.0.0
+status: structure-only
+depends_on: [household]
+privacy_class: normal
+audiences: [adult, child, guest]   # who may ever see this module; actual visibility comes from household/member/surface config
+surfaces: [tv, tablet, web, mobile-adult, mobile-kid]
+submodules:
+  - id: overview
+  - id: home-assistant
+  - id: appliances
+  - id: climate
+  - id: maintenance
+cards: []     # each card: id, submodule, sizes, surfaces, permissions, data_states
+views: []     # full-screen pages
+permissions: []

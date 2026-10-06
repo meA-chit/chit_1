@@ -2,6 +2,10 @@
 
 This directory is the version-controlled source of truth for product intent, delivery scope, architecture and implementation contracts.
 
+## Structure (new)
+
+Docs mirror code. Start at [`00-overview/README.md`](00-overview/README.md). Per-module docs: [`modules/`](modules/README.md). Shared platform: [`core/`](core/README.md). Existing product, architecture, specification, backlog and release documents remain at their current paths and are being migrated incrementally.
+
 ## Reading paths
 
 ### Product owner

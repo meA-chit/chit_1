@@ -8,7 +8,7 @@ The first pilot is an always-visible, read-only household dashboard. It prioriti
 
 ## Documentation
 
-Start with [`docs/README.md`](docs/README.md).
+Start with [`docs/00-overview/README.md`](docs/00-overview/README.md) (whole-product context), then [`docs/README.md`](docs/README.md).
 
 - Product vision: [`docs/product/product-vision.md`](docs/product/product-vision.md)
 - Customer journey: [`docs/product/customer-journey.md`](docs/product/customer-journey.md)

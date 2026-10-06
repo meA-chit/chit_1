@@ -1,0 +1,3 @@
+type: shared-flat
+modules: [household, planner, finance]
+submodules: {planner: [calendar, chores, tasks], finance: [shared-expenses, recurring-bills]}

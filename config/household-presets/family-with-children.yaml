@@ -1,0 +1,2 @@
+type: family-with-children
+modules: [household, planner, kids, energy, devices, finance]

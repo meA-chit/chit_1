@@ -1,0 +1,5 @@
+surface: mobile-kid
+audience: child
+configured_by: adult
+allowed_modules_default: [planner, kids]
+sensitive_modules: hidden

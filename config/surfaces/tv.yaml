@@ -1,0 +1,5 @@
+surface: tv
+screen_safe: true
+max_cards: 7
+interactive: false
+sensitive_modules: hidden

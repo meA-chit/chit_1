@@ -1,5 +1,14 @@
 # Chit Agent Instructions
 
+## Navigation (read first)
+
+Chit is a modular household operating system built in parallel by several people/agents. Keep the whole-product context while working on one module:
+
+1. Read `docs/00-overview/README.md` (product context, rules, module map, workflow).
+2. Jump to your module: `docs/modules/<module>/README.md` and its `submodules/<sub>/README.md`. Code mirrors docs: `modules/<module>/submodules/<sub>/`.
+3. Shared platform work: `docs/core/` and `core/`.
+4. Never import another module's code; use public contracts and events. UI is contributed as registered cards/views, composed per household, member and surface.
+
 ## Product intent
 
 Chit is a trustworthy, read-only household overview before it is an autonomous assistant. Do not introduce messaging, schedule changes, appliance control or other external side effects unless an approved story explicitly requires them.
@@ -8,6 +17,7 @@ Chit is a trustworthy, read-only household overview before it is an autonomous a
 
 Use this precedence when documents disagree:
 
+0. Whole-product rules in `docs/00-overview/non-negotiable-rules.md` and the module's own README
 1. Approved story and acceptance criteria in `docs/backlog/stories/`
 2. Current pilot scope in `docs/releases/pilot-scope.md`
 3. Product principles in `docs/product/product-vision.md`

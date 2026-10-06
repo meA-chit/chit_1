@@ -1,0 +1,16 @@
+# Replace TBD with GitHub handles. Core needs two reviewers (enforce via branch protection).
+/core/                    @TBD
+/docs/core/               @TBD
+/docs/00-overview/        @TBD
+/modules/household/       @TBD
+/docs/modules/household/  @TBD
+/modules/planner/         @TBD
+/docs/modules/planner/    @TBD
+/modules/kids/            @TBD
+/docs/modules/kids/       @TBD
+/modules/energy/          @TBD
+/docs/modules/energy/     @TBD
+/modules/devices/         @TBD
+/docs/modules/devices/    @TBD
+/modules/finance/         @TBD
+/docs/modules/finance/    @TBD
