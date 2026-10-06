@@ -1,0 +1,50 @@
+{
+  "household_id": "hh-meyer",
+  "chores": [
+    {
+      "id": "chore-bins",
+      "title": "Put the bins out",
+      "assignee_id": "jonas",
+      "weekdays": [
+        "tuesday",
+        "friday"
+      ],
+      "seed_streak": 6,
+      "day_part": "evening"
+    },
+    {
+      "id": "chore-plants",
+      "title": "Water the plants",
+      "assignee_id": "nina",
+      "weekdays": [],
+      "seed_streak": 11,
+      "done_today": true,
+      "day_part": "morning"
+    },
+    {
+      "id": "chore-dishwasher",
+      "title": "Empty the dishwasher",
+      "assignee_id": "mila",
+      "weekdays": [],
+      "seed_streak": 4,
+      "day_part": "evening"
+    },
+    {
+      "id": "chore-toys",
+      "title": "Tidy the toys",
+      "assignee_id": "leo",
+      "weekdays": [],
+      "seed_streak": 2,
+      "day_part": "day"
+    },
+    {
+      "id": "chore-table",
+      "title": "Set the table",
+      "assignee_id": "mila",
+      "weekdays": [],
+      "seed_streak": 8,
+      "done_today": true,
+      "day_part": "evening"
+    }
+  ]
+}

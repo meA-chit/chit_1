@@ -12,6 +12,9 @@ What a user sees = modules the household enabled, narrowed by who the member is,
 
 Effective visibility of a card = module enabled AND submodule enabled AND member audience allowed AND surface supported AND permission granted.
 
+## Implementation status
+Layers 1, 2, 3, 4 and 5 are resolved by `GET /api/shell` at module level (household and member selections are stored: `household_modules`, `member_modules`). Submodule-level enablement and identity-based member resolution are pending; "View as" stands in for identity until the auth ADR.
+
 ## Audiences
 `adult`, `child`, `guest`. Children's views are defined by an adult. A child cannot enable anything the adult has not.
 

@@ -9,10 +9,12 @@ Production, consumption, grid, battery and dynamic prices — with forecast and 
 Chit is a modular household operating system. A household enables the modules it needs; each member and each device surface (TV, tablet, web, adult mobile, kid mobile) sees only what is enabled for them. This module is one of several (see `docs/00-overview/module-map.md`). It must keep working when other modules are disabled, and it must never import another module's internals.
 
 ## Submodules
-- **overview** — Live power flow and daily production/consumption, measured only when a source is connected.
-- **pricing** — Tariffs and dynamic electricity prices with freshness and source.
-- **forecast** — Public solar estimates, always labelled as forecast, shown beside (never merged with) actuals.
-- **appliance-planner** — Explainable, read-only suggestions that combine price, solar forecast and chores. Execution is out of scope until an approved story and explicit confirmation flow exist.
+- **overview** — The dashboard Energy card: hourly consumption bars coloured by price against the day's average, the price line and the day average, plus what was actually paid per kWh. Needs a Tibber token.
+- **pricing** — Tibber hourly prices (today, tomorrow once published) and hourly consumption, served at `/api/energy/pricing/day`.
+- **solar** — Until SolarEdge is connected the tab shows a clearly labelled example day (state `demo`). SolarEdge production now, today, month, lifetime and per hour; the rest of today is an estimate drawn hollow.
+- **forecast** — Public solar estimates, always labelled as forecast, shown beside (never merged with) actuals. Today a shared helper (`shared/forecast.py`, Open-Meteo radiation x plant peak power x 0.8) feeds the suggestions and the solar card; it has no card of its own yet.
+- **appliance-planner** — Shown at the bottom of the Energy card (no separate tab). The two best windows for heavy loads (run length 1 to 4 hours), read-only. Ranked by average hourly price; with SolarEdge connected, sunny hours count cheaper. Execution is out of scope until an approved story and explicit confirmation flow exist.
+- **connections** — The household energy settings section: Tibber token, SolarEdge site id and API key. Verified before storing, never shown again ([ADR-0011](../../decisions/0011-energy-provider-connections.md)).
 
 Each submodule has its own folder: `docs/modules/energy/submodules/<name>/` and `modules/energy/submodules/<name>/`.
 
@@ -39,12 +41,12 @@ Normal.
 _None beyond `docs/00-overview/non-negotiable-rules.md` yet. Add rules here, not in code comments._
 
 ## Status
-- Stage: pilot stories exist; module not yet re-homed in code
+- Stage: Tibber prices/consumption, SolarEdge production and best-window suggestions are implemented behind the hub; Home Assistant sources, battery/EV and tariffs other than Tibber are not
 - Owner: TBD
 - Stories: [US-402](stories/), [US-403](stories/), [US-405](stories/), [US-406](stories/) — folder `docs/modules/energy/stories/` · Decisions: `docs/modules/energy/decisions/`
 
 ## Source documents and prior art
-Code today: `js/tibber.js` (browser-side; to move behind the server).
+The archived prototype `js/tibber.js` called Tibber from the browser; it is replaced by the server-side client in `modules/energy/shared/tibber.py`. Unverified against a live account: the GraphQL queries follow Tibber's public schema but were exercised only against recorded-shape test data, so check the first real token on a development hub.
 
 ## Open questions
 - _Add as they arise._

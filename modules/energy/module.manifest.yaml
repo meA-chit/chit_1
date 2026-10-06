@@ -1,17 +1,48 @@
 # Module manifest — read by the module registry (see docs/core/module-contract.md and core/contracts/module-manifest.schema.yaml)
 id: energy
 title: Energy
+short_title: Energy
+nav_order: 30
 version: 0.0.0
-status: structure-only
+status: in-progress
 depends_on: [household, devices, planner]
 privacy_class: normal
-audiences: [adult, child, guest]   # who may ever see this module; actual visibility comes from household/member/surface config
+audiences: [adult]   # who may ever see this module; actual visibility comes from household/member/surface config
 surfaces: [tv, tablet, web, mobile-adult, mobile-kid]
 submodules:
   - id: overview
   - id: pricing
+  - id: solar
   - id: forecast
-  - id: appliance-planner
-cards: []     # each card: id, submodule, sizes, surfaces, permissions, data_states
+  - id: appliance-planner      # best windows, shown inside the Energy card
+  - id: connections
+cards:
+  - id: energy-now
+    submodule: overview
+    title: Energy
+    slot: right
+    group: home
+    order: 40
+    sizes: [m]
+    surfaces: [tv, tablet, web, mobile-adult]
+    permissions: []
+    data_states: [available, stale, unavailable, unconfigured]   # Tibber prices and consumption
+  - id: energy-solar
+    submodule: solar
+    title: Solar
+    slot: right
+    group: home
+    order: 41
+    sizes: [m]
+    surfaces: [tv, tablet, web, mobile-adult]
+    permissions: []
+    data_states: [available, stale, demo, unavailable, unconfigured]   # SolarEdge production; demo example day until connected
 views: []     # full-screen pages
+settings_sections:           # contributed to the household settings screen
+  - id: energy
+    submodule: connections
+    title: Energy
+    target: household
+    order: 30
+    surfaces: [tablet, web]
 permissions: []

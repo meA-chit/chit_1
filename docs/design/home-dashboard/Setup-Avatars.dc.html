@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Household setup: members and avatars</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#05070d}
+.su{--text:#e8eeff;--dim:#8d9bc2;--faint:#5b6890;--line:rgba(120,150,255,.16);--line2:rgba(120,190,255,.38);--glass:rgba(16,22,40,.66);--cyan:#4df0ff;position:relative;width:1180px;height:820px;overflow:hidden;background:#05070d;color:var(--text);font-family:'Space Grotesk',system-ui,sans-serif;padding:32px 40px;display:flex;flex-direction:column;gap:20px}
+.su *{box-sizing:border-box}
+.su button{font:inherit;color:inherit;cursor:pointer}
+.bg{position:absolute;inset:0;pointer-events:none;background:radial-gradient(700px 400px at 95% -10%,rgba(139,123,255,.2),transparent 65%),radial-gradient(600px 400px at -5% 105%,rgba(77,240,255,.12),transparent 65%),linear-gradient(rgba(120,150,255,.06) 1px,transparent 1px) 0 0/56px 56px,linear-gradient(90deg,rgba(120,150,255,.06) 1px,transparent 1px) 0 0/56px 56px}
+.rel{position:relative}
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.16em;color:var(--dim)}
+h1{margin:4px 0 0;font-size:28px;font-weight:600;letter-spacing:-.01em}
+.steps{display:flex;gap:8px;align-items:center}
+.step{display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;border:1px solid var(--line);font-size:12.5px;color:var(--dim)}
+.step[data-on='true']{color:var(--cyan);border-color:var(--line2);background:rgba(77,240,255,.08)}
+.step i{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px}
+.body{flex:1;display:grid;grid-template-columns:260px minmax(0,1fr) 300px;gap:16px;min-height:0}
+.card{position:relative;padding:20px;border:1px solid var(--line);border-radius:20px;background:var(--glass);box-shadow:0 10px 40px rgba(0,0,0,.35);display:flex;flex-direction:column;gap:14px;min-width:0}
+.card::before{content:'';position:absolute;top:8px;left:8px;width:12px;height:12px;border-top:1.5px solid var(--cyan);border-left:1.5px solid var(--cyan);border-top-left-radius:5px;opacity:.55}
+.card h2{margin:0;font-size:16px;font-weight:600}
+.mem{display:flex;align-items:center;gap:12px;width:100%;padding:9px 10px;border-radius:14px;border:1px solid transparent;background:transparent;text-align:left}
+.mem:hover{background:rgba(120,150,255,.07)}
+.mem[aria-pressed='true']{border-color:var(--line2);background:rgba(77,240,255,.07)}
+.mem b{display:block;font-size:14px;font-weight:500}
+.mem small{font-size:11.5px;color:var(--dim)}
+.add{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:10px;border-radius:14px;border:1px dashed var(--line2);background:transparent;color:var(--cyan);font-size:13px}
+.field{display:grid;gap:6px}
+.field label{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:var(--dim)}
+.input{min-height:40px;padding:9px 12px;border-radius:9px;border:1px solid var(--line);background:rgba(5,7,13,.55);color:var(--text);font:inherit;font-size:14px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.picks{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.pick{display:flex;flex-direction:column;align-items:center;gap:10px;padding:16px 8px 12px;border-radius:18px;border:1px solid var(--line);background:rgba(5,7,13,.4);transition:all .2s}
+.pick:hover{border-color:var(--line2)}
+.pick[aria-pressed='true']{border-color:var(--c);background:color-mix(in srgb,var(--c) 10%,transparent);box-shadow:0 0 26px color-mix(in srgb,var(--c) 25%,transparent)}
+.pick span.l{font-size:12.5px;color:var(--dim)}
+.pick[aria-pressed='true'] span.l{color:var(--text);font-weight:600}
+.sw{display:flex;gap:10px}
+.swb{width:34px;height:34px;border-radius:50%;border:2px solid transparent;padding:3px;background:transparent}
+.swb[aria-pressed='true']{border-color:var(--text)}
+.swb i{display:block;width:100%;height:100%;border-radius:50%}
+.prev{display:flex;flex-direction:column;gap:14px}
+.mini{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:rgba(5,7,13,.4);font-size:13px}
+.blk{padding:6px 10px;border-radius:8px;font-size:12px;border:1px solid color-mix(in srgb,var(--c) 38%,transparent);border-left:3px solid var(--c);background:color-mix(in srgb,var(--c) 17%,transparent);color:color-mix(in srgb,var(--c) 55%,#fff);flex:1}
+.ring{display:inline-flex;border-radius:50%;padding:2px}
+.foot{display:flex;justify-content:space-between;align-items:center}
+.btn{padding:11px 20px;border-radius:999px;border:1px solid var(--line2);background:rgba(77,240,255,.08);color:var(--cyan);font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+.btn.pri{color:#04101a;border-color:transparent;background:linear-gradient(135deg,#4df0ff,#8b7bff);box-shadow:0 0 24px rgba(77,240,255,.3)}
+.btn.gh{color:var(--dim);border-color:var(--line);background:transparent}
+.hint{font-size:12px;color:var(--faint);line-height:1.5}
+</style>
+</helmet>
+<div class="su">
+<div class="bg"></div>
+<header class="rel" style="display:flex;justify-content:space-between;align-items:flex-end;gap:20px">
+<div><div class="eyebrow">New household</div><h1>Who lives here?</h1></div>
+<div class="steps"><span class="step" data-on="false"><i>01</i>Household</span><span class="step" data-on="true"><i>02</i>Members</span><span class="step" data-on="false"><i>03</i>Calendars</span><span class="step" data-on="false"><i>04</i>Modules</span></div>
+</header>
+
+<div class="body rel">
+<section class="card" aria-label="Household members">
+<h2>Members</h2>
+<sc-for list="{{members}}" as="m" hint-placeholder-count="4">
+<button class="mem" aria-pressed="{{m.selected}}" onClick="{{m.pick}}">
+<span class="ring" style="background: {{m.color}}"><span style="display:inline-flex;border-radius:50%;background:#0a0f1d"><dc-import name="Avatar" kind="{{m.avatar}}" size="44" hint-size="44px,44px"></dc-import></span></span>
+<span><b>{{m.name}}</b><small>{{m.role}}</small></span>
+</button>
+</sc-for>
+<button class="add"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Add a person</button>
+</section>
+
+<section class="card" aria-label="Edit member">
+<div style="display:flex;align-items:center;gap:14px">
+<span class="ring" style="background: {{sel.color}}"><span style="display:inline-flex;border-radius:50%;background:#0a0f1d"><dc-import name="Avatar" kind="{{sel.avatar}}" size="64" hint-size="64px,64px"></dc-import></span></span>
+<div><div class="eyebrow">{{sel.role}}</div><h2 style="font-size:22px;margin-top:2px">{{sel.name}}</h2></div>
+</div>
+<div class="two">
+<div class="field"><label for="n">Name</label><input id="n" class="input" value="{{sel.name}}" readonly></div>
+<div class="field"><label for="b">Birth date</label><input id="b" class="input" value="{{sel.birth}}" readonly></div>
+</div>
+<div>
+<div class="eyebrow" style="margin-bottom:10px">Choose an avatar · {{sel.kindLabel}} set</div>
+<div class="picks" role="group" aria-label="Avatar options">
+<sc-for list="{{options}}" as="o" hint-placeholder-count="4">
+<button class="pick" aria-pressed="{{o.selected}}" onClick="{{o.pick}}" style="--c: {{sel.color}}" aria-label="{{o.label}}">
+<dc-import name="Avatar" kind="{{o.kind}}" size="84" hint-size="84px,84px"></dc-import>
+<span class="l">{{o.label}}</span>
+</button>
+</sc-for>
+</div>
+</div>
+<div>
+<div class="eyebrow" style="margin-bottom:10px">Colour on the dashboard</div>
+<div class="sw" role="group" aria-label="Colour">
+<sc-for list="{{swatches}}" as="s" hint-placeholder-count="5">
+<button class="swb" aria-pressed="{{s.selected}}" onClick="{{s.pick}}" aria-label="{{s.label}}"><i style="background: {{s.hex}}"></i></button>
+</sc-for>
+</div>
+<p class="hint" style="margin:10px 0 0">Illustrations only, never photos. The colour follows this person on the timeline, calendar and chores.</p>
+</div>
+</section>
+
+<section class="card prev" aria-label="Preview">
+<h2>How {{sel.name}} appears</h2>
+<div class="eyebrow">Left rail</div>
+<div class="mini" style="justify-content:center;padding:14px"><div style="display:flex;flex-direction:column;align-items:center;gap:6px"><span class="ring" style="background: {{sel.color}}"><span style="display:inline-flex;border-radius:50%;background:#0a0f1d"><dc-import name="Avatar" kind="{{sel.avatar}}" size="44" hint-size="44px,44px"></dc-import></span></span><span style="font-size:12px;font-weight:600">{{sel.name}}</span></div></div>
+<div class="eyebrow">Timeline</div>
+<div class="mini"><dc-import name="Avatar" kind="{{sel.avatar}}" size="30" hint-size="30px,30px"></dc-import><span class="blk" style="--c: {{sel.color}}">{{sel.sample}}</span></div>
+<div class="eyebrow">Calendar and chores</div>
+<div class="mini"><span class="ring" style="background: {{sel.color}}"><span style="display:inline-flex;border-radius:50%;background:#0a0f1d"><dc-import name="Avatar" kind="{{sel.avatar}}" size="24" hint-size="24px,24px"></dc-import></span></span><span style="flex:1">{{sel.sampleChore}}</span><span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#ffc857">4 days</span></div>
+<p class="hint" style="margin:0">Adults pick from four adult avatars, children from four child avatars. You can change this later in household settings.</p>
+</section>
+</div>
+
+<footer class="rel foot">
+<button class="btn gh">Back</button>
+<span class="hint">Nothing is saved until you finish.</span>
+<button class="btn pri">Continue to calendars</button>
+</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1180,"height":820}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = this.state || {};
+    const sel0 = st.sel || 'mila';
+    const base = {
+      nina:  { name: 'Nina Meyer', role: 'Adult · owner', kind: 'adult', birth: '14 Mar 1987', avatar: 'a2', color: '#b79cff', sample: 'Work · home', chore: 'Water the plants' },
+      jonas: { name: 'Jonas Meyer', role: 'Adult', kind: 'adult', birth: '2 Sep 1985', avatar: 'a1', color: '#4df0ff', sample: 'Work · office', chore: 'Put the bins out' },
+      mila:  { name: 'Mila', role: 'Child · 9', kind: 'child', birth: '20 May 2016', avatar: 'k2', color: '#ff8fb8', sample: 'School', chore: 'Set the table' },
+      leo:   { name: 'Leo', role: 'Child · 5', kind: 'child', birth: '8 Nov 2020', avatar: 'k3', color: '#ffc857', sample: 'Kita', chore: 'Tidy the toys' }
+    };
+    const over = st.over || {};
+    const people = {};
+    Object.keys(base).forEach((id) => { people[id] = Object.assign({}, base[id], over[id] || {}); });
+    const s = people[sel0];
+    const OPT = {
+      adult: [['a1', 'Man'], ['a2', 'Woman'], ['a3', 'Man, beard'], ['a4', 'Woman, bun']],
+      child: [['k1', 'Boy'], ['k2', 'Girl, pigtails'], ['k3', 'Boy, cap'], ['k4', 'Girl, glasses']]
+    };
+    const COLORS = [['#b79cff', 'Violet'], ['#4df0ff', 'Cyan'], ['#ff8fb8', 'Pink'], ['#ffc857', 'Amber'], ['#8dffb0', 'Green']];
+    const patch = (obj) => this.setState({ over: Object.assign({}, over, { [sel0]: Object.assign({}, over[sel0] || {}, obj) }) });
+    return {
+      members: Object.keys(people).map((id) => ({
+        name: people[id].name, role: people[id].role, avatar: people[id].avatar, color: people[id].color,
+        selected: id === sel0, pick: () => this.setState({ sel: id })
+      })),
+      sel: {
+        name: s.name, role: s.role, birth: s.birth, avatar: s.avatar, color: s.color,
+        kindLabel: s.kind === 'adult' ? 'adult' : 'child', sample: s.sample, sampleChore: s.chore
+      },
+      options: OPT[s.kind].map((o) => ({ kind: o[0], label: o[1], selected: s.avatar === o[0], pick: () => patch({ avatar: o[0] }) })),
+      swatches: COLORS.map((c) => ({ hex: c[0], label: c[1], selected: s.color === c[0], pick: () => patch({ color: c[0] }) }))
+    };
+  }
+}
+</script>
+</body>
+</html>

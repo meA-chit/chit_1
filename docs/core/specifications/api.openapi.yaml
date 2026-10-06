@@ -4,7 +4,7 @@ info:
   version: 0.2.0
   description: |
     Draft contract. Platform routes live under /api; each module owns /api/<module>/... (see docs/modules/<module>/contracts.md).
-    Routes marked x-implemented exist in server/run.py today. No authentication is applied (ADR-0007, interim, loopback only).
+    Routes marked x-implemented exist in the hub today (core/server + module routes.py). No authentication is applied (ADR-0007, interim, loopback only).
 servers:
   - url: /api
 paths:
@@ -23,17 +23,122 @@ paths:
                 properties:
                   status: { type: string }
                   storage: { type: string }
-  /home/summary:
+  /shell:
     get:
-      operationId: getHomeSummary
+      operationId: getShell
+      x-implemented: true
+      x-module: core
+      description: Cards and views enabled for a surface (and optional household preset). Layers 1, 2 and 5 of enablement; household/member overrides pending.
+      parameters:
+        - { name: surface, in: query, schema: { type: string, enum: [tv, tablet, web, mobile-adult, mobile-kid] } }
+        - { name: preset, in: query, schema: { type: string } }
+      responses:
+        '200': { description: Shell configuration }
+        '400': { description: Unknown surface or preset }
+  /modules:
+    get: { operationId: listModules, x-implemented: true, x-module: core, description: Module catalog for the household settings form., responses: { '200': { description: Modules with short title, audiences, dependencies } } }
+  /household/current:
+    get: { operationId: getCurrentHousehold, x-implemented: true, x-module: household/setup, description: Latest household as an editable document., responses: { '200': { description: Document or state unconfigured } } }
+  /household/{id}:
+    get: { operationId: getHousehold, x-implemented: true, x-module: household/setup, parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: Household document }, '404': { description: Not found } } }
+    put: { operationId: updateHousehold, x-implemented: true, x-module: household/setup, description: Edit a household; ids of members and calendars are preserved., parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: Saved }, '400': { description: Invalid }, '404': { description: Not found } } }
+  /planner/timeline/day:
+    get: { operationId: getTimelineDay, x-implemented: true, x-module: planner/timeline, description: 'Lanes of routine blocks, reminders and the day-part zones for a date (default today, up to 14 days ahead; state manual). /planner/timeline/today is the same view.', parameters: [{ name: date, in: query, schema: { type: string, format: date } }], responses: { '200': { description: Timeline }, '400': { description: Date out of range } } }
+  /planner/chores/{id}/skip:
+    post: { operationId: skipChoreToday, x-implemented: true, x-module: planner/chores, description: 'Body {skipped: boolean}; today only.', parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: Updated }, '404': { description: Not found } } }
+  /planner/reminders/{id}/skip:
+    post: { operationId: skipReminderToday, x-implemented: true, x-module: planner/reminders, description: 'Body {skipped: boolean}; today only.', parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: Updated }, '404': { description: Not found } } }
+  /planner/timeline/today:
+    get: { operationId: getTimelineToday, x-implemented: true, x-module: planner/timeline, description: Alias of /planner/timeline/day for today., responses: { '200': { description: Timeline } } }
+  /planner/chores/today:
+    get: { operationId: getChoresToday, x-implemented: true, x-module: planner/chores, description: Chores due today with done flag and computed streak., responses: { '200': { description: Chores } } }
+  /planner/chores:
+    post: { operationId: createChore, x-implemented: true, x-module: planner/chores, responses: { '201': { description: Created }, '400': { description: Invalid } } }
+  /planner/chores/options:
+    get: { operationId: getChoreOptions, x-implemented: true, x-module: planner/chores, description: 'Day parts (morning, day, evening with their hours) and weekday names.', responses: { '200': { description: Options } } }
+  /planner/chores/{id}:
+    put: { operationId: updateChore, x-implemented: true, x-module: planner/chores, parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: Saved }, '400': { description: Invalid }, '404': { description: Not found } } }
+    delete: { operationId: archiveChore, x-implemented: true, x-module: planner/chores, description: Archives the chore; history is kept., parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: Archived }, '404': { description: Not found } } }
+  /planner/reminders:
+    get: { operationId: listReminders, x-implemented: true, x-module: planner/reminders, responses: { '200': { description: Active reminders } } }
+    post: { operationId: createReminder, x-implemented: true, x-module: planner/reminders, responses: { '201': { description: Created }, '400': { description: Invalid } } }
+  /planner/reminders/today:
+    get: { operationId: getRemindersToday, x-implemented: true, x-module: planner/reminders, responses: { '200': { description: Reminders that apply today } } }
+  /planner/reminders/{id}:
+    put: { operationId: updateReminder, x-implemented: true, x-module: planner/reminders, parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: Saved }, '404': { description: Not found } } }
+    delete: { operationId: archiveReminder, x-implemented: true, x-module: planner/reminders, parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: Archived }, '404': { description: Not found } } }
+  /planner/chores/{id}/toggle:
+    post: { operationId: toggleChore, x-implemented: true, x-module: planner/chores, description: 'Body {done: boolean} for today.', parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: Updated }, '404': { description: Not found } } }
+  /planner/weather/now:
+    get: { operationId: getWeatherNow, x-implemented: true, x-module: planner/weather, description: 'Open-Meteo via the hub; states available, stale, unavailable, unconfigured.', responses: { '200': { description: Weather } } }
+  /energy/connections:
+    get: { operationId: getEnergyConnections, x-implemented: true, x-module: energy/connections, description: 'Which providers are connected. Returns connected, a masked hint and non-secret details; never a key (ADR-0011).', responses: { '200': { description: Status } } }
+  /energy/connections/tibber:
+    put: { operationId: connectTibber, x-implemented: true, x-module: energy/connections, description: 'Body {token}. Verified with Tibber before it is stored. 400 key rejected, 502 provider unreachable.', responses: { '200': { description: Status }, '400': { description: Key rejected }, '502': { description: Provider unreachable } } }
+  /energy/connections/solaredge:
+    put: { operationId: connectSolarEdge, x-implemented: true, x-module: energy/connections, description: 'Body {site_id, api_key}. Verified with SolarEdge before it is stored.', responses: { '200': { description: Status }, '400': { description: Key rejected }, '502': { description: Provider unreachable } } }
+  /energy/connections/{provider}:
+    delete: { operationId: disconnectEnergyProvider, x-implemented: true, x-module: energy/connections, description: 'Remove a stored key (tibber or solaredge).', parameters: [{ name: provider, in: path, required: true, schema: { type: string } }], responses: { '200': { description: Status }, '404': { description: Unknown provider } } }
+  /energy/pricing/day:
+    get: { operationId: getEnergyPriceDay, x-implemented: true, x-module: energy/pricing, description: 'Hourly Tibber price and consumption for date=today|tomorrow, the day average, the current hour against it and what was paid per kWh. States available, stale, unavailable, unconfigured. Consumption is reported unavailable (never zero) without meter data. totals: month/year to date use and cost.', parameters: [{ name: date, in: query, schema: { type: string, enum: [today, tomorrow] } }], responses: { '200': { description: Day } } }
+  /energy/solar/day:
+    get: { operationId: getSolarDay, x-implemented: true, x-module: energy/solar, description: 'SolarEdge production now, today, month, lifetime and per hour; remaining hours carry an estimate (expected_state forecast).', responses: { '200': { description: Production } } }
+  /energy/suggestions/windows:
+    get: { operationId: getBestWindows, x-implemented: true, x-module: energy/appliance-planner, description: 'The two best windows (hours=1..4, default 2) for heavy loads, from Tibber prices and, when available, an expected-solar estimate. Read-only advice.', parameters: [{ name: hours, in: query, schema: { type: integer, minimum: 1, maximum: 4 } }], responses: { '200': { description: Windows } } }
+  /kids/stars/overview:
+    get: { operationId: getStarsOverview, x-implemented: true, x-module: kids/rewards, description: 'Per child: stars (total, week), goals with progress, chores and which are star chores, today with outcomes.', responses: { '200': { description: OK } } }
+  /kids/stars/chores/{id}:
+    put: { operationId: setStarChore, x-implemented: true, x-module: kids/rewards, description: 'Body {enabled}. A star chore needs an assignee.', parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: OK } } }
+  /kids/stars/outcome:
+    post: { operationId: setChoreOutcome, x-implemented: true, x-module: kids/rewards, description: 'Body {chore_id, outcome: well|again|null, date?}. Needs a ticked-off star chore.', responses: { '200': { description: OK } } }
+  /kids/goals:
+    post: { operationId: createGoal, x-implemented: true, x-module: kids/rewards, description: 'Body {member_id, title, cost, note?, count_existing?}.', responses: { '200': { description: OK } } }
+  /kids/goals/{id}:
+    put: { operationId: updateGoal, x-implemented: true, x-module: kids/rewards, description: 'Body {title, cost, note?}.', parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: OK } } }
+    delete: { operationId: removeGoal, x-implemented: true, x-module: kids/rewards, description: 'Archive a goal.', parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: OK } } }
+  /kids/goals/{id}/approve:
+    post: { operationId: approveGoal, x-implemented: true, x-module: kids/rewards, description: 'Body {approved: boolean}.', parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: OK } } }
+  /kids/grades/overview:
+    get: { operationId: getGrades, x-implemented: true, x-module: kids/learning, description: 'Subjects with written and oral averages and the weighted average, latest entries and weights. ?member=', responses: { '200': { description: OK } } }
+  /kids/grades/weights:
+    put: { operationId: setGradeWeights, x-implemented: true, x-module: kids/learning, description: 'Body {main_written_pct, other_written_pct}.', responses: { '200': { description: OK } } }
+  /kids/grades/subjects:
+    post: { operationId: addSubject, x-implemented: true, x-module: kids/learning, description: 'Body {member_id, name, kind: main|other}.', responses: { '200': { description: OK } } }
+  /kids/grades/subjects/{id}:
+    put: { operationId: updateSubject, x-implemented: true, x-module: kids/learning, description: 'Body {name, kind}.', parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: OK } } }
+    delete: { operationId: removeSubject, x-implemented: true, x-module: kids/learning, description: 'Archive a subject.', parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: OK } } }
+  /kids/grades:
+    post: { operationId: addGrade, x-implemented: true, x-module: kids/learning, description: 'Body {subject_id, grade_type: written|oral, grade: 1-6, date?, note?}.', responses: { '200': { description: OK } } }
+  /kids/grades/{id}:
+    delete: { operationId: removeGrade, x-implemented: true, x-module: kids/learning, description: 'Delete a grade.', parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: OK } } }
+  /kids/school/plan:
+    get: { operationId: getSchoolPlan, x-implemented: true, x-module: kids/school, description: 'Slots for a child (?member=), optionally one weekday (?weekday=0-6|today).', responses: { '200': { description: OK } } }
+  /kids/school/slots:
+    post: { operationId: addSchoolSlot, x-implemented: true, x-module: kids/school, description: 'Body {member_id, weekday, start, end, title, kind: lesson|break|meal|care, note?}.', responses: { '200': { description: OK } } }
+  /kids/school/slots/{id}:
+    put: { operationId: updateSchoolSlot, x-implemented: true, x-module: kids/school, description: 'Body {start, end, title, kind, note?}.', parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: OK } } }
+    delete: { operationId: removeSchoolSlot, x-implemented: true, x-module: kids/school, description: 'Remove a slot.', parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: OK } } }
+  /kids/school/copy:
+    post: { operationId: copySchoolDay, x-implemented: true, x-module: kids/school, description: 'Body {member_id, from_weekday, to_weekdays}. Replaces the target days.', responses: { '200': { description: OK } } }
+  /kids/health/meds:
+    get: { operationId: getMeds, x-implemented: true, x-module: kids/health, description: 'Medication for a child with the week log and supply. Parents only.', responses: { '200': { description: OK } } }
+    post: { operationId: addMed, x-implemented: true, x-module: kids/health, description: 'Body {member_id, name, dose?, time, weekdays, remind_member_id?, supply?}.', responses: { '200': { description: OK } } }
+  /kids/health/meds/{id}:
+    put: { operationId: updateMed, x-implemented: true, x-module: kids/health, description: 'Same body as add.', parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: OK } } }
+    delete: { operationId: removeMed, x-implemented: true, x-module: kids/health, description: 'Archive a medication.', parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: OK } } }
+  /kids/health/meds/{id}/log:
+    post: { operationId: logDose, x-implemented: true, x-module: kids/health, description: 'Body {status: given|missed|null, date?}. Giving a dose uses one unit of supply.', parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: OK } } }
+  /household/summary:
+    get:
+      operationId: getHouseholdSummary
       x-implemented: true
       x-module: household
       description: Latest household summary including members and roles.
       responses:
-        '200': { description: Household summary or {state: unconfigured} }
-  /home/calendar:
+        '200': { description: 'Household summary, or state: unconfigured' }
+  /planner/calendar/agenda:
     get:
-      operationId: getHomeCalendar
+      operationId: getCalendarAgenda
       x-implemented: true
       x-module: planner/calendar
       description: Upcoming events for connected sources with per-source state. Feed URLs are never returned.
@@ -43,7 +148,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/CalendarProjection' }
-  /households/setup:
+  /household/setup:
     post:
       operationId: saveHouseholdSetup
       x-implemented: true

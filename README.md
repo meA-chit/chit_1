@@ -17,6 +17,25 @@ Start with [`docs/00-overview/README.md`](docs/00-overview/README.md); the full 
 - Backlog index: [`docs/backlog/`](docs/backlog/README.md) · Pilot scope and roadmap: [`docs/releases/`](docs/releases/pilot-scope.md)
 - Agent guidance: [`AGENTS.md`](AGENTS.md)
 
-## Repository state
+## Run it
 
-Documentation has been restructured into the modular layout. The module folders under `modules/` and `core/` contain manifests and empty scaffolding only. Existing implementation code (`server/`, `dashboard/`, `js/`, `css/`) has not yet been migrated into them; see `docs/00-overview/module-map.md` (legacy code mapping) and `docs/core/current-implementation.md`. Historical dashboard prototypes remain under `dashboard/archive/`.
+```sh
+npm install
+python3 -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt
+npm run dev:all   # unencrypted dev database, auto-seeded with the sample household (seed/), UI on http://localhost:5173
+npm run check     # isolation + typecheck + vitest + python tests
+```
+`dev:all` runs the hub on `127.0.0.1:8765` (loopback only, ADR-0007) with `CHIT_STORAGE=plain` and the Vite client. For the encrypted store use `npm run hub` with `CHIT_DB_KEY_HEX` and `CHIT_DB_PATH` (see `core/store/README.md`). Sample data: `seed/README.md`.
+`npm run build` produces `apps/web/dist`, which the hub serves at `/`.
+
+## Repository layout
+
+```
+apps/web/            client entry (Vite); apps/mobile/ is planned (Capacitor)
+core/{server,store,web,contracts}   shared platform
+modules/<m>/submodules/<s>/{server,web,tests}   one folder per feature; server/routes.py + web/index.ts self-register
+config/              household presets and surface profiles
+docs/                mirrors the code; start at docs/00-overview/README.md
+dashboard/archive/   archived prototypes (not requirements)
+```
+Architecture decisions: [ADR-0008](docs/decisions/0008-web-client-react-typescript-and-hub-api.md) (stack), [ADR-0009](docs/decisions/0009-hub-first-deployment-and-data-residency.md) (deployment and data residency). Code migration status: `docs/core/current-implementation.md`.

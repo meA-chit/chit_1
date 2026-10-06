@@ -28,6 +28,11 @@ Use this precedence when documents disagree:
 
 Do not treat archived dashboard prototypes (`dashboard/archive/`) or `docs/archive/` as current requirements. Check `docs/00-overview/open-decisions.md` before assuming an undecided topic (stack, identity, mobile, sequencing).
 
+## Where code goes
+- A feature lives in `modules/<module>/submodules/<sub>/{server,web,tests}`. Server: `server/routes.py` defines `register(router)`, routes only under `/api/<module-id>/`. Web: `web/index.ts` default-exports a `ModuleWeb`; cards are also declared in `modules/<module>/module.manifest.yaml`. Both self-register; do not edit central lists.
+- Shared UI primitives, shell and tokens: `core/web` (import as `@chit/core`). Hub, registry and store: `core/server`, `core/store`.
+- Run `npm run check` before a PR. Stack and deployment decisions: ADR-0008, ADR-0009. UI rules: `docs/core/ui-design-system.md`.
+
 ## Before coding
 
 - Identify one or more story IDs and read their dependencies and architecture references. Read the module README for the module you change.

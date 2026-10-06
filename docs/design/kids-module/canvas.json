@@ -1,0 +1,55 @@
+{
+ "v": 3,
+ "createdOnFiles": {
+  "v": 1,
+  "at": "2026-10-06T18:00:00Z"
+ },
+ "title": "Chit Kids Module",
+ "boards": {
+  "Main.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 1280,
+   "h": 1500,
+   "title": "Today \u00b7 school day"
+  },
+  "Stars.dc.html": {
+   "x": 1400,
+   "y": 0,
+   "w": 1280,
+   "h": 1500,
+   "title": "Stars, chores and goals"
+  },
+  "Grades.dc.html": {
+   "x": 0,
+   "y": 1620,
+   "w": 1280,
+   "h": 1500,
+   "title": "Grades"
+  },
+  "Health.dc.html": {
+   "x": 1400,
+   "y": 1620,
+   "w": 1280,
+   "h": 1200,
+   "title": "Medication"
+  },
+  "KidView.dc.html": {
+   "x": 2800,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Mila's own screen"
+  }
+ },
+ "order": [
+  "Main.dc.html",
+  "Stars.dc.html",
+  "Grades.dc.html",
+  "Health.dc.html",
+  "KidView.dc.html"
+ ],
+ "notes": {},
+ "pages": [],
+ "designSystems": []
+}

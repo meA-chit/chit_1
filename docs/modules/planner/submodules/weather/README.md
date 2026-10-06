@@ -1,20 +1,9 @@
 # Submodule: weather (module `planner`)
 
-> Parent: [`docs/modules/planner/README.md`](../../README.md) · Code: `modules/planner/submodules/weather/`
+> Code: `modules/planner/submodules/weather/`
 
-## Purpose
-Day context: current conditions, next hours and seven-day outlook from a public provider, always labelled forecast/measured correctly. Provider access is a core connector.
+**Purpose.** Current weather for the top bar.
 
-## Boundaries
-- Owns: _to be defined_
-- Reads from other submodules/modules: _to be defined (public contracts only)_
-- Must not: import other modules' internals; infer availability from missing data; present forecast/manual/demo data as measured.
+**Behaviour.** `GET /api/planner/weather/now`: the hub fetches Open-Meteo for the household's latitude/longitude (no API key), caches 15 minutes, and returns temperature, condition, high/low, rain chance, observation time and source. No coordinates → `unconfigured` (link to household settings). Provider down → last reading as `stale`, or `unavailable` if none. The browser never calls a weather provider (the prototype did).
 
-## Enablement
-Can be enabled or disabled independently of its siblings where its dependencies allow it. Declared in `modules/planner/module.manifest.yaml`.
-
-## UI (cards / views)
-_To be defined._
-
-## Status
-Structure only — no stories yet. Stories: `docs/modules/planner/stories/`.
+**Not built.** Hourly forecast, alerts, address search (coordinates are entered by hand), forecast feeding energy planning (`energy/forecast`).

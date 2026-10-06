@@ -34,15 +34,18 @@ household <- planner <- kids; household <- devices <- energy (also reads planner
 ## Ownership by people
 Owners are listed in each module README (`Owner: TBD`) and mirrored in `.github/CODEOWNERS`.
 
-## Legacy code mapping (existing code to migrate in the rework)
-| Existing | Target |
-|---|---|
-| `server/chit_store/` | `core/store` (engine, migrations runner) and module-owned tables (`household_*`, `planner_*`) |
-| `server/run.py` | `core/server` (routing, policy) |
-| `dashboard/household-setup.html` | `modules/household/submodules/setup/web` |
-| `dashboard/calendar-home.html`, calendar reader in `run.py` | `modules/planner/submodules/calendar` |
-| `js/weather.js` | `modules/planner/submodules/weather` (+ core connector) |
-| `js/tibber.js` | `modules/energy/submodules/pricing` (+ core connector, server-side) |
-| `js/components/chit-ribbon.js` | `core/web` |
-| child care/activity schedules in household store | `modules/kids/submodules/{school,activities}` |
-| `dashboard/archive/` | stays archived |
+## Legacy code mapping (status after the 2026-10-06 rework)
+| Existing | Now | Remaining |
+|---|---|---|
+| `server/chit_store/` | `core/store/chit_store/` (moved intact) | Split module-owned tables/migrations out of the single store (open decision 12) |
+| `server/run.py` | `core/server/chit_server/` (router, registry, shell, static) + module `server/routes.py` | — |
+| calendar reader in `run.py` | `modules/planner/submodules/calendar/server/{reader,routes}.py` | RRULE, floating times, SSRF guard, caching |
+| household summary/setup routes | `modules/household/submodules/setup/server/routes.py` | — |
+| `dashboard/household-setup.html` | Ported to React: `modules/household/submodules/setup/web` (create + edit); prototype in `dashboard/archive/household-setup-prototype/` | Submodule enablement, member health fields |
+| `dashboard/calendar-home.html` | Replaced by the `calendar-agenda` card; prototype in `dashboard/archive/home-prototype/` | — |
+| `js/weather.js` | Archived in `dashboard/archive/home-prototype/js/` | Rebuild in `planner/weather` server-side with provenance |
+| `js/tibber.js` | Archived in `dashboard/archive/home-prototype/js/` | Rebuild in `energy/pricing` server-side; the token must not reach the browser |
+| `js/components/chit-ribbon.js`, `css/` | Replaced by `core/web` shell and theme; archived | — |
+| child care/activity schedules in household store | unchanged | Move to `kids/{school,activities}` |
+| `dashboard/archive/home-prototype` weather/tariff scripts | Weather rebuilt server-side: `planner/weather` (Open-Meteo, cached, provenance). Tariff still pending in `energy/pricing` | Energy pricing connector |
+| other `dashboard/*.html` mockups | `dashboard/archive/mockups/` | — |

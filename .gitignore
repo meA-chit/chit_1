@@ -16,3 +16,8 @@ __pycache__/
 config.js
 js/config.js
 *.key
+
+# Web client build output and dependencies
+node_modules/
+apps/web/dist/
+*.tsbuildinfo

@@ -1,0 +1,21 @@
+// Public surface of core/web. Modules import from '@chit/core' only.
+export { App } from './shell/App';
+export { registerModules } from './registry';
+export type { CardProps, ModuleWeb, SettingsSectionProps } from './registry/types';
+export { SettingsSections } from './shell/SettingsSections';
+export type { DataState, ManifestCard, Person, ShellConfig, Surface } from './api/types';
+export { Avatar, AVATARS, PERSON_COLORS, PersonAvatar } from './ui/Avatar';
+export type { AvatarKind } from './ui/Avatar';
+export { useSurface } from './lib/useSurface';
+export { useViewer } from './shell/viewer';
+export { BellIcon, BoltIcon, BookIcon, CalendarIcon, CheckIcon, ChipIcon, ClockIcon, FlameIcon, PillIcon, PlusIcon, SparkIcon, StarIcon, SunIcon, ThermoIcon } from './ui/icons';
+export { api, ApiError, setHubBaseUrl } from './api/client';
+export { CardFrame, Empty, Skeleton } from './ui/CardFrame';
+export { StateBadge } from './ui/StateBadge';
+export { hhmm, relativeTime } from './lib/time';
+export { ChipGroup, Field, Notice, Section, SelectField, TextField, Toggle, WeekdayChips, WEEKDAYS } from './ui/form';
+export type { ChipOption } from './ui/form';
+export { useShell } from './shell/useShell';
+export { Link } from 'react-router-dom';
+export { useNavigate, useSearchParams } from 'react-router-dom';
+export { useClock } from './lib/useClock';

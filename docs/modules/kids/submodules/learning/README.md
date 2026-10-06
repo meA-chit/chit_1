@@ -16,5 +16,11 @@ Can be enabled or disabled independently of its siblings where its dependencies 
 ## UI (cards / views)
 _To be defined._
 
+## What it does
+German scale 1 (best) to 6. Two graded types, **written exam** and **oral / short test**; subjects are **main** (German, Maths, English) or **other** (Geography, Biology, Music, Sport, Art). A subject's average = the average of each type, combined with the household's weights per kind (default main 50/50, other 30/70 written/oral; editable because schools differ); a subject with one type uses it alone and no grade is ever treated as zero. The trend compares the two latest grades with the earlier ones.
+- API: `GET /api/kids/grades/overview?member=`, `PUT /api/kids/grades/weights`, `POST|PUT|DELETE /api/kids/grades/subjects[/{id}]`, `POST /api/kids/grades`, `DELETE /api/kids/grades/{id}`.
+- Grades are for parents: no dashboard card, and a child's own view never shows them.
+- Data: `kid_subjects`, `kid_grades`, `kid_settings` (migration 010). Seed: `seed/kids/learning.json`.
+
 ## Status
-Structure only — no stories yet. Stories: `docs/modules/kids/stories/`.
+Implemented (first version).

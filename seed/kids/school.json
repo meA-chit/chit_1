@@ -1,0 +1,81 @@
+{
+  "household_id": "hh-meyer",
+  "member_id": "mila",
+  "copy_to": [
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday"
+  ],
+  "monday": [
+    {
+      "start": "08:00",
+      "end": "08:45",
+      "title": "Maths",
+      "kind": "lesson",
+      "note": "Room 4a"
+    },
+    {
+      "start": "08:45",
+      "end": "09:30",
+      "title": "German",
+      "kind": "lesson",
+      "note": "Room 4a"
+    },
+    {
+      "start": "09:30",
+      "end": "09:50",
+      "title": "Recess",
+      "kind": "break",
+      "note": "Schoolyard, bring a snack"
+    },
+    {
+      "start": "09:50",
+      "end": "10:35",
+      "title": "Biology",
+      "kind": "lesson",
+      "note": "Room 6"
+    },
+    {
+      "start": "10:35",
+      "end": "11:20",
+      "title": "Geography",
+      "kind": "lesson",
+      "note": "Room 4a"
+    },
+    {
+      "start": "11:20",
+      "end": "11:35",
+      "title": "Short break",
+      "kind": "break"
+    },
+    {
+      "start": "11:35",
+      "end": "12:20",
+      "title": "Sport",
+      "kind": "lesson",
+      "note": "Gym, bring the PE bag"
+    },
+    {
+      "start": "12:20",
+      "end": "13:00",
+      "title": "Lunch",
+      "kind": "meal",
+      "note": "Canteen"
+    },
+    {
+      "start": "13:00",
+      "end": "14:30",
+      "title": "Homework club",
+      "kind": "care",
+      "note": "Care group B"
+    },
+    {
+      "start": "14:30",
+      "end": "15:30",
+      "title": "Free play",
+      "kind": "care",
+      "note": "Care group B"
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "household_id": "hh-meyer",
+  "star_chores": [
+    "chore-dishwasher",
+    "chore-table"
+  ],
+  "outcomes": [
+    {
+      "chore": "chore-table",
+      "days_ago": 0,
+      "outcome": "well"
+    },
+    {
+      "chore": "chore-table",
+      "days_ago": 1,
+      "outcome": "well"
+    },
+    {
+      "chore": "chore-table",
+      "days_ago": 2,
+      "outcome": "well"
+    },
+    {
+      "chore": "chore-table",
+      "days_ago": 3,
+      "outcome": "well"
+    },
+    {
+      "chore": "chore-table",
+      "days_ago": 4,
+      "outcome": "well"
+    },
+    {
+      "chore": "chore-table",
+      "days_ago": 5,
+      "outcome": "well"
+    },
+    {
+      "chore": "chore-table",
+      "days_ago": 6,
+      "outcome": "again"
+    },
+    {
+      "chore": "chore-dishwasher",
+      "days_ago": 1,
+      "outcome": "well"
+    },
+    {
+      "chore": "chore-dishwasher",
+      "days_ago": 2,
+      "outcome": "well"
+    },
+    {
+      "chore": "chore-dishwasher",
+      "days_ago": 4,
+      "outcome": "well"
+    }
+  ],
+  "goals": [
+    {
+      "member_id": "mila",
+      "title": "Movie night, pick the film",
+      "cost": 20,
+      "note": "Family goal"
+    },
+    {
+      "member_id": "mila",
+      "title": "Sleepover with friends",
+      "cost": 50,
+      "note": "Needs a parent to plan it"
+    },
+    {
+      "member_id": "mila",
+      "title": "Hang out outside the home",
+      "cost": 100,
+      "note": "With friends, agreed time and place"
+    }
+  ]
+}

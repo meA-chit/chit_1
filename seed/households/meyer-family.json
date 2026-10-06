@@ -1,0 +1,197 @@
+{
+  "household": {
+    "id": "hh-meyer",
+    "name": "Meyer family",
+    "timezone": "Europe/Berlin",
+    "country_code": "DE",
+    "region": "Bayern",
+    "latitude": 48.1374,
+    "longitude": 11.5755
+  },
+  "owner_client_id": "nina",
+  "modules": [
+    "household",
+    "planner",
+    "kids",
+    "energy",
+    "devices"
+  ],
+  "members": [
+    {
+      "client_id": "nina",
+      "role": "adult",
+      "name": "Nina Meyer",
+      "modules": null,
+      "profile": {
+        "birth_date": "1987-03-14",
+        "work_start": "08:30",
+        "work_end": "16:30",
+        "commute_minutes": 25,
+        "evening_weekend_availability": "available",
+        "focus_start": "09:00",
+        "focus_end": "11:00",
+        "babysitting_max_evenings": 2,
+        "babysitting_notice": "one_day",
+        "work_days": {
+          "monday": "office",
+          "tuesday": "home",
+          "wednesday": "office",
+          "thursday": "home",
+          "friday": "home",
+          "saturday": "off",
+          "sunday": "off"
+        }
+      },
+      "avatar": "a2",
+      "color": "#b79cff"
+    },
+    {
+      "client_id": "jonas",
+      "role": "adult",
+      "name": "Jonas Meyer",
+      "modules": null,
+      "profile": {
+        "birth_date": "1985-09-02",
+        "work_start": "07:30",
+        "work_end": "15:30",
+        "commute_minutes": 40,
+        "evening_weekend_availability": "varies",
+        "babysitting_notice": "same_day",
+        "work_days": {
+          "monday": "office",
+          "tuesday": "office",
+          "wednesday": "home",
+          "thursday": "office",
+          "friday": "office",
+          "saturday": "off",
+          "sunday": "off"
+        }
+      },
+      "avatar": "a1",
+      "color": "#4df0ff"
+    },
+    {
+      "client_id": "mila",
+      "role": "child",
+      "name": "Mila",
+      "modules": [
+        "planner",
+        "kids"
+      ],
+      "profile": {
+        "birth_date": "2016-05-20",
+        "school_or_care_name": "Grundschule am Park",
+        "school_type_or_year": "Year 4",
+        "after_school_care": "yes",
+        "pickup_time": "15:30",
+        "supervision_policy": "independent",
+        "travel_minutes": 15,
+        "care_days": [
+          "monday",
+          "tuesday",
+          "thursday"
+        ],
+        "pickup_adult_client_ids": [],
+        "dropoff_adult_client_ids": [],
+        "activities": [
+          {
+            "name": "Swimming",
+            "location": "Stadtbad",
+            "start_time": "17:00",
+            "end_time": "18:00",
+            "days": [
+              "wednesday"
+            ],
+            "commute_mode": "cycle",
+            "travel_minutes": 10,
+            "escort": "independent",
+            "escort_adult_client_id": null
+          },
+          {
+            "name": "Football",
+            "location": "Sportpark",
+            "start_time": "10:00",
+            "end_time": "11:30",
+            "days": [
+              "saturday"
+            ],
+            "commute_mode": "car",
+            "travel_minutes": 20,
+            "escort": "parent",
+            "escort_adult_client_id": "jonas"
+          }
+        ],
+        "dropoff_time": "08:00",
+        "commute_mode": "cycle"
+      },
+      "avatar": "k2",
+      "color": "#ff8fb8"
+    },
+    {
+      "client_id": "leo",
+      "role": "child",
+      "name": "Leo",
+      "modules": [
+        "planner",
+        "kids"
+      ],
+      "profile": {
+        "birth_date": "2020-11-08",
+        "school_or_care_name": "Kita Sonnenschein",
+        "after_school_care": "no",
+        "pickup_time": "14:30",
+        "supervision_policy": "always",
+        "travel_minutes": 10,
+        "care_days": [
+          "monday",
+          "tuesday",
+          "wednesday",
+          "thursday",
+          "friday"
+        ],
+        "pickup_adult_client_ids": [
+          "nina",
+          "jonas"
+        ],
+        "dropoff_adult_client_ids": [
+          "nina"
+        ],
+        "activities": [],
+        "dropoff_time": "08:15",
+        "commute_mode": "car"
+      },
+      "avatar": "k3",
+      "color": "#ffc857"
+    }
+  ],
+  "calendars": [
+    {
+      "client_id": "cal-bins",
+      "name": "City bins",
+      "category": "waste_collection",
+      "subscription_url": "https://calendar.example/meyer/bins.ics",
+      "member_client_ids": [
+        "nina",
+        "jonas"
+      ],
+      "chore_enabled": true,
+      "chore_title": "Put the bins out",
+      "chore_assignee_client_ids": [
+        "jonas"
+      ]
+    },
+    {
+      "client_id": "cal-school",
+      "name": "School calendar",
+      "category": "school_care",
+      "subscription_url": "https://calendar.example/meyer/school.ics",
+      "member_client_ids": [
+        "mila",
+        "nina"
+      ],
+      "chore_enabled": false,
+      "chore_title": null,
+      "chore_assignee_client_ids": []
+    }
+  ]
+}

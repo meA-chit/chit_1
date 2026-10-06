@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Chit home, phone</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#05070d}
+.ph{--text:#e8eeff;--dim:#8d9bc2;--faint:#5b6890;--line:rgba(120,150,255,.16);--line2:rgba(120,190,255,.38);--glass:rgba(16,22,40,.7);--cyan:#4df0ff;position:relative;width:390px;height:1500px;overflow:hidden;background:#05070d;color:var(--text);font-family:'Space Grotesk',system-ui,sans-serif}
+.ph *{box-sizing:border-box}
+.ph button{font:inherit;color:inherit;cursor:pointer}
+.bg{position:absolute;inset:0;pointer-events:none;background:radial-gradient(420px 300px at 100% -5%,rgba(139,123,255,.22),transparent 65%),radial-gradient(380px 300px at -10% 100%,rgba(77,240,255,.13),transparent 65%),linear-gradient(rgba(120,150,255,.06) 1px,transparent 1px) 0 0/48px 48px,linear-gradient(90deg,rgba(120,150,255,.06) 1px,transparent 1px) 0 0/48px 48px}
+.scroll{position:absolute;inset:0 0 84px 0;padding:18px 16px 16px;display:flex;flex-direction:column;gap:14px;overflow:hidden}
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.16em;color:var(--dim)}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.top h1{margin:3px 0 0;font-size:23px;font-weight:600}
+.top h1 em{font-style:normal;background:linear-gradient(90deg,#4df0ff,#8b7bff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.wx{display:flex;align-items:center;gap:8px;padding:7px 12px 7px 8px;border:1px solid var(--line);border-radius:16px;background:var(--glass)}
+.wx b{font-size:20px;font-weight:600}
+.wx small{display:block;font-size:10.5px;color:var(--dim);line-height:1.3}
+.strip{display:flex;gap:8px;overflow:hidden}
+.who{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:8px 0 6px;border-radius:15px;border:1px solid transparent;background:transparent}
+.who[aria-pressed='true']{background:rgba(120,190,255,.09);border-color:var(--line2)}
+.who span.n{font-size:11.5px;color:var(--dim)}
+.who[aria-pressed='true'] span.n{color:var(--text);font-weight:600}
+.ring{display:inline-flex;border-radius:50%;padding:2px}
+.card{position:relative;padding:15px 16px 14px;border:1px solid var(--line);border-radius:18px;background:var(--glass);box-shadow:0 8px 30px rgba(0,0,0,.35)}
+.ch{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.ci{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;flex:none;color:var(--c);background:color-mix(in srgb,var(--c) 13%,transparent);border:1px solid color-mix(in srgb,var(--c) 30%,transparent)}
+.ct{flex:1;min-width:0}
+.ct h2{margin:0;font-size:15px;font-weight:600}
+.ct p{margin:1px 0 0;font-size:11.5px;color:var(--dim)}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:999px;font-family:'JetBrains Mono',monospace;font-size:9.5px;text-transform:uppercase;letter-spacing:.12em;color:var(--c);border:1px solid color-mix(in srgb,var(--c) 40%,transparent);background:color-mix(in srgb,var(--c) 10%,transparent)}
+.pill::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--c)}
+.now{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px 4px 5px;border-radius:999px;border:1px solid var(--line);font-size:11.5px;color:var(--dim)}
+.tlv{position:relative;display:flex;flex-direction:column;gap:2px;padding-left:20px}
+.tlv::before{content:'';position:absolute;left:5px;top:6px;bottom:6px;width:2px;background:linear-gradient(var(--line2),var(--line))}
+.nowrow{position:relative;display:flex;align-items:center;gap:8px;margin:2px 0 6px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan)}
+.nowrow::before{content:'';position:absolute;left:-20px;width:12px;height:12px;border-radius:50%;background:var(--cyan);box-shadow:0 0 14px var(--cyan)}
+.nowrow::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--cyan),transparent)}
+.it{position:relative;display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 8px;border-radius:12px;border:1px solid transparent}
+.it::before{content:'';position:absolute;left:-19px;width:8px;height:8px;border-radius:50%;background:var(--c);box-shadow:0 0 8px var(--c)}
+.it.next{background:rgba(77,240,255,.08);border-color:var(--line2)}
+.it .tm{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--cyan)}
+.it .t{font-size:13.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.it .s{font-size:11px;color:var(--dim)}
+.row{display:flex;align-items:center;gap:10px;padding:9px 2px;border-top:1px solid var(--line)}
+.row:first-of-type{border-top:0}
+.chk{width:20px;height:20px;border-radius:6px;border:1.5px solid var(--faint);display:grid;place-items:center;flex:none;background:transparent;padding:0}
+.chk[data-on='true']{background:#8dffb0;border-color:#8dffb0}
+.streak{display:flex;align-items:center;gap:4px;padding:3px 8px;border-radius:999px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:#ffc857;background:rgba(255,200,87,.1);border:1px solid rgba(255,200,87,.3)}
+.grow{flex:1;min-width:0}
+.bar{height:5px;border-radius:99px;background:rgba(120,150,255,.14);overflow:hidden;margin-bottom:6px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,#4df0ff,#8dffb0)}
+.kpis{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.kpi{padding:10px;border-radius:12px;border:1px solid var(--line);background:rgba(5,7,13,.4)}
+.kpi b{display:block;font-family:'JetBrains Mono',monospace;font-size:15px;margin-top:5px;font-weight:500}
+.tabs{position:absolute;left:12px;right:12px;bottom:max(12px,env(safe-area-inset-bottom));display:flex;justify-content:space-between;padding:6px;border:1px solid var(--line2);border-radius:20px;background:rgba(14,20,38,.92);backdrop-filter:blur(16px)}
+.tabs button{display:flex;flex-direction:column;align-items:center;gap:3px;width:58px;padding:7px 0 6px;border-radius:14px;border:1px solid transparent;background:transparent;color:var(--dim);font-size:10.5px}
+.tabs button[aria-current='page']{color:var(--cyan);border-color:var(--line2);background:rgba(77,240,255,.08)}
+.tabs svg{width:20px;height:20px}
+</style>
+</helmet>
+<div class="ph">
+<div class="bg"></div>
+<div class="scroll">
+
+<header class="top">
+<div>
+<div class="eyebrow">Tue 6 Oct · {{clock}}</div>
+<h1>Good afternoon, <em>{{viewerName}}</em></h1>
+</div>
+<div class="wx" title="Open-Meteo · 12:00">
+<svg width="30" height="30" viewBox="0 0 48 48" fill="none" aria-hidden="true"><circle cx="19" cy="19" r="8" fill="#ffc857"/><g stroke="#ffc857" stroke-width="2.4" stroke-linecap="round"><path d="M19 5v3M5 19h3M9 9l2 2M29 9l-2 2"/></g><path d="M17 36a7 7 0 011-13.8A9 9 0 0135 26a5 5 0 01-1 10z" fill="#c7d4f5" stroke="#05070d" stroke-width="2"/></svg>
+<div><b>14°</b></div>
+<div><small>Partly cloudy</small><small>Rain 20%</small></div>
+</div>
+</header>
+
+<div class="strip" role="group" aria-label="Whose day">
+<button class="who" aria-pressed="{{allSelected}}" onClick="{{pickAll}}" aria-label="Everyone"><span class="ring" style="background: linear-gradient(135deg,#4df0ff,#8b7bff)"><span style="display:inline-flex;border-radius:50%;background:#0a0f1d"><dc-import name="Avatar" kind="home" size="42" hint-size="42px,42px"></dc-import></span></span><span class="n">All</span></button>
+<sc-for list="{{members}}" as="m" hint-placeholder-count="4">
+<button class="who" aria-pressed="{{m.selected}}" onClick="{{m.pick}}" aria-label="View as {{m.name}}"><span class="ring" style="background: {{m.ring}}"><span style="display:inline-flex;border-radius:50%;background:#0a0f1d"><dc-import name="Avatar" kind="{{m.avatar}}" size="42" hint-size="42px,42px"></dc-import></span></span><span class="n">{{m.name}}</span></button>
+</sc-for>
+</div>
+
+<section class="card" aria-label="Today">
+<div class="ch">
+<div class="ci" style="--c:#4df0ff"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+<div class="ct"><h2>Today</h2><p>{{doneCount}} earlier · {{upCount}} to go</p></div>
+<span class="pill" style="--c:#8dffb0">Live</span>
+</div>
+<div class="now"><span class="eyebrow">In progress</span>
+<sc-for list="{{inProgress}}" as="p" hint-placeholder-count="3"><span class="chip"><dc-import name="Avatar" kind="{{p.avatar}}" size="20" hint-size="20px,20px"></dc-import>{{p.title}}</span></sc-for>
+</div>
+<div class="tlv">
+<div class="nowrow">NOW {{clock}}</div>
+<sc-for list="{{upcoming}}" as="u" hint-placeholder-count="4">
+<div class="it {{u.cls}}" style="--c: {{u.color}}">
+<div class="tm">{{u.time}}</div>
+<div style="min-width:0"><div class="t">{{u.title}}</div><div class="s">{{u.who}}</div></div>
+<dc-import name="Avatar" kind="{{u.avatar}}" size="26" hint-size="26px,26px"></dc-import>
+</div>
+</sc-for>
+</div>
+</section>
+
+<section class="card" aria-label="Chores">
+<div class="ch">
+<div class="ci" style="--c:#8dffb0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg></div>
+<div class="ct"><h2>Chores</h2><p>2 of 5 done · family streak 9 days</p></div>
+</div>
+<div class="bar"><i style="width:40%"></i></div>
+<div class="row"><span class="chk" data-on="false"></span><div class="grow"><div style="font-size:13.5px">Put the bins out</div><div style="font-size:11px;color:var(--dim)">Jonas · tonight 19:30</div></div><span class="streak">6</span></div>
+<div class="row"><span class="chk" data-on="false"></span><div class="grow"><div style="font-size:13.5px">Empty the dishwasher</div><div style="font-size:11px;color:var(--dim)">Mila · by 17:00</div></div><span class="streak">4</span></div>
+<div class="row"><span class="chk" data-on="false"></span><div class="grow"><div style="font-size:13.5px">Tidy the toys</div><div style="font-size:11px;color:var(--dim)">Leo · by 18:00</div></div><span class="streak">2</span></div>
+</section>
+
+<section class="card" aria-label="Home">
+<div class="ch">
+<div class="ci" style="--c:#ffc857"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg></div>
+<div class="ct"><h2>Home</h2><p>Energy, climate and one suggestion</p></div>
+<span class="pill" style="--c:#8dffb0">Live</span>
+</div>
+<div class="kpis">
+<div class="kpi"><span class="eyebrow">Solar</span><b style="color:#ffc857">3.2 kW</b></div>
+<div class="kpi"><span class="eyebrow">Using</span><b style="color:#4df0ff">1.1 kW</b></div>
+<div class="kpi"><span class="eyebrow">Indoor</span><b>21.4°</b></div>
+</div>
+<div style="display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12px;color:var(--dim)"><span class="pill" style="--c:#8b7bff">Suggestion</span>Run the dishwasher 13:00 to 15:00 (cheap power)</div>
+</section>
+
+</div>
+
+<nav class="tabs" aria-label="Modules">
+<button aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Home</button>
+<button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>Planner</button>
+<button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5c1 1.4 2.2 2 3.5 2s2.5-.6 3.5-2"/><path d="M9 9.5h.01M15 9.5h.01"/></svg>Kids</button>
+<button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg>Energy</button>
+<button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>Settings</button>
+</nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"now":{"editor":"range","default":12.4,"min":6,"max":22,"step":0.05,"unit":"h"},"$preview":{"width":390,"height":1500}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = this.state || {};
+    const viewer = st.viewer || 'all';
+    const now = this.props.now ?? 12.4;
+    const P = {
+      nina:  { name: 'Nina',  avatar: 'a2', color: '#b79cff' },
+      jonas: { name: 'Jonas', avatar: 'a1', color: '#4df0ff' },
+      mila:  { name: 'Mila',  avatar: 'k2', color: '#ff8fb8' },
+      leo:   { name: 'Leo',   avatar: 'k3', color: '#ffc857' }
+    };
+    const hm = (h) => { const m = Math.round(h * 60); return String(Math.floor(m / 60) % 24).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); };
+    const EV = [
+      ['nina', 7.75, 8.25, 'School run'], ['nina', 8.5, 16.5, 'Work · home'], ['nina', 14.5, 15, 'Pick up Leo'], ['nina', 15.5, 16, 'Pick up Mila'], ['nina', 17.5, 18.5, 'Dinner prep'],
+      ['jonas', 6.83, 7.5, 'Commute'], ['jonas', 7.5, 15.5, 'Work · office'], ['jonas', 17.25, 17.75, 'Grocery run'], ['jonas', 19.5, 20, 'Bins out'],
+      ['mila', 8, 15.5, 'School'], ['mila', 16.5, 17.25, 'Homework'], ['mila', 20, 20.5, 'Reading'],
+      ['leo', 8, 14.5, 'Kita'], ['leo', 19.25, 19.75, 'Story time']
+    ].filter((e) => viewer === 'all' || e[0] === viewer);
+    const LONG = 4; // blocks longer than this are "in progress" chips, not list rows
+    const inProgress = EV.filter((e) => e[1] <= now && now < e[2] && e[2] - e[1] > 1).map((e) => ({ avatar: P[e[0]].avatar, title: P[e[0]].name + ' · ' + e[3] }));
+    const upcoming = EV.filter((e) => e[1] > now && e[2] - e[1] <= LONG).sort((a, b) => a[1] - b[1]).slice(0, 5);
+    let firstNext = true;
+    const rows = upcoming.map((e) => {
+      const next = firstNext; firstNext = false;
+      return { time: hm(e[1]), title: e[3], who: P[e[0]].name, avatar: P[e[0]].avatar, color: P[e[0]].color, cls: next ? 'next' : '' };
+    });
+    const IDS = ['nina', 'jonas', 'mila', 'leo'];
+    return {
+      clock: hm(now),
+      viewerName: viewer === 'all' ? 'Meyers' : P[viewer].name,
+      allSelected: viewer === 'all', pickAll: () => this.setState({ viewer: 'all' }),
+      members: IDS.map((id) => ({ name: P[id].name, avatar: P[id].avatar, selected: viewer === id, ring: viewer === id ? P[id].color : 'transparent', pick: () => this.setState({ viewer: id }) })),
+      inProgress, upcoming: rows,
+      doneCount: EV.filter((e) => e[2] <= now).length, upCount: EV.filter((e) => e[1] > now).length
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+{
+  "household_id": "hh-meyer",
+  "reminders": [
+    {
+      "id": "rem-dentist",
+      "title": "Call the dentist",
+      "member_id": "nina",
+      "in_days": 0,
+      "day_part": "day"
+    },
+    {
+      "id": "rem-library",
+      "title": "Return the library books",
+      "member_id": "mila",
+      "in_days": 0
+    },
+    {
+      "id": "rem-bins",
+      "title": "Bins out tonight",
+      "member_id": "jonas",
+      "in_days": 0,
+      "day_part": "evening"
+    },
+    {
+      "id": "rem-swim-bag",
+      "title": "Pack the swimming bag",
+      "member_id": "mila",
+      "in_days": 1,
+      "day_part": "morning"
+    },
+    {
+      "id": "rem-parents-evening",
+      "title": "Parents' evening at school",
+      "in_days": 1,
+      "day_part": "evening"
+    },
+    {
+      "id": "rem-flights",
+      "title": "Book summer flights",
+      "member_id": "nina",
+      "in_days": 4,
+      "day_part": "day"
+    }
+  ]
+}

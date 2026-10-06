@@ -16,5 +16,14 @@ Can be enabled or disabled independently of its siblings where its dependencies 
 ## UI (cards / views)
 _To be defined._
 
+## What it does
+`GET /api/energy/suggestions/windows?hours=2` ranks every run of consecutive hours from the next full hour (today, plus tomorrow once Tibber has published it) and returns the two best that are at least one hour apart, so they are real alternatives.
+
+## Ranking (`modules/energy/shared/windows.py`)
+Score = mean over the window of price x (1 - solar share). The solar share of an hour is the expected PV output divided by a typical heavy load of 2 kW, capped at 1; without SolarEdge it is 0 and the score is the plain mean price. Each window reports its average price, expected solar, and the saving against the average price of the horizon; under 5 % better (and no sun) it is flagged `worth_moving: false` and the card says prices are flat.
+
+## Rules
+Read-only advice. Chit never switches a device. Needs Tibber prices (`unconfigured` otherwise).
+
 ## Status
-Structure only — no stories yet. Stories: `docs/modules/energy/stories/`.
+Implemented (see the energy module README). Stories: `docs/modules/energy/stories/`.

@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "types": ["vite/client"],
+    "baseUrl": ".",
+    "paths": { "@chit/core": ["core/web/src/index.ts"], "@chit/core/styles": ["core/web/src/theme/index.css"] }
+  },
+  "include": ["apps/web/src", "core/web/src", "modules/*/submodules/*/web", "modules/*/shared"],
+  "exclude": ["**/legacy/**", "node_modules"]
+}

@@ -19,16 +19,19 @@ One deployable application composed of modules (`modules/<id>`) on a shared plat
  core/store ── encrypted SQLite (SQLCipher)
 ```
 
-## Current implementation (pilot code)
+## Current implementation
 | Concern | Today |
 |---|---|
-| Server | Python stdlib `ThreadingHTTPServer`, loopback `127.0.0.1:8765` (`server/run.py`) |
-| Storage | SQLite + SQLCipher, key from `CHIT_DB_KEY_HEX`, SQL migrations (`server/chit_store/`) |
-| Frontend | Static HTML + vanilla ES modules, no build step (`dashboard/`, `js/`, `css/`) |
+| Hub | Python stdlib `ThreadingHTTPServer`, loopback `127.0.0.1:8765` (`core/server/chit_server`); manifest registry loads each submodule's `server/routes.py`; `GET /api/shell` resolves enablement |
+| Storage | SQLite + SQLCipher, key from `CHIT_DB_KEY_HEX`, SQL migrations (`core/store/chit_store/`) |
+| Client | React 18 + TypeScript + Vite single-page app (`apps/web`), shell and design system in `core/web`, cards in `modules/*/submodules/*/web` ([ADR-0008](../decisions/0008-web-client-react-typescript-and-hub-api.md)) |
+| Mobile | Planned: Capacitor shells over the same bundle + PWA; blocked on identity ([ADR-0009](../decisions/0009-hub-first-deployment-and-data-residency.md)) |
 | Auth | None (ADR-0007, interim) |
 | Calendar | iCal/webcal fetch with `icalendar`, read-only |
-| Weather / energy | Browser-side calls to Open-Meteo and Tibber (to be moved behind the server) |
-| Display | Browser kiosk (Raspberry Pi planned) |
+| Weather / energy | Not served yet (prototypes archived); to be rebuilt as server-side connectors |
+
+## Deployment and data residency
+Hub-first: one household hub in `local` or `hosted` profile; personal data stays on the hub; the optional cloud service only provides relay, push, encrypted backup and updates. Full detail in ADR-0009.
 
 See [`current-implementation.md`](current-implementation.md) for gaps against the rules.
 

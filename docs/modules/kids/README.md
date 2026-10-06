@@ -13,6 +13,7 @@ Chit is a modular household operating system. A household enables the modules it
 - **activities** — Sports events plans, clubs, festivals and family/cultural events relevant to the child.
 - **learning** — Exam and homework tracker; later tutor support and exam preparation planning.
 - **rewards** — Stars or allowance for completed chores, perks/goodies catalogue and redemption. Reads chores from planner; owns reward data.
+- **health** — Medication and pill reminders with a given/missed log and supply tracking; strictest privacy (proposed, see `docs/design/kids-module/`).
 - **kid-view** — Composition of the child's own mobile view: which modules and cards appear, as configured by an adult in household settings.
 
 Each submodule has its own folder: `docs/modules/kids/submodules/<name>/` and `modules/kids/submodules/<name>/`.
@@ -40,7 +41,7 @@ Strict (children's data) — least-data default; adults control what a child's d
 _None beyond `docs/00-overview/non-negotiable-rules.md` yet. Add rules here, not in code comments._
 
 ## Status
-- Stage: documentation structure only; no stories yet
+- Stage: implemented (first version): school-day plan, star chores and goals, grades, medication, the Kids page and a dashboard goals card. Design: `docs/design/kids-module/`. Previously: documentation structure only; no stories yet
 - Owner: TBD
 - Stories: none yet — folder `docs/modules/kids/stories/` · Decisions: `docs/modules/kids/decisions/`
 

@@ -1,0 +1,36 @@
+*, *::before, *::after { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  font-family: var(--font-ui);
+  color: var(--text);
+  background: var(--bg-void);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+a { color: inherit; }
+button { font: inherit; color: inherit; }
+
+/* ambient backdrop: grid + two soft light pools */
+.backdrop {
+  position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(60vmax 40vmax at 85% -10%, rgb(139 123 255 / 0.18), transparent 60%),
+    radial-gradient(50vmax 40vmax at -10% 110%, rgb(77 240 255 / 0.12), transparent 60%),
+    linear-gradient(var(--line) 1px, transparent 1px) 0 0 / 56px 56px,
+    linear-gradient(90deg, var(--line) 1px, transparent 1px) 0 0 / 56px 56px,
+    var(--bg-void);
+  mask-image: radial-gradient(120% 100% at 50% 0%, #000 55%, rgb(0 0 0 / 0.55));
+}
+:root[data-theme='light'] .backdrop { opacity: 0.6; }
+
+.mono { font-family: var(--font-mono); letter-spacing: 0.04em; }
+.eyebrow {
+  font-family: var(--font-mono); font-size: 0.68rem; text-transform: uppercase;
+  letter-spacing: 0.18em; color: var(--text-dim);
+}
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+}

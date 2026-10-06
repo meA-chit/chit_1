@@ -1,0 +1,38 @@
+{
+  "household_id": "hh-meyer",
+  "meds": [
+    {
+      "member_id": "mila",
+      "name": "Vitamin D",
+      "dose": "1 drop with breakfast",
+      "time": "07:30",
+      "weekdays": [],
+      "remind_member_id": "nina",
+      "supply": 41,
+      "given_days_ago": [
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "member_id": "mila",
+      "name": "Allergy tablet",
+      "dose": "1 tablet after dinner",
+      "time": "19:00",
+      "weekdays": [
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday"
+      ],
+      "remind_member_id": "jonas",
+      "supply": 7,
+      "given_days_ago": [
+        1,
+        2
+      ]
+    }
+  ]
+}

@@ -1,8 +1,10 @@
 # Module manifest — read by the module registry (see docs/core/module-contract.md and core/contracts/module-manifest.schema.yaml)
 id: planner
 title: Time & Planner
+short_title: Planner
+nav_order: 10
 version: 0.0.0
-status: structure-only
+status: in-progress
 depends_on: [household]
 privacy_class: normal
 audiences: [adult, child, guest]   # who may ever see this module; actual visibility comes from household/member/surface config
@@ -16,6 +18,55 @@ submodules:
   - id: timeline
   - id: weather
   - id: time-intelligence
-cards: []     # each card: id, submodule, sizes, surfaces, permissions, data_states
-views: []     # full-screen pages
+cards:
+  - id: family-timeline
+    submodule: timeline
+    title: Today
+    slot: timeline
+    order: 10
+    sizes: [xl]
+    surfaces: [tv, tablet, web, mobile-adult]
+    permissions: []
+    data_states: [manual, unconfigured, unavailable]
+  - id: todo-today
+    submodule: chores
+    title: Today's to-do
+    slot: left
+    order: 20
+    sizes: [m]
+    surfaces: [tablet, web, mobile-adult, mobile-kid]
+    permissions: []
+    data_states: [manual, unconfigured]
+  - id: calendar-agenda
+    submodule: calendar
+    title: Family Planner
+    slot: center
+    order: 30
+    sizes: [m, l]
+    surfaces: [tv, tablet, web, mobile-adult, mobile-kid]
+    permissions: []
+    data_states: [available, stale, partial, unavailable, unconfigured]
+  - id: weather-now
+    submodule: weather
+    title: Weather
+    slot: topbar
+    order: 5
+    sizes: [s]
+    surfaces: [tv, tablet, web, mobile-adult, mobile-kid]
+    permissions: []
+    data_states: [available, stale, unavailable, unconfigured]
+views: []
+settings_sections:           # contributed to another module's settings screen; the household screen renders them
+  - id: chores
+    submodule: chores
+    title: Chores
+    target: household
+    order: 10
+    surfaces: [tablet, web]
+  - id: reminders
+    submodule: reminders
+    title: Reminders
+    target: household
+    order: 20
+    surfaces: [tablet, web]
 permissions: []

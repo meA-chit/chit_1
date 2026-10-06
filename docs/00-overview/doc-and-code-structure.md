@@ -6,6 +6,8 @@ docs/core/             <->  core/       shared platform: architecture, enablemen
 docs/modules/<m>/      <->  modules/<m>/
   README.md  contracts.md  stories/  decisions/            (module brief, public surface, work items, module ADRs)
   submodules/<s>/README.md  <->  submodules/<s>/{server,web,tests}
+apps/web/                               client entry that composes core/web + every submodule's web/index.ts
+scripts/                                repo checks (module isolation, python test runner)
 docs/decisions/                         product-wide ADRs
 docs/backlog/                           global index: backlog.yaml, epics (stories live with their module)
 docs/releases/                          pilot scope, roadmap, changelog

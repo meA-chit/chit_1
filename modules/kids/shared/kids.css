@@ -1,0 +1,46 @@
+.kd { display: grid; gap: 20px; }
+.kd-cols { display: grid; gap: 20px; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); align-items: start; }
+@media (max-width: 960px) { .kd-cols { grid-template-columns: minmax(0, 1fr); } }
+.kd-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.kd-kids { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.kd-kids button { display: flex; align-items: center; gap: 10px; padding: 6px 14px 6px 6px; border-radius: 999px; border: 1px solid var(--line); background: transparent; color: var(--text-dim); cursor: pointer; }
+.kd-kids button[aria-pressed='true'] { color: var(--text); border-color: var(--line-strong); background: rgb(77 240 255 / 0.08); }
+.kd-row { display: flex; align-items: center; gap: 12px; padding: 11px 0; border-top: 1px solid var(--line); }
+.kd-row:first-child { border-top: 0; }
+.kd-row__main { flex: 1; min-width: 0; }
+.kd-row__title { font-size: 0.92rem; font-weight: 500; }
+.kd-row__sub { font-size: 0.74rem; color: var(--text-faint); margin-top: 2px; }
+.kd-big { font-size: 2.6rem; font-weight: 600; line-height: 1; color: var(--lime); }
+.kd-star { color: var(--lime); display: inline-flex; vertical-align: -3px; }
+.kd-bar { height: 12px; border-radius: 99px; background: var(--line); overflow: hidden; }
+.kd-bar > i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--cyan), var(--lime)); transition: width 0.4s var(--ease); }
+.kd-goal { padding: 14px; border-radius: 16px; border: 1px solid var(--line); display: grid; gap: 10px; }
+.kd-goal[data-reached] { border-color: color-mix(in srgb, var(--lime) 45%, transparent); background: color-mix(in srgb, var(--lime) 6%, transparent); }
+.kd-goal__head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.kd-goal__foot { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-faint); }
+.kd-week { display: flex; gap: 6px; align-items: flex-end; padding-top: 10px; border-top: 1px solid var(--line); }
+.kd-week > div { flex: 1; display: grid; justify-items: center; gap: 6px; font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-dim); }
+.kd-week i { display: block; width: 70%; max-width: 30px; border-radius: 6px; background: var(--line); min-height: 4px; }
+.kd-week i[data-has] { background: var(--lime); }
+.kd-slot { display: grid; grid-template-columns: 124px 12px 1fr auto; gap: 12px; align-items: center; padding: 10px 12px; border-radius: 14px; border: 1px solid var(--line); }
+.kd-slot[data-kind='break'] { background: color-mix(in srgb, var(--lime) 8%, transparent); border-color: color-mix(in srgb, var(--lime) 25%, transparent); }
+.kd-slot[data-kind='meal'] { background: color-mix(in srgb, var(--amber) 7%, transparent); border-color: color-mix(in srgb, var(--amber) 22%, transparent); }
+.kd-slot[data-now] { box-shadow: 0 0 0 1.5px var(--cyan); }
+.kd-slot__dot { width: 10px; height: 10px; border-radius: 50%; background: var(--violet); }
+.kd-slot[data-kind='break'] .kd-slot__dot { background: var(--lime); }
+.kd-slot[data-kind='meal'] .kd-slot__dot { background: var(--amber); }
+.kd-slot[data-kind='care'] .kd-slot__dot { background: var(--cyan); }
+.kd-grade { display: grid; grid-template-columns: minmax(90px, 1.2fr) repeat(3, minmax(56px, 0.6fr)) minmax(56px, 0.6fr); gap: 10px; align-items: center; padding: 11px 0; border-top: 1px solid var(--line); }
+.kd-grade--head { border-top: 0; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-faint); padding-bottom: 4px; }
+.kd-avg { font-size: 1.25rem; font-weight: 600; }
+.kd-avg[data-good] { color: var(--lime); }
+.kd-avg[data-mid] { color: var(--amber); }
+.kd-avg[data-bad] { color: var(--magenta); }
+.kd-dots { display: flex; gap: 8px; }
+.kd-dot { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; border: 1px dashed var(--text-faint); color: var(--lime); }
+.kd-dot[data-status='given'] { border: 1px solid var(--lime); background: color-mix(in srgb, var(--lime) 14%, transparent); }
+.kd-dot[data-status='missed'] { border: 1px solid var(--magenta); background: color-mix(in srgb, var(--magenta) 10%, transparent); color: var(--magenta); }
+.kd-dot[data-off] { border-style: dotted; opacity: 0.35; }
+.kd-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.kd-small { padding: 5px 11px; font-size: 0.7rem; }
+.kd-card-kids { display: grid; gap: 14px; }

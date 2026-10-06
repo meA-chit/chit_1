@@ -16,5 +16,11 @@ Can be enabled or disabled independently of its siblings where its dependencies 
 ## UI (cards / views)
 _To be defined._
 
+## What it does
+Renders `/api/energy/pricing/day`: the price now against the day average, 24 bars of hourly consumption coloured by price band (below, about, above the average), the hourly price line with the dashed day average, tomorrow's price as a faint second line once Tibber has published it (the Today/Tomorrow switch is gone), month-to-date and year-to-date cost in money, and a line comparing what was paid per kWh with the average price.
+
+## Rules
+No token: the card says how to connect Tibber and shows no numbers. See the pricing submodule for the data states.
+
 ## Status
-Structure only — no stories yet. Stories: `docs/modules/energy/stories/`.
+Implemented (see the energy module README). Stories: `docs/modules/energy/stories/`.

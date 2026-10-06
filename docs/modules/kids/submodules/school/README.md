@@ -16,5 +16,10 @@ Can be enabled or disabled independently of its siblings where its dependencies 
 ## UI (cards / views)
 _To be defined._
 
+## What it does
+Lessons, recess, meals and after-school care per weekday, typed in by a parent (state `manual`; nothing is read from a school). Add, edit, remove, and copy one day to others. The current slot is highlighted on today. Trips to and from school stay on the family timeline (planner, from household setup).
+- API: `GET /api/kids/school/plan?member=[&weekday=0-6|today]`, `POST /api/kids/school/slots`, `PUT|DELETE /api/kids/school/slots/{id}`, `POST /api/kids/school/copy`.
+- Data: `kid_school_slots` (migration 010). Seed: `seed/kids/school.json`.
+
 ## Status
-Structure only — no stories yet. Stories: `docs/modules/kids/stories/`.
+Implemented (first version).

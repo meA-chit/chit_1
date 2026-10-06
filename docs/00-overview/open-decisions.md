@@ -4,9 +4,9 @@ Do not assume an answer to any item here. Resolve through an ADR (product-wide) 
 
 | # | Decision | Why it matters | Blocks | Proposed owner |
 |---|---|---|---|---|
-| 1 | **Technology stack** — keep Python + vanilla JS, or adopt TypeScript/React (see `docs/core/architecture/target-stack-proposal.md`)? | Needs a manifest-driven card shell and a mobile client | Code rework | TBD |
-| 2 | **Identity and access** — design to replace ADR-0007 (households, members, devices/surfaces, TLS) | Needed for Pi display over LAN, mobile apps, sensitive modules | Any non-loopback exposure; finance, health, kids data | TBD |
-| 3 | **Mobile client approach** — PWA vs native; how kid devices are provisioned and constrained | kids/kid-view, mobile-adult | kids module | TBD |
+| 1 | ~~Technology stack~~ — **resolved** by ADR-0008 (React/TS client, Python hub kept) | — | — | — |
+| 2 | **Identity and access** — households, members, device pairing, TLS, per-surface credentials (replaces ADR-0007). **Now the critical path**: blocks mobile apps, TV over LAN and `hosted` profile (ADR-0009) | Any non-loopback exposure; finance, health, kids data | TBD |
+| 3 | **Mobile client** — approach decided in ADR-0008/0009 (Capacitor + PWA over a paired hub). Still open: how kid devices are provisioned and constrained | kids/kid-view, mobile-kid | kids module | TBD |
 | 4 | **Display delivery** — how the TV/Pi reaches the server | ADR-0007 conditions | TV rollout | TBD |
 | 5 | **Module owners** (four people) and module order | CODEOWNERS, parallel branches | Parallel work | Product owner |
 | 6 | **Module sequencing after the pilot** — see `docs/releases/roadmap.md` (proposed) | Scope of next stories | Story writing | Product owner |
@@ -17,3 +17,5 @@ Do not assume an answer to any item here. Resolve through an ADR (product-wide) 
 | 11 | **Event bus mechanism** — in-process pub/sub vs persisted outbox | Cross-module events | contracts | TBD |
 | 12 | **Migration strategy** — per-module numbering and runner in `core/store` | Parallel branches | core/store | TBD |
 | 13 | **UI/UX alignment** — mockups show density, health and location data and control actions that conflict with rules | Design direction | Shell and cards | Design |
+| 14 | **Cloud services scope** — relay, push, encrypted backup, update channel (ADR-0009 §3): provider, key custody and recovery | Whether the product works away from home | Remote access, mobile notifications | Product owner |
+| 15 | **Data classes per table** — tag existing tables personal/household/public/operational (ADR-0009 §2) | Prevents personal data reaching cloud paths | Cloud boundary | Module owners |

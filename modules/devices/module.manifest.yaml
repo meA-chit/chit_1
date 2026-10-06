@@ -1,11 +1,13 @@
 # Module manifest — read by the module registry (see docs/core/module-contract.md and core/contracts/module-manifest.schema.yaml)
 id: devices
 title: Devices & IoT
+short_title: Devices
+nav_order: 40
 version: 0.0.0
-status: structure-only
+status: in-progress
 depends_on: [household]
 privacy_class: normal
-audiences: [adult, child, guest]   # who may ever see this module; actual visibility comes from household/member/surface config
+audiences: [adult]   # who may ever see this module; actual visibility comes from household/member/surface config
 surfaces: [tv, tablet, web, mobile-adult, mobile-kid]
 submodules:
   - id: overview
@@ -13,6 +15,16 @@ submodules:
   - id: appliances
   - id: climate
   - id: maintenance
-cards: []     # each card: id, submodule, sizes, surfaces, permissions, data_states
+cards:
+  - id: climate-now
+    submodule: climate
+    title: Climate
+    slot: right
+    group: home
+    order: 41
+    sizes: [m]
+    surfaces: [tv, tablet, web, mobile-adult]
+    permissions: []
+    data_states: [demo]
 views: []     # full-screen pages
 permissions: []

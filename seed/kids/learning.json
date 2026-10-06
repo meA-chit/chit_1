@@ -1,0 +1,157 @@
+{
+  "household_id": "hh-meyer",
+  "member_id": "mila",
+  "weights": {
+    "main_written_pct": 50,
+    "other_written_pct": 30
+  },
+  "subjects": [
+    {
+      "name": "German",
+      "kind": "main",
+      "grades": [
+        {
+          "type": "written",
+          "grade": 3,
+          "days_ago": 60
+        },
+        {
+          "type": "written",
+          "grade": 2,
+          "days_ago": 35,
+          "note": "Dictation"
+        },
+        {
+          "type": "oral",
+          "grade": 2,
+          "days_ago": 50
+        },
+        {
+          "type": "oral",
+          "grade": 2,
+          "days_ago": 12
+        }
+      ]
+    },
+    {
+      "name": "Maths",
+      "kind": "main",
+      "grades": [
+        {
+          "type": "written",
+          "grade": 2,
+          "days_ago": 55
+        },
+        {
+          "type": "written",
+          "grade": 2,
+          "days_ago": 4,
+          "note": "Fractions, careless slips"
+        },
+        {
+          "type": "oral",
+          "grade": 2,
+          "days_ago": 40
+        },
+        {
+          "type": "oral",
+          "grade": 1,
+          "days_ago": 20
+        }
+      ]
+    },
+    {
+      "name": "English",
+      "kind": "main",
+      "grades": [
+        {
+          "type": "written",
+          "grade": 3,
+          "days_ago": 45
+        },
+        {
+          "type": "oral",
+          "grade": 3,
+          "days_ago": 7,
+          "note": "Vocabulary"
+        },
+        {
+          "type": "oral",
+          "grade": 4,
+          "days_ago": 30
+        }
+      ]
+    },
+    {
+      "name": "Geography",
+      "kind": "other",
+      "grades": [
+        {
+          "type": "written",
+          "grade": 2,
+          "days_ago": 38
+        },
+        {
+          "type": "oral",
+          "grade": 1,
+          "days_ago": 25
+        }
+      ]
+    },
+    {
+      "name": "Biology",
+      "kind": "other",
+      "grades": [
+        {
+          "type": "written",
+          "grade": 2,
+          "days_ago": 42
+        },
+        {
+          "type": "oral",
+          "grade": 1,
+          "days_ago": 11,
+          "note": "Plant experiment"
+        },
+        {
+          "type": "oral",
+          "grade": 1,
+          "days_ago": 28
+        }
+      ]
+    },
+    {
+      "name": "Music",
+      "kind": "other",
+      "grades": [
+        {
+          "type": "oral",
+          "grade": 2,
+          "days_ago": 33
+        }
+      ]
+    },
+    {
+      "name": "Sport",
+      "kind": "other",
+      "grades": [
+        {
+          "type": "oral",
+          "grade": 1,
+          "days_ago": 30
+        }
+      ]
+    },
+    {
+      "name": "Art",
+      "kind": "other",
+      "grades": [
+        {
+          "type": "oral",
+          "grade": 1,
+          "days_ago": 36
+        }
+      ]
+    }
+  ]
+}

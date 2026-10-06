@@ -1,0 +1,39 @@
+{
+  "name": "chit",
+  "private": true,
+  "version": "0.2.0",
+  "type": "module",
+  "description": "Chit household OS: web client (apps/web) composed from core/web and modules/*/submodules/*/web",
+  "scripts": {
+    "dev": "vite --config apps/web/vite.config.ts",
+    "build": "tsc --noEmit && vite build --config apps/web/vite.config.ts",
+    "preview": "vite preview --config apps/web/vite.config.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --config apps/web/vite.config.ts",
+    "check:isolation": "node scripts/check-isolation.mjs",
+    "hub": "PYTHONPATH=core/server:core/store python3 -m chit_server",
+    "test:py": "scripts/test-py.sh",
+    "check": "npm run check:isolation && npm run typecheck && npm test && npm run test:py",
+    "hub:dev": "CHIT_STORAGE=plain PYTHONPATH=core/server:core/store python3 -m chit_server",
+    "dev:all": "scripts/dev-all.sh",
+    "seed": "CHIT_STORAGE=plain PYTHONPATH=core/server:core/store python3 -m chit_server.seed",
+    "export": "CHIT_STORAGE=plain PYTHONPATH=core/server:core/store python3 -m chit_store.cli export"
+  },
+  "dependencies": {
+    "@fontsource-variable/jetbrains-mono": "^5.1.0",
+    "@fontsource-variable/space-grotesk": "^5.1.0",
+    "@tanstack/react-query": "^5.59.0",
+    "motion": "^11.11.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.27.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.11",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.2",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.9",
+    "vitest": "^2.1.3"
+  }
+}

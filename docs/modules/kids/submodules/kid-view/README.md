@@ -16,5 +16,8 @@ Can be enabled or disabled independently of its siblings where its dependencies 
 ## UI (cards / views)
 _To be defined._
 
+## What it does
+`/kids` composes the other submodules' panels. A parent picks a child and a tab (Today, Stars, Grades, Health). Viewing as a child shows only that child's school day, stars, chores and goals: no grades, no medication, no management controls. "View as" is a convenience, not access control, until identity exists (ADR-0007).
+
 ## Status
-Structure only — no stories yet. Stories: `docs/modules/kids/stories/`.
+Implemented (first version).

@@ -1,6 +1,6 @@
 # ADR-0006: Modular architecture with mirrored docs and code
 
-- Status: Proposed
+- Status: Accepted
 - Date: 2026-10-06
 
 ## Context

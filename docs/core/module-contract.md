@@ -10,3 +10,6 @@ A module must:
 - expose server routes under `/api/<module>/...`;
 - contribute UI only as registered cards/views;
 - list its public read APIs and events in `docs/modules/<id>/contracts.md`.
+
+## Settings sections
+A module may contribute sections to another module's settings screen: declare `settings_sections` in the manifest (`id`, `submodule`, `title`, `target`, `order`, `surfaces`) and export the component under `ModuleWeb.settings[id]`. The host renders `<SettingsSections target="..." />`; the shell decides which appear (module enabled, surface). Sections persist themselves through the contributor's own `/api/<module>/…` routes.

@@ -1,0 +1,63 @@
+/* Chit design tokens. Everything visual flows from here; modules never hard-code colours. */
+:root {
+  --font-ui: 'Space Grotesk Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* void + glass */
+  --bg-void: #05070d;
+  --bg-deep: #090d18;
+  --glass: rgb(16 22 40 / 0.62);
+  --glass-strong: rgb(20 28 52 / 0.82);
+  --line: rgb(120 150 255 / 0.16);
+  --line-strong: rgb(120 190 255 / 0.38);
+
+  --text: #e8eeff;
+  --text-dim: #8d9bc2;
+  --text-faint: #5b6890;
+
+  /* signal colours */
+  --cyan: #4df0ff;
+  --violet: #8b7bff;
+  --magenta: #ff5fd2;
+  --lime: #8dffb0;
+  --amber: #ffc857;
+  --red: #ff6b7d;
+
+  --accent: var(--cyan);
+  --accent-2: var(--violet);
+  --glow: 0 0 24px rgb(77 240 255 / 0.22);
+
+  /* data states (docs/core/specifications/data-states.yaml) */
+  --state-available: var(--lime);
+  --state-stale: var(--amber);
+  --state-partial: var(--amber);
+  --state-unavailable: var(--red);
+  --state-unconfigured: var(--text-dim);
+  --state-demo: var(--magenta);
+  --state-manual: var(--violet);
+  --state-forecast: var(--amber);
+
+  --radius: 14px;
+  --radius-sm: 8px;
+  --gap: 16px;
+  --rail: 72px;
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+:root[data-theme='light'] {
+  --bg-void: #eef2fb;
+  --bg-deep: #e4eaf8;
+  --glass: rgb(255 255 255 / 0.7);
+  --glass-strong: rgb(255 255 255 / 0.9);
+  --line: rgb(40 70 160 / 0.14);
+  --line-strong: rgb(30 90 200 / 0.4);
+  --text: #0b1430;
+  --text-dim: #4a5a86;
+  --text-faint: #7b88ad;
+  --cyan: #0a8fb0;
+  --violet: #5b4bd6;
+  --lime: #12915a;
+  --amber: #a86d00;
+  --red: #c4233d;
+  --glow: 0 0 24px rgb(10 143 176 / 0.12);
+}

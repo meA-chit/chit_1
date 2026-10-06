@@ -1,11 +1,13 @@
 # Module manifest — read by the module registry (see docs/core/module-contract.md and core/contracts/module-manifest.schema.yaml)
 id: kids
 title: Children
+short_title: Kids
+nav_order: 20
 version: 0.0.0
-status: structure-only
+status: in-progress
 depends_on: [household, planner]
 privacy_class: strict
-audiences: [adult, child, guest]   # who may ever see this module; actual visibility comes from household/member/surface config
+audiences: [adult, child]   # who may ever see this module; actual visibility comes from household/member/surface config
 surfaces: [tv, tablet, web, mobile-adult, mobile-kid]
 submodules:
   - id: school
@@ -13,6 +15,21 @@ submodules:
   - id: learning
   - id: rewards
   - id: kid-view
-cards: []     # each card: id, submodule, sizes, surfaces, permissions, data_states
-views: []     # full-screen pages
+  - id: health
+cards:
+  - id: kids-goals
+    submodule: rewards
+    title: Goals
+    slot: center
+    order: 35
+    sizes: [m]
+    surfaces: [tablet, web, mobile-adult, mobile-kid]
+    permissions: []
+    data_states: [manual, unconfigured, unavailable]
+views:
+  - id: kids
+    submodule: kid-view
+    title: Kids
+    path: /kids
+    surfaces: [tablet, web, mobile-adult, mobile-kid]
 permissions: []

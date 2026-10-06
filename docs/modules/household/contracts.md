@@ -3,7 +3,9 @@
 The only surface other modules may use. Anything not listed here is private.
 
 ## Read APIs
-_None defined yet._
+- `GET /api/household/summary`: id, name, members (id, name, role), enabled modules of the latest household. Safe for shared screens.
+- Other modules read household data through `ctx.store` documents/summary only; they never touch household tables.
+- Enablement (which modules a household or member has) is resolved by `GET /api/shell`; modules do not read it themselves.
 
 ## Events published
 _None defined yet._
