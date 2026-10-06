@@ -24,7 +24,7 @@ Each submodule has its own folder: `docs/modules/finance/submodules/<name>/` and
 - Enablement is configured per household, per member and per surface (see `docs/core/enablement-and-audiences.md`). Do not hard-code who sees what.
 
 ## Data this module owns
-_To be defined with the module's first stories. Rule: one owner per entity (see ownership table in `docs/00-overview/module-map.md`)._
+Account (personal/shared), Expense and split rule, Balance between members, Budget, Recurring bill, Goal.
 
 ## Dependencies
 - Depends on: household; kids (optional, allowance)
@@ -41,9 +41,12 @@ Sensitive — personal vs shared ledgers; per-person visibility; never on shared
 _None beyond `docs/00-overview/non-negotiable-rules.md` yet. Add rules here, not in code comments._
 
 ## Status
-- Stage: structure only (no stories yet)
+- Stage: documentation structure only; no stories yet
 - Owner: TBD
-- Stories: `docs/modules/finance/stories/` · Decisions: `docs/modules/finance/decisions/`
+- Stories: none yet — folder `docs/modules/finance/stories/` · Decisions: `docs/modules/finance/decisions/`
+
+## Source documents and prior art
+No prior documents beyond the finance agent idea in `docs/00-overview/ecosystem-vision.md`. Needs research (market-synthesis agenda), sensitivity and data-source decisions (open decisions #7).
 
 ## Open questions
 - _Add as they arise._

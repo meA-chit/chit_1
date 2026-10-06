@@ -2,7 +2,7 @@
 
 Product and data rules (inherited from the root `AGENTS.md`, restated so they are in the first folder you read):
 1. Read-only first. No messaging, schedule changes, appliance control or other side effects without an approved story.
-2. Preserve source, observed time, ingestion time, availability and data state on normalized records. Use only states in `docs/specifications/data-states.yaml`.
+2. Preserve source, observed time, ingestion time, availability and data state on normalized records. Use only states in `docs/core/specifications/data-states.yaml`.
 3. Missing information is `unavailable` or `unknown`. Never infer availability from absence.
 4. Never label forecast, manual or demo values as measured.
 5. Apply screen-safe presentation before returning data for shared displays.

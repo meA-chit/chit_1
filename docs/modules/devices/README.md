@@ -23,7 +23,7 @@ Each submodule has its own folder: `docs/modules/devices/submodules/<name>/` and
 - Enablement is configured per household, per member and per surface (see `docs/core/enablement-and-audiences.md`). Do not hard-code who sees what.
 
 ## Data this module owns
-_To be defined with the module's first stories. Rule: one owner per entity (see ownership table in `docs/00-overview/module-map.md`)._
+Device and Appliance state, connection status and freshness, maintenance signals.
 
 ## Dependencies
 - Depends on: household
@@ -40,9 +40,12 @@ Normal; camera and security data are sensitive and deferred.
 _None beyond `docs/00-overview/non-negotiable-rules.md` yet. Add rules here, not in code comments._
 
 ## Status
-- Stage: structure only (no stories yet)
+- Stage: pilot stories exist; module not yet re-homed in code
 - Owner: TBD
-- Stories: `docs/modules/devices/stories/` · Decisions: `docs/modules/devices/decisions/`
+- Stories: [US-104](stories/), [US-404](stories/) — folder `docs/modules/devices/stories/` · Decisions: `docs/modules/devices/decisions/`
+
+## Source documents and prior art
+ADR: [`0002`](../../decisions/0002-home-assistant-integration.md) (read-only boundary).
 
 ## Open questions
 - _Add as they arise._

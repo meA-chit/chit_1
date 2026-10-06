@@ -1,0 +1,121 @@
+openapi: 3.1.0
+info:
+  title: Chit API
+  version: 0.2.0
+  description: |
+    Draft contract. Platform routes live under /api; each module owns /api/<module>/... (see docs/modules/<module>/contracts.md).
+    Routes marked x-implemented exist in server/run.py today. No authentication is applied (ADR-0007, interim, loopback only).
+servers:
+  - url: /api
+paths:
+  /health:
+    get:
+      operationId: getHealth
+      x-implemented: true
+      responses:
+        '200':
+          description: Service health
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status: { type: string }
+                  storage: { type: string }
+  /home/summary:
+    get:
+      operationId: getHomeSummary
+      x-implemented: true
+      x-module: household
+      description: Latest household summary including members and roles.
+      responses:
+        '200': { description: Household summary or {state: unconfigured} }
+  /home/calendar:
+    get:
+      operationId: getHomeCalendar
+      x-implemented: true
+      x-module: planner/calendar
+      description: Upcoming events for connected sources with per-source state. Feed URLs are never returned.
+      responses:
+        '200':
+          description: Calendar projection
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CalendarProjection' }
+  /households/setup:
+    post:
+      operationId: saveHouseholdSetup
+      x-implemented: true
+      x-module: household/setup
+      description: Create a household with members, profile settings, calendar mappings and chore rules in one transaction.
+      requestBody: { required: true }
+      responses:
+        '201': { description: Created }
+        '400': { description: Invalid payload }
+        '413': { description: Payload too large }
+        '415': { description: Content-Type must be application/json }
+  /households/{householdId}/dashboard:
+    get:
+      operationId: getDashboard
+      x-implemented: false
+      description: Target. Authorised, screen-safe projection of cards for one surface, resolved from enablement and layout (see docs/core/enablement-and-audiences.md).
+      parameters:
+        - { name: householdId, in: path, required: true, schema: { type: string } }
+        - { name: surface, in: query, required: false, schema: { $ref: '#/components/schemas/Surface' } }
+      responses:
+        '200':
+          description: Dashboard projection
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DashboardProjection' }
+        '403': { description: Not authorised (once authorisation exists) }
+components:
+  schemas:
+    Surface:
+      type: string
+      enum: [tv, tablet, web, mobile-adult, mobile-kid]
+    DataState:
+      type: string
+      enum: [measured, forecast, manual, unavailable, demo]
+    Provenance:
+      type: object
+      required: [sourceId, sourceType, dataState, ingestedAt]
+      properties:
+        sourceId: { type: string }
+        sourceType: { type: string }
+        dataState: { $ref: '#/components/schemas/DataState' }
+        observedAt: { type: [string, 'null'], format: date-time }
+        ingestedAt: { type: string, format: date-time }
+        stale: { type: boolean }
+    DashboardCard:
+      type: object
+      required: [id, module, type, status, provenance]
+      properties:
+        id: { type: string }
+        module: { type: string }
+        submodule: { type: string }
+        type: { type: string }
+        size: { type: string, enum: [s, m, l, xl] }
+        status: { type: string, enum: [available, stale, partial, unavailable, unconfigured, unknown] }
+        provenance: { $ref: '#/components/schemas/Provenance' }
+        content: { type: object, additionalProperties: true }
+    DashboardProjection:
+      type: object
+      required: [householdId, surface, screenSafe, generatedAt, cards]
+      properties:
+        householdId: { type: string }
+        surface: { $ref: '#/components/schemas/Surface' }
+        screenSafe: { type: boolean }
+        generatedAt: { type: string, format: date-time }
+        cards:
+          type: array
+          items: { $ref: '#/components/schemas/DashboardCard' }
+    CalendarProjection:
+      type: object
+      properties:
+        state: { type: string, enum: [available, partial, unavailable] }
+        household: { type: string }
+        range_days: { type: integer }
+        sources: { type: array, items: { type: object } }
+        events: { type: array, items: { type: object } }

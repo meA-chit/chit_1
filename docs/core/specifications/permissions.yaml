@@ -1,0 +1,45 @@
+version: 2
+status: draft   # no enforcement exists yet (ADR-0007)
+audiences:
+  adult: {description: Household adult; may administer if granted}
+  child: {description: Child member; sees only modules an adult enabled for them}
+  guest: {description: Helper/visitor; nothing by default}
+roles:
+  administrator:
+    capabilities:
+      - household:configure
+      - connector:configure
+      - display:configure
+      - enablement:configure        # modules/submodules per household, member, surface
+      - policy:configure
+      - dashboard:read_authorised
+  member:
+    capabilities:
+      - dashboard:read_authorised
+      - insight:acknowledge
+      - insight:dismiss
+  child-member:
+    capabilities:
+      - dashboard:read_enabled_for_child
+      - chore:complete_own
+  shared-display:
+    capabilities:
+      - dashboard:read_screen_safe
+sensitive_categories:
+  - health
+  - finance
+  - children
+  - location
+  - tax
+  - private-calendar-details
+module_privacy_classes:
+  normal: []
+  sensitive: [household/health, household/insights, finance/*]
+  strict: [kids/*]
+rules:
+  default_sensitive_access: deny
+  explicit_person_consent_required: true
+  shared_display_screen_safe_required: true
+  sensitive_modules_hidden_on_shared_surfaces_by_default: true
+  child_cannot_widen_own_enablement: true
+  permission_revocation_invalidates_cache: true

@@ -14,6 +14,8 @@ submodules:
   - id: tasks
   - id: routines
   - id: timeline
+  - id: weather
+  - id: time-intelligence
 cards: []     # each card: id, submodule, sizes, surfaces, permissions, data_states
 views: []     # full-screen pages
 permissions: []

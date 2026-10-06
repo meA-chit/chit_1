@@ -1,20 +1,27 @@
 # Start here (agents and humans)
 
-Chit is a **modular household operating system**: several modules (household, planner, kids, energy, devices, finance), composed into per-household, per-member, per-surface experiences. Several people and agents work on different modules in parallel branches, so context must survive module boundaries.
+Chit is a **modular household operating system**: modules (household, planner, kids, energy, devices, finance) on a shared platform (`core/`), composed into per-household, per-member, per-surface experiences. Several people and agents build different modules in parallel branches, so context must survive module boundaries.
 
-## Reading order (about 10 minutes)
+## Reading order (about 15 minutes)
 1. This page.
-2. [`product-context.md`](product-context.md) — what we are building, for whom, on which surfaces.
+2. [`product-vision.md`](product-vision.md) and [`product-context.md`](product-context.md) — what and for whom; household types; surfaces.
 3. [`non-negotiable-rules.md`](non-negotiable-rules.md) — rules every module obeys.
-4. [`module-map.md`](module-map.md) — all modules, submodules, ownership of data, dependencies.
-5. [`doc-and-code-structure.md`](doc-and-code-structure.md) — docs and code mirror each other; how to jump to your folder.
-6. [`agent-workflow.md`](agent-workflow.md) — checklist for starting, working and merging.
+4. [`module-map.md`](module-map.md) — modules, submodules, entity ownership, dependencies, story coverage.
+5. [`doc-and-code-structure.md`](doc-and-code-structure.md) — docs and code mirror each other.
+6. [`agent-workflow.md`](agent-workflow.md) — start / work / merge checklist.
+7. [`open-decisions.md`](open-decisions.md) — what is not decided yet (do not assume).
 
 ## Then jump to your module
-`docs/modules/<module>/README.md` → `docs/modules/<module>/submodules/<submodule>/README.md`
+`docs/modules/<module>/README.md` → `submodules/<submodule>/README.md` → `stories/`
 Code: `modules/<module>/submodules/<submodule>/`
 
-Touching shared behaviour (UI shell, enablement, trust labels, connectors, auth)? Read `docs/core/` and work in `core/` — those changes need wider review.
+Shared behaviour (UI shell, enablement, trust labels, connectors, attention cards, auth)? Read `docs/core/` and work in `core/`; changes there need wider review.
 
-## Where the older documents fit
-Product vision, personas, ADRs, specifications, backlog and the original pilot scope remain valid and live under their existing paths (see `docs/README.md`). Where they conflict with this overview, raise it; do not guess.
+## Other documents in this folder
+| Document | Use |
+|---|---|
+| [`personas.md`](personas.md), [`customer-journey.md`](customer-journey.md), [`glossary.md`](glossary.md) | Users, journeys, terms |
+| [`market-synthesis.md`](market-synthesis.md) | Directional competitor and segment research |
+| [`ecosystem-vision.md`](ecosystem-vision.md) | Long-term agent/messaging ecosystem (directional, not pilot) |
+
+Decisions: [`docs/decisions/`](../decisions/README.md). Backlog index: [`docs/backlog/`](../backlog/README.md). Releases: [`docs/releases/`](../releases/).

@@ -11,4 +11,4 @@ _None defined yet._
 ## Events consumed
 _None defined yet._
 
-Changes to this file are contract changes: update the module manifest, `docs/specifications/` where applicable, and notify the owners of dependent modules (`docs/00-overview/module-map.md`).
+Changes to this file are contract changes: update the module manifest, `docs/core/specifications/` where applicable, and notify the owners of dependent modules (`docs/00-overview/module-map.md`).

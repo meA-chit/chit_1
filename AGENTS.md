@@ -17,20 +17,20 @@ Chit is a trustworthy, read-only household overview before it is an autonomous a
 
 Use this precedence when documents disagree:
 
-0. Whole-product rules in `docs/00-overview/non-negotiable-rules.md` and the module's own README
-1. Approved story and acceptance criteria in `docs/backlog/stories/`
+1. Approved story and acceptance criteria (`docs/modules/<module>/stories/` or `docs/core/stories/`; index in `docs/backlog/backlog.yaml`)
 2. Current pilot scope in `docs/releases/pilot-scope.md`
-3. Product principles in `docs/product/product-vision.md`
-4. Accepted decisions in `docs/architecture/adr/`
-5. Architecture documents in `docs/architecture/`
-6. Machine-readable contracts in `docs/specifications/`
-7. Directional research in `docs/product/market-synthesis.md`
+3. The module README and its `contracts.md`
+4. Whole-product rules (`docs/00-overview/non-negotiable-rules.md`) and product principles (`docs/00-overview/product-vision.md`)
+5. Accepted decisions in `docs/decisions/`
+6. Architecture documents in `docs/core/`
+7. Machine-readable contracts in `docs/core/specifications/`
+8. Directional material: `docs/00-overview/market-synthesis.md`, `ecosystem-vision.md`, `docs/core/architecture/target-stack-proposal.md`
 
-Do not treat archived dashboard prototypes as current requirements.
+Do not treat archived dashboard prototypes (`dashboard/archive/`) or `docs/archive/` as current requirements. Check `docs/00-overview/open-decisions.md` before assuming an undecided topic (stack, identity, mobile, sequencing).
 
 ## Before coding
 
-- Identify one or more story IDs and read their dependencies and architecture references.
+- Identify one or more story IDs and read their dependencies and architecture references. Read the module README for the module you change.
 - Confirm that acceptance criteria are unambiguous and testable.
 - Check relevant ADRs and specifications.
 - Ask for clarification instead of inventing product behaviour.
@@ -38,8 +38,9 @@ Do not treat archived dashboard prototypes as current requirements.
 
 ## Non-negotiable rules
 
+- Respect module isolation: no cross-module imports; use public contracts and events; contribute UI only as registered cards/views; never hard-code who sees what (enablement is configuration).
 - Preserve source, observed time, ingestion time, availability and data state for normalized records.
-- Use only the states defined in `docs/specifications/data-states.yaml`.
+- Use only the states defined in `docs/core/specifications/data-states.yaml`.
 - Treat missing information as `unavailable` or `unknown`; never infer availability from absence.
 - Never label forecast, manual or demo values as measured.
 - Keep pilot device integrations read-only.

@@ -22,7 +22,7 @@ Each submodule has its own folder: `docs/modules/energy/submodules/<name>/` and 
 - Enablement is configured per household, per member and per surface (see `docs/core/enablement-and-audiences.md`). Do not hard-code who sees what.
 
 ## Data this module owns
-_To be defined with the module's first stories. Rule: one owner per entity (see ownership table in `docs/00-overview/module-map.md`)._
+Energy reading (measured vs forecast), Tariff/price window, Solar forecast, Appliance timing suggestion.
 
 ## Dependencies
 - Depends on: household, devices (inverter/meter data via Home Assistant), planner (chores)
@@ -39,9 +39,12 @@ Normal.
 _None beyond `docs/00-overview/non-negotiable-rules.md` yet. Add rules here, not in code comments._
 
 ## Status
-- Stage: structure only (no stories yet)
+- Stage: pilot stories exist; module not yet re-homed in code
 - Owner: TBD
-- Stories: `docs/modules/energy/stories/` · Decisions: `docs/modules/energy/decisions/`
+- Stories: [US-402](stories/), [US-403](stories/), [US-405](stories/), [US-406](stories/) — folder `docs/modules/energy/stories/` · Decisions: `docs/modules/energy/decisions/`
+
+## Source documents and prior art
+Code today: `js/tibber.js` (browser-side; to move behind the server).
 
 ## Open questions
 - _Add as they arise._

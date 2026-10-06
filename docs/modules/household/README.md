@@ -23,7 +23,7 @@ Each submodule has its own folder: `docs/modules/household/submodules/<name>/` a
 - Enablement is configured per household, per member and per surface (see `docs/core/enablement-and-audiences.md`). Do not hard-code who sees what.
 
 ## Data this module owns
-_To be defined with the module's first stories. Rule: one owner per entity (see ownership table in `docs/00-overview/module-map.md`)._
+Household, Member (adult/child/guest), Role, Profile and settings; (existing store also holds adult work patterns and child care/activity schedules inside setup — to be re-homed, see `docs/core/current-implementation.md`); Health metric (opt-in); personal insights.
 
 ## Dependencies
 - Depends on: core only
@@ -40,9 +40,12 @@ Sensitive (health) — per-person consent, never shown on shared screens by defa
 _None beyond `docs/00-overview/non-negotiable-rules.md` yet. Add rules here, not in code comments._
 
 ## Status
-- Stage: structure only (no stories yet)
+- Stage: documentation structure only; no stories yet
 - Owner: TBD
-- Stories: `docs/modules/household/stories/` · Decisions: `docs/modules/household/decisions/`
+- Stories: none yet — folder `docs/modules/household/stories/` · Decisions: `docs/modules/household/decisions/`
+
+## Source documents and prior art
+Existing: `docs/core/data-model.md`, `docs/core/specifications/domain-model.yaml`, `docs/core/specifications/permissions.yaml`. Code today: `server/chit_store/`, `dashboard/household-setup.html`.
 
 ## Open questions
 - _Add as they arise._

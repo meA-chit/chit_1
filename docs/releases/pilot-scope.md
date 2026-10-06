@@ -4,6 +4,9 @@
 
 Validate that households find a trustworthy shared overview useful before investing in broad agent autonomy.
 
+## Modules in the pilot
+Pilot work touches `core`, `household` (setup), `planner` (calendar, chores, weather), `devices` (Home Assistant, appliances) and `energy`. The `kids`, `finance` and `household` health/insights modules are not in the pilot (see `roadmap.md`).
+
 ## Delivery slices
 
 | Slice | Objective | Story range |
@@ -22,7 +25,9 @@ Must Have stories define the minimum usable pilot. Should Have stories are deliv
 - WhatsApp and Telegram queries
 - Messaging others or changing schedules
 - Appliance control
-- Specialist school, health, finance and tax agents
+- AI agents for school, health, finance and tax (the underlying modules are planned post-pilot; see `roadmap.md`)
+- Child-facing mobile views and the rewards system
+- Shared finance tracking
 - Autonomous actions of any kind
 
 ## Exit signals

@@ -8,15 +8,15 @@ The first pilot is an always-visible, read-only household dashboard. It prioriti
 
 ## Documentation
 
-Start with [`docs/00-overview/README.md`](docs/00-overview/README.md) (whole-product context), then [`docs/README.md`](docs/README.md).
+Start with [`docs/00-overview/README.md`](docs/00-overview/README.md); the full map is in [`docs/README.md`](docs/README.md). Docs mirror code: `docs/core` <-> `core/`, `docs/modules/<module>` <-> `modules/<module>`.
 
-- Product vision: [`docs/product/product-vision.md`](docs/product/product-vision.md)
-- Customer journey: [`docs/product/customer-journey.md`](docs/product/customer-journey.md)
-- Prioritised backlog: [`docs/backlog/backlog.yaml`](docs/backlog/backlog.yaml)
-- Architecture: [`docs/architecture/architecture-overview.md`](docs/architecture/architecture-overview.md)
-- Pilot scope: [`docs/releases/pilot-scope.md`](docs/releases/pilot-scope.md)
+- Product vision and context: [`docs/00-overview/`](docs/00-overview/README.md)
+- Modules: household, planner, kids, energy, devices, finance — [`docs/modules/`](docs/modules/README.md)
+- Platform architecture, enablement, trust and contracts: [`docs/core/`](docs/core/README.md)
+- Decisions: [`docs/decisions/`](docs/decisions/README.md) · Open decisions: [`docs/00-overview/open-decisions.md`](docs/00-overview/open-decisions.md)
+- Backlog index: [`docs/backlog/`](docs/backlog/README.md) · Pilot scope and roadmap: [`docs/releases/`](docs/releases/pilot-scope.md)
 - Agent guidance: [`AGENTS.md`](AGENTS.md)
 
 ## Repository state
 
-Implementation code has not yet been standardised under `src/`. Historical dashboard prototypes remain under `dashboard/archive/` until reviewed against the approved pilot stories.
+Documentation has been restructured into the modular layout. The module folders under `modules/` and `core/` contain manifests and empty scaffolding only. Existing implementation code (`server/`, `dashboard/`, `js/`, `css/`) has not yet been migrated into them; see `docs/00-overview/module-map.md` (legacy code mapping) and `docs/core/current-implementation.md`. Historical dashboard prototypes remain under `dashboard/archive/`.

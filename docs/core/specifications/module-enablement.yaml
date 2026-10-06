@@ -1,0 +1,17 @@
+version: 1
+status: draft
+description: How the effective set of modules, submodules and cards for a viewer is resolved.
+layers:        # evaluated in order; later layers may narrow or reorder, never exceed what an administrator enabled
+  - platform_defaults
+  - household_preset        # single | couple | family-with-children | shared-flat (config/household-presets/)
+  - household_overrides     # administrator enables/disables modules and submodules
+  - member_overrides        # per member, within household-enabled set
+  - surface_profile         # tv | tablet | web | mobile-adult | mobile-kid (config/surfaces/)
+effective_visibility: >-
+  module_enabled AND submodule_enabled AND dependencies_satisfied AND audience_allowed
+  AND surface_supported AND permission_granted
+then: screen_safe_masking   # applied server-side on shared surfaces after enablement
+stored_as: data              # per household / member / surface; never hard-coded
+example_mobile_kid:
+  enabled: [planner/reminders, planner/chores, planner/calendar, kids/school, kids/activities, kids/rewards]
+  disabled: [finance/*, household/health, energy/*, devices/*]

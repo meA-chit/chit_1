@@ -23,7 +23,7 @@ Each submodule has its own folder: `docs/modules/kids/submodules/<name>/` and `m
 - Enablement is configured per household, per member and per surface (see `docs/core/enablement-and-audiences.md`). Do not hard-code who sees what.
 
 ## Data this module owns
-_To be defined with the module's first stories. Rule: one owner per entity (see ownership table in `docs/00-overview/module-map.md`)._
+School plan and timetable, holiday/term plan, activity and event plans, Exam/homework, Reward balance and Perk (reads chores from planner). Child-view composition is configuration owned jointly with household/settings.
 
 ## Dependencies
 - Depends on: household, planner (chores, reminders, events); finance (optional, for allowance)
@@ -40,9 +40,12 @@ Strict (children's data) — least-data default; adults control what a child's d
 _None beyond `docs/00-overview/non-negotiable-rules.md` yet. Add rules here, not in code comments._
 
 ## Status
-- Stage: structure only (no stories yet)
+- Stage: documentation structure only; no stories yet
 - Owner: TBD
-- Stories: `docs/modules/kids/stories/` · Decisions: `docs/modules/kids/decisions/`
+- Stories: none yet — folder `docs/modules/kids/stories/` · Decisions: `docs/modules/kids/decisions/`
+
+## Source documents and prior art
+Child care and activity schedules currently live in the household setup store; the Alfred spec (S2, S3) overlaps school and activities — see `docs/modules/planner/time-keeper-spec.md`.
 
 ## Open questions
 - _Add as they arise._

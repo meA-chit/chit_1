@@ -13,6 +13,9 @@ A trustworthy, local-first household overview that grows into an assistant. It b
 
 Finance is a first-class module for couples and flatmates, not only a family add-on: unmarried couples with shared financial burdens need personal vs shared ledgers, split rules and settle-up.
 
+## Module availability per household type
+Household type sets the default module preset (`config/household-presets/`); administrators can enable or disable modules and submodules afterwards.
+
 ## Surfaces
 | Surface | Notes |
 |---|---|

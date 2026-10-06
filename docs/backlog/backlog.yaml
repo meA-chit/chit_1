@@ -1,7 +1,7 @@
 version: 1
-last_updated: '2026-09-23'
+last_updated: '2026-10-06'
 source_of_truth: Individual story files contain authoritative behaviour and acceptance
-  criteria.
+  criteria. Stories live with their module (docs/modules/<module>/stories/) or in docs/core/stories/; this file is the global index.
 releases:
   pilot-1:
     objective: Establish trusted source ingestion, provenance and privacy foundations.
@@ -57,7 +57,8 @@ epics:
     file: epics/EPIC-05-proactive-interaction.md
 stories:
   US-101:
-    file: stories/US-101-consistent-household-data-model.md
+    file: ../core/stories/US-101-consistent-household-data-model.md
+    module: core
     epic: EPIC-01
     priority: must
     status: ready
@@ -67,7 +68,8 @@ stories:
     - DU1
     - DU2
   US-102:
-    file: stories/US-102-preserve-provenance-and-freshness.md
+    file: ../core/stories/US-102-preserve-provenance-and-freshness.md
+    module: core
     epic: EPIC-01
     priority: must
     status: ready
@@ -79,7 +81,9 @@ stories:
     depends_on:
     - US-101
   US-103:
-    file: stories/US-103-connect-calendar-and-weather.md
+    file: ../modules/planner/stories/US-103-connect-calendar-and-weather.md
+    module: planner
+    submodule: calendar
     epic: EPIC-01
     priority: must
     status: ready
@@ -88,7 +92,9 @@ stories:
     - D2
     - FL2
   US-104:
-    file: stories/US-104-connect-home-assistant.md
+    file: ../modules/devices/stories/US-104-connect-home-assistant.md
+    module: devices
+    submodule: home-assistant
     epic: EPIC-01
     priority: must
     status: ready
@@ -98,7 +104,8 @@ stories:
     - FL2
     - DU4
   US-105:
-    file: stories/US-105-graceful-unavailable-states.md
+    file: ../core/stories/US-105-graceful-unavailable-states.md
+    module: core
     epic: EPIC-01
     priority: must
     status: ready
@@ -110,7 +117,8 @@ stories:
     depends_on:
     - US-101
   US-106:
-    file: stories/US-106-extensible-connector-framework.md
+    file: ../core/stories/US-106-extensible-connector-framework.md
+    module: core
     epic: EPIC-01
     priority: should
     status: ready
@@ -122,7 +130,8 @@ stories:
     - US-101
     - US-102
   US-201:
-    file: stories/US-201-shared-household-dashboard.md
+    file: ../core/stories/US-201-shared-household-dashboard.md
+    module: core
     epic: EPIC-02
     priority: must
     status: ready
@@ -134,7 +143,9 @@ stories:
     depends_on:
     - US-103
   US-202:
-    file: stories/US-202-calendar-supported-availability.md
+    file: ../modules/planner/stories/US-202-calendar-supported-availability.md
+    module: planner
+    submodule: calendar
     epic: EPIC-02
     priority: must
     status: ready
@@ -145,7 +156,9 @@ stories:
     depends_on:
     - US-103
   US-203:
-    file: stories/US-203-unknown-availability.md
+    file: ../modules/planner/stories/US-203-unknown-availability.md
+    module: planner
+    submodule: calendar
     epic: EPIC-02
     priority: must
     status: ready
@@ -156,7 +169,8 @@ stories:
     depends_on:
     - US-202
   US-204:
-    file: stories/US-204-configurable-cards-and-layout.md
+    file: ../core/stories/US-204-configurable-cards-and-layout.md
+    module: core
     epic: EPIC-02
     priority: should
     status: ready
@@ -167,7 +181,8 @@ stories:
     depends_on:
     - US-201
   US-301:
-    file: stories/US-301-explicit-data-state-labels.md
+    file: ../core/stories/US-301-explicit-data-state-labels.md
+    module: core
     epic: EPIC-03
     priority: must
     status: ready
@@ -179,7 +194,8 @@ stories:
     depends_on:
     - US-101
   US-302:
-    file: stories/US-302-display-source-and-freshness.md
+    file: ../core/stories/US-302-display-source-and-freshness.md
+    module: core
     epic: EPIC-03
     priority: must
     status: ready
@@ -192,16 +208,18 @@ stories:
     - US-102
     - US-301
   US-303:
-    file: stories/US-303-local-deployment-and-access-control.md
+    file: ../core/stories/US-303-local-deployment-and-access-control.md
+    module: core
     epic: EPIC-03
     priority: must
-    status: ready
+    status: draft
     release: pilot-1
     journey_touchpoints:
     - D3
     - FL1
   US-304:
-    file: stories/US-304-screen-safe-mode.md
+    file: ../core/stories/US-304-screen-safe-mode.md
+    module: core
     epic: EPIC-03
     priority: must
     status: ready
@@ -213,7 +231,8 @@ stories:
     depends_on:
     - US-303
   US-305:
-    file: stories/US-305-per-person-sensitive-permissions.md
+    file: ../core/stories/US-305-per-person-sensitive-permissions.md
+    module: core
     epic: EPIC-03
     priority: should
     status: ready
@@ -224,7 +243,9 @@ stories:
     depends_on:
     - US-303
   US-401:
-    file: stories/US-401-chores-and-appliance-context.md
+    file: ../modules/planner/stories/US-401-chores-and-appliance-context.md
+    module: planner
+    submodule: chores
     epic: EPIC-04
     priority: must
     status: ready
@@ -236,7 +257,9 @@ stories:
     - US-104
     - US-201
   US-402:
-    file: stories/US-402-separate-solar-forecast-and-actuals.md
+    file: ../modules/energy/stories/US-402-separate-solar-forecast-and-actuals.md
+    module: energy
+    submodule: forecast
     epic: EPIC-04
     priority: must
     status: ready
@@ -247,7 +270,9 @@ stories:
     depends_on:
     - US-301
   US-403:
-    file: stories/US-403-actual-solar-only-when-connected.md
+    file: ../modules/energy/stories/US-403-actual-solar-only-when-connected.md
+    module: energy
+    submodule: overview
     epic: EPIC-04
     priority: must
     status: ready
@@ -260,7 +285,9 @@ stories:
     - US-104
     - US-402
   US-404:
-    file: stories/US-404-read-only-appliance-information.md
+    file: ../modules/devices/stories/US-404-read-only-appliance-information.md
+    module: devices
+    submodule: appliances
     epic: EPIC-04
     priority: must
     status: ready
@@ -271,7 +298,9 @@ stories:
     depends_on:
     - US-104
   US-405:
-    file: stories/US-405-read-only-energy-suggestions.md
+    file: ../modules/energy/stories/US-405-read-only-energy-suggestions.md
+    module: energy
+    submodule: appliance-planner
     epic: EPIC-04
     priority: should
     status: ready
@@ -283,7 +312,9 @@ stories:
     - US-402
     - US-403
   US-406:
-    file: stories/US-406-explain-energy-suggestions.md
+    file: ../modules/energy/stories/US-406-explain-energy-suggestions.md
+    module: energy
+    submodule: appliance-planner
     epic: EPIC-04
     priority: should
     status: ready
@@ -294,7 +325,8 @@ stories:
     depends_on:
     - US-405
   US-501:
-    file: stories/US-501-prioritised-attention-cards.md
+    file: ../core/stories/US-501-prioritised-attention-cards.md
+    module: core
     epic: EPIC-05
     priority: should
     status: ready
@@ -304,7 +336,8 @@ stories:
     depends_on:
     - US-302
   US-502:
-    file: stories/US-502-explain-attention-cards.md
+    file: ../core/stories/US-502-explain-attention-cards.md
+    module: core
     epic: EPIC-05
     priority: should
     status: ready
@@ -315,7 +348,8 @@ stories:
     depends_on:
     - US-501
   US-503:
-    file: stories/US-503-acknowledge-or-dismiss-insight.md
+    file: ../core/stories/US-503-acknowledge-or-dismiss-insight.md
+    module: core
     epic: EPIC-05
     priority: should
     status: ready
@@ -325,3 +359,12 @@ stories:
     - IE4
     depends_on:
     - US-501
+module_coverage:
+  # Modules with no approved stories yet. Add stories under docs/modules/<module>/stories/ and index them above.
+  household: [none beyond setup flow in US-101/US-305]
+  kids: [none]
+  finance: [none]
+  planner: [US-103, US-202, US-203, US-401]
+  energy: [US-402, US-403, US-405, US-406]
+  devices: [US-104, US-404]
+  core: [US-101, US-102, US-105, US-106, US-201, US-204, US-301, US-302, US-303, US-304, US-305, US-501, US-502, US-503]
