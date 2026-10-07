@@ -1,15 +1,16 @@
 import { CardFrame, CheckIcon, Empty, StarIcon, Toggle } from '@chit/core';
 import { dayShort, useSend, type StarChild } from '../../../shared/kids';
-import { GoalList } from './GoalList';
 
 /** Today's star chores with the three outcomes a parent can give: Done (just ticked), Done well (green star), Try again. */
-export function TodayStars({ child, adult }: { child: StarChild; adult: boolean }) {
+export function TodayStars({ child, adult, part, empty = 'No chores today.' }: { child: StarChild; adult: boolean; part?: 'morning' | 'after'; empty?: string }) {
   const send = useSend();
   const outcome = (chore: string, value: 'well' | 'again' | null) => send.mutate({ method: 'POST', path: '/api/kids/stars/outcome', body: { chore_id: chore, outcome: value } });
-  if (child.today.length === 0) return <p className="field__hint" style={{ margin: 0 }}>No chores today.</p>;
+  const dayPart = (id: string) => child.chores.find((c) => c.id === id)?.day_part ?? null;
+  const list = child.today.filter((chore) => !part || (part === 'morning') === (dayPart(chore.id) === 'morning'));
+  if (list.length === 0) return <p className="field__hint" style={{ margin: 0 }}>{empty}</p>;
   return (
     <div>
-      {child.today.map((chore) => (
+      {list.map((chore) => (
         <div key={chore.id} className="kd-row">
           <span className="badge" data-state={chore.done ? 'available' : 'unconfigured'} style={{ minWidth: 28, justifyContent: 'center' }} aria-label={chore.done ? 'Done' : 'Not done yet'}>{chore.done ? <CheckIcon /> : ''}</span>
           <div className="kd-row__main">
@@ -46,39 +47,21 @@ export function StarsSummary({ child }: { child: StarChild }) {
   );
 }
 
-/** The Stars tab for a parent: totals, which chores count, today's outcomes and the goals. */
-export default function StarsPanel({ child, adult = true }: { child: StarChild; adult?: boolean }) {
+/** Settings for stars: which chores count, and how a chore finishes. Parents only; lives at the bottom of the Kids page. */
+export function StarsSettings({ child }: { child: StarChild }) {
   const send = useSend();
   const name = child.name.split(' ')[0] ?? child.name;
   return (
-    <div className="kd-cols">
-      <div className="kd">
-        <CardFrame title={`${name}'s stars`} state="manual" icon={<StarIcon />} tone="#8dffb0" subtitle="This week"><StarsSummary child={child} /></CardFrame>
-        <CardFrame title="Today" state="manual" subtitle="Tick in the to-do list, then give the outcome here" tone="#8dffb0"><TodayStars child={child} adult={adult} /></CardFrame>
-        {adult && (
-          <CardFrame title="Chores and what counts" state="manual" subtitle="Chores come from the planner; stars belong to Kids" tone="#8dffb0">
-            {child.chores.length === 0 ? <Empty title="No chores for this child yet">Add chores in the household settings and assign them to {name}.</Empty> : child.chores.map((chore) => (
-              <div key={chore.id} className="kd-row">
-                <div className="kd-row__main"><div className="kd-row__title">{chore.title}</div><div className="kd-row__sub">{chore.weekdays.length ? chore.weekdays.map(dayShort).join(', ') : 'Every day'}{chore.day_part ? ` · ${chore.day_part}` : ''}</div></div>
-                <Toggle label="Star chore" checked={chore.star} onChange={(enabled) => send.mutate({ method: 'PUT', path: `/api/kids/stars/chores/${chore.id}`, body: { enabled } })} />
-              </div>
-            ))}
-          </CardFrame>
-        )}
-      </div>
-      <div className="kd">
-        <CardFrame title="Goals" state="manual" tone="#8dffb0" subtitle={adult ? 'Set the goal and its star cost; the bar shows on their own screen' : undefined}>
-          <GoalList goals={child.goals} memberId={child.member_id} name={name} adult={adult} />
-        </CardFrame>
-        {adult && (
-          <CardFrame title="How a chore finishes" state="manual" tone="#8dffb0">
-            <div className="stack">
-              <p className="field__hint" style={{ margin: 0 }}><b>Done</b> keeps the streak. <b>Done well</b> gives a green star. <b>Try again</b> gives nothing and takes nothing away.</p>
-              <p className="field__hint" style={{ margin: 0 }}>Stars are only ever added. A chore that was not done stays open; it never counts against anyone.</p>
-            </div>
-          </CardFrame>
-        )}
-      </div>
-    </div>
+    <>
+      <CardFrame title="Chores and what counts" state="manual" subtitle="Chores come from the planner; stars belong to Kids" tone="#8dffb0">
+        {child.chores.length === 0 ? <Empty title="No chores for this child yet">Add chores in the household settings and assign them to {name}.</Empty> : child.chores.map((chore) => (
+          <div key={chore.id} className="kd-row">
+            <div className="kd-row__main"><div className="kd-row__title">{chore.title}</div><div className="kd-row__sub">{chore.weekdays.length ? chore.weekdays.map(dayShort).join(', ') : 'Every day'}{chore.day_part ? ` · ${chore.day_part}` : ''}</div></div>
+            <Toggle label="Star chore" checked={chore.star} onChange={(enabled) => send.mutate({ method: 'PUT', path: `/api/kids/stars/chores/${chore.id}`, body: { enabled } })} />
+          </div>
+        ))}
+        <p className="field__hint" style={{ margin: '12px 0 0' }}><b>Done</b> keeps the streak. <b>Done well</b> gives a green star. <b>Try again</b> gives nothing and takes nothing away. Stars are only ever added; a chore that was not done stays open and never counts against anyone.</p>
+      </CardFrame>
+    </>
   );
 }

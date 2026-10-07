@@ -7,6 +7,76 @@ const KIND_LABEL: Record<string, string> = { lesson: 'Lesson', break: 'Recess', 
 interface Draft { id: string | null; start: string; end: string; title: string; kind: string; note: string }
 const blank = (start = '08:00'): Draft => ({ id: null, start, end: '', title: '', kind: 'lesson', note: '' });
 
+/** The whole week as a grid: one row per time slot, one column per weekday. Today's column and the running lesson stand out. */
+export function SchoolWeek({ memberId }: { memberId: string }) {
+  const plan = useSchoolPlan(memberId);
+  if (plan.isPending) return <Skeleton lines={4} />;
+  if (plan.isError) return <p className="field__hint" style={{ margin: 0 }}>The school plan could not be loaded.</p>;
+  const today = plan.data.today_weekday ?? 0;
+  const lessons = plan.data.slots.filter((slot) => slot.kind !== 'care');
+  if (lessons.length === 0) return <p className="field__hint" style={{ margin: 0 }}>No school plan yet. Add it under Manage, below.</p>;
+  const days = WEEKDAY_NAMES.map((_, i) => i).filter((i) => i < 5 || lessons.some((slot) => slot.weekday === i));
+  const rows = [...new Map(lessons.map((slot) => [`${slot.start}|${slot.end}`, slot] as const)).values()].sort((a, b) => a.start.localeCompare(b.start) || a.end.localeCompare(b.end));
+  const at = (day: number, row: Slot) => lessons.filter((slot) => slot.weekday === day && slot.start === row.start && slot.end === row.end);
+  const period = (row: Slot) => lessons.find((slot) => slot.start === row.start && /period (\d+)/.test(slot.note ?? ''))?.note?.match(/period (\d+)/)?.[1];
+  const room = (note: string | null) => note?.replace(/,?\s*period \d+/, '').replace(/^Room /, '').trim() || null;
+  const now = plan.data.now;
+
+  return (
+    <div className="kd-week-grid-wrap">
+      <table className="kd-wg" aria-label="Week plan">
+        <thead>
+          <tr>
+            <th scope="col"><span className="sr-only">Time</span></th>
+            {days.map((d) => <th key={d} scope="col" data-today={d === today || undefined}>{dayShort(WEEKDAY_NAMES[d]!)}{d === today ? <small>today</small> : null}</th>)}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={`${row.start}|${row.end}`}>
+              <th scope="row"><span className="mono">{row.start}</span><span className="mono">{row.end}</span>{period(row) && <small>{period(row)}.</small>}</th>
+              {days.map((d) => {
+                const here = at(d, row);
+                const active = d === today && now !== undefined && row.start <= now && now < row.end;
+                return (
+                  <td key={d} data-today={d === today || undefined} data-now={active || undefined} data-empty={here.length === 0 || undefined}>
+                    {here.map((slot) => <div key={slot.id} data-kind={slot.kind}><b>{slot.title}</b>{room(slot.note) && <span>{room(slot.note)}</span>}</div>)}
+                  </td>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/** Today's timetable (or, with `after`, the after-school care slots) for the Today board. Read-only; editing lives in the page settings. */
+export function SchoolToday({ memberId, after = false }: { memberId: string; after?: boolean }) {
+  const plan = useSchoolPlan(memberId);
+  if (plan.isPending) return <Skeleton lines={3} />;
+  if (plan.isError) return <p className="field__hint" style={{ margin: 0 }}>The school day could not be loaded.</p>;
+  const today = plan.data.today_weekday ?? 0;
+  const slots = plan.data.slots.filter((slot) => slot.weekday === today && (slot.kind === 'care') === after);
+  if (slots.length === 0) return <p className="field__hint" style={{ margin: 0 }}>{after ? 'No after-school care today.' : 'No school plan for today.'}</p>;
+  return (
+    <div className="stack" style={{ gap: 6 }}>
+      {slots.map((slot) => {
+        const active = plan.data.now !== undefined && slot.start <= plan.data.now && plan.data.now < slot.end;
+        return (
+          <div key={slot.id} className="kd-slot kd-slot--compact" data-kind={slot.kind} data-now={active || undefined}>
+            <span className="mono" style={{ fontSize: '0.78rem', color: 'var(--text-dim)' }}>{slot.start}–{slot.end}</span>
+            <span className="kd-slot__dot" aria-hidden />
+            <div className="kd-row__main"><div className="kd-row__title">{slot.title}{active ? ' · now' : ''}</div>{slot.note && <div className="kd-row__sub">{slot.note}</div>}</div>
+            {slot.kind !== 'lesson' && <span className="eyebrow">{KIND_LABEL[slot.kind]}</span>}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 /** The school day for one child: lessons, recess, lunch, care. Typed in by a parent (nothing is read from the school). */
 export default function SchoolPlan({ memberId, name, adult }: { memberId: string; name: string; adult: boolean }) {
   const plan = useSchoolPlan(memberId);
@@ -33,7 +103,7 @@ export default function SchoolPlan({ memberId, name, adult }: { memberId: string
   const edit = (slot: Slot) => { setError(null); setDraft({ id: slot.id, start: slot.start, end: slot.end, title: slot.title, kind: slot.kind, note: slot.note ?? '' }); };
 
   return (
-    <CardFrame title="School day" state="manual" subtitle={`${name} · typed in by a parent, not read from the school`} tone="#8b7bff"
+    <CardFrame title="Edit the school day" state="manual" subtitle={`${name} · typed in by a parent, not read from the school`} tone="#8b7bff"
       provenance={['school day entered in Chit']}>
       <div className="stack">
         <div className="seg" role="tablist" aria-label="Weekday" style={{ marginBottom: 0 }}>
