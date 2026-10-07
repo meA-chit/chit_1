@@ -51,3 +51,40 @@ export function PersonAvatar({ kind, color, size = 40, selected = true, label }:
     </span>
   );
 }
+
+/**
+ * The "Everyone" mark: a roof (inverted V) over one small figure per member, adults taller than children.
+ * Figures shrink to fit, so a household of two and a household of six both read at a glance.
+ */
+export function HouseholdMark({ adults, kids, size = 40, selected = true, color = 'var(--cyan)' }: {
+  adults: number; kids: number; size?: number; selected?: boolean; color?: string;
+}) {
+  const people = [...Array(Math.max(0, adults)).fill('adult'), ...Array(Math.max(0, kids)).fill('child')] as ('adult' | 'child')[];
+  const widths = people.map((kind) => (kind === 'adult' ? 11 : 8));
+  const gap = 3;
+  const total = widths.reduce((sum, w) => sum + w, 0) + gap * Math.max(0, people.length - 1);
+  const scale = total > 40 ? 40 / total : 1;
+  let x = 32 - (total * scale) / 2;
+  const figures = people.map((kind, i) => {
+    const w = widths[i]! * scale;
+    const cx = x + w / 2;
+    x += w + gap * scale;
+    const head = (kind === 'adult' ? 4.2 : 3.1) * Math.max(scale, 0.6);
+    const bodyTop = kind === 'adult' ? 40 : 45.5;
+    return (
+      <g key={i} fill={kind === 'adult' ? '#4df0ff' : '#ffc857'}>
+        <circle cx={cx} cy={bodyTop - head - 1.2} r={head} />
+        <path d={`M${cx - w / 2} 55 V${bodyTop + 4} a${w / 2} ${w / 2} 0 0 1 ${w} 0 V55Z`} />
+      </g>
+    );
+  });
+  return (
+    <span className="person-ring" style={{ background: selected ? color : 'transparent', padding: size >= 40 ? 2 : 1.5 }}>
+      <svg viewBox="0 0 64 64" width={size} height={size} role="img" aria-label={`Whole household: ${adults} adult${adults === 1 ? '' : 's'}, ${kids} child${kids === 1 ? '' : 'ren'}`} style={{ display: 'block', flex: 'none' }}>
+        <circle cx="32" cy="32" r="32" fill="#1b2745" />
+        <path d="M10 31 L32 11 L54 31" fill="none" stroke="#4df0ff" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" />
+        {figures}
+      </svg>
+    </span>
+  );
+}

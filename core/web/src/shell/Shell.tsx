@@ -3,7 +3,7 @@ import type { ShellConfig } from '../api/types';
 import { hhmm } from '../lib/time';
 import { useClock } from '../lib/useClock';
 import { getViewComponent } from '../registry';
-import { PersonAvatar } from '../ui/Avatar';
+import { HouseholdMark, PersonAvatar } from '../ui/Avatar';
 import { Suspense } from 'react';
 import { Empty, Skeleton } from '../ui/CardFrame';
 import { BellIcon, GridIcon, MODULE_ICONS, PlusIcon, SettingsIcon } from '../ui/icons';
@@ -41,7 +41,7 @@ function Rail({ shell }: { shell: ShellConfig }) {
       {shell.household && (
         <>
           <button className="who" aria-pressed={!shell.member} onClick={() => setViewer(null)} aria-label="Whole household">
-            <PersonAvatar kind="home" color="var(--cyan)" size={44} selected={!shell.member} />
+            <HouseholdMark adults={shell.members.filter((m) => m.role === 'adult').length} kids={shell.members.filter((m) => m.role === 'child').length} size={44} selected={!shell.member} />
             <span className="who__name">Everyone</span>
           </button>
           <div className="rail__sep" />

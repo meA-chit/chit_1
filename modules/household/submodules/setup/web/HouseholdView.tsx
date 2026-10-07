@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { api, ApiError, Empty, Field, Notice, Section, SelectField, SettingsSections, Skeleton, TextField, useNavigate, useSearchParams, useShell } from '@chit/core';
+import { api, ApiError, ArrowUpIcon, Empty, Field, Notice, Section, SelectField, SettingsSections, Skeleton, TextField, useNavigate, useSearchParams, useShell } from '@chit/core';
 import { CalendarCard } from './CalendarCard';
 import { MemberCard } from './MemberCard';
 import { ModulesSection } from './ModulesSection';
@@ -10,6 +10,18 @@ import {
 } from './model';
 
 interface Current { state: 'unconfigured' | 'configured'; document?: HouseholdDocument }
+
+/** Floating "Top" jump, shown once the page is scrolled down. */
+function useScrolledDown(threshold = 360) {
+  const [down, setDown] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setDown(window.scrollY > threshold);
+    onScroll();
+    addEventListener('scroll', onScroll, { passive: true });
+    return () => removeEventListener('scroll', onScroll);
+  }, [threshold]);
+  return down;
+}
 
 const COUNTRIES: [string, string][] = [
   ['', 'Not set'], ['DE', 'Germany'], ['AT', 'Austria'], ['CH', 'Switzerland'], ['NL', 'Netherlands'], ['FR', 'France'],
@@ -42,6 +54,7 @@ function HouseholdForm({ initial, catalog, mode, hasExisting }: {
   const navigate = useNavigate();
   const [doc, setDoc] = useState(initial);
   const [problems, setProblems] = useState<string[]>([]);
+  const scrolled = useScrolledDown();
   const dirty = useMemo(() => JSON.stringify(doc) !== JSON.stringify(initial), [doc, initial]);
 
   useEffect(() => {
@@ -89,69 +102,77 @@ function HouseholdForm({ initial, catalog, mode, hasExisting }: {
 
       <nav className="form-nav" aria-label="Sections">
         <a href="#section-household">Household</a>
-        <a href="#section-members">Members</a>
         <a href="#section-calendars">Calendars</a>
         <a href="#section-modules">Modules</a>
+        <a href="#section-members">Members</a>
         {extraSections.map((section) => <a key={section.id} href={`#section-${section.id}`}>{section.title}</a>)}
+        {scrolled && <button type="button" className="form-nav__top" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}><ArrowUpIcon />Top</button>}
       </nav>
 
-      <Section id="section-household" eyebrow="01" title="Household">
-        <div className="form-grid">
-          <TextField label="Household name" value={doc.household.name} placeholder="The Meyer family" required
-            onChange={(name) => update({ household: { ...doc.household, name } })} />
-          <Field label="Time zone">
-            <input className="input" list="zones" value={doc.household.timezone}
-              onChange={(event) => update({ household: { ...doc.household, timezone: event.target.value } })} />
-            <datalist id="zones">{ZONES.map((zone) => <option key={zone} value={zone} />)}</datalist>
-          </Field>
-          <SelectField label="Country" value={doc.household.country_code ?? ''} options={COUNTRIES}
-            onChange={(country_code) => update({ household: { ...doc.household, country_code: country_code || null } })} />
-          <TextField label="Region / state" value={doc.household.region} placeholder="e.g. Bayern"
-            hint="Used for public holidays and school terms."
-            onChange={(region) => update({ household: { ...doc.household, region } })} />
-          <TextField label="Latitude" type="number" value={doc.household.latitude} placeholder="48.14"
-            hint="Optional. Approximate is fine. Used for the weather."
-            onChange={(value) => update({ household: { ...doc.household, latitude: value === '' ? null : Number(value) } })} />
-          <TextField label="Longitude" type="number" value={doc.household.longitude} placeholder="11.58"
-            onChange={(value) => update({ household: { ...doc.household, longitude: value === '' ? null : Number(value) } })} />
+      <div className="form-cols">
+        <div className="form-col">
+          <Section id="section-household" eyebrow="01" title="Household">
+            <div className="form-grid">
+              <TextField label="Household name" value={doc.household.name} placeholder="The Meyer family" required
+                onChange={(name) => update({ household: { ...doc.household, name } })} />
+              <Field label="Time zone">
+                <input className="input" list="zones" value={doc.household.timezone}
+                  onChange={(event) => update({ household: { ...doc.household, timezone: event.target.value } })} />
+                <datalist id="zones">{ZONES.map((zone) => <option key={zone} value={zone} />)}</datalist>
+              </Field>
+              <SelectField label="Country" value={doc.household.country_code ?? ''} options={COUNTRIES}
+                onChange={(country_code) => update({ household: { ...doc.household, country_code: country_code || null } })} />
+              <TextField label="Region / state" value={doc.household.region} placeholder="e.g. Bayern"
+                hint="Used for public holidays and school terms."
+                onChange={(region) => update({ household: { ...doc.household, region } })} />
+              <TextField label="Latitude" type="number" value={doc.household.latitude} placeholder="48.14"
+                hint="Optional. Approximate is fine. Used for the weather."
+                onChange={(value) => update({ household: { ...doc.household, latitude: value === '' ? null : Number(value) } })} />
+              <TextField label="Longitude" type="number" value={doc.household.longitude} placeholder="11.58"
+                onChange={(value) => update({ household: { ...doc.household, longitude: value === '' ? null : Number(value) } })} />
         </div>
-      </Section>
+          </Section>
 
-      <Section id="section-members" eyebrow="02" title="Household members"
-        actions={<div className="row">
-          <button type="button" className="btn" onClick={() => update({ members: [...doc.members, newAdult('', doc.members)] })}>Add adult</button>
-          <button type="button" className="btn" onClick={() => update({ members: [...doc.members, newChild('', doc.members)] })}>Add child</button>
-        </div>}>
-        <div className="stack">
-          {doc.members.map((member) => (
-            <MemberCard key={member.client_id} member={member} doc={doc} catalog={catalog}
-              isOwner={member.client_id === doc.owner_client_id}
-              canRemove={member.client_id !== doc.owner_client_id && (member.role === 'child' || adults.length > 1)}
-              onChange={(next) => update({ members: doc.members.map((m) => (m.client_id === next.client_id ? next : m)) })}
-              onRemove={() => setDoc(removeMember(doc, member.client_id))}
-              onMakeOwner={() => update({ owner_client_id: member.client_id })} />
-          ))}
+          <Section id="section-calendars" eyebrow="02" title="Calendars"
+            actions={<button type="button" className="btn" onClick={() => update({ calendars: [...doc.calendars, newCalendar()] })}>Add calendar</button>}>
+            <div className="stack">
+              {doc.calendars.length === 0 && <Empty title="No calendars yet">Connect school, waste collection, sport or work calendars. They are read-only.</Empty>}
+              {doc.calendars.map((calendar) => (
+                <CalendarCard key={calendar.client_id} calendar={calendar} doc={doc}
+                  onChange={(next) => update({ calendars: doc.calendars.map((c) => (c.client_id === next.client_id ? next : c)) })}
+                  onRemove={() => update({ calendars: doc.calendars.filter((c) => c.client_id !== calendar.client_id) })} />
+              ))}
         </div>
-      </Section>
+          </Section>
 
-      <Section id="section-calendars" eyebrow="03" title="Calendars"
-        actions={<button type="button" className="btn" onClick={() => update({ calendars: [...doc.calendars, newCalendar()] })}>Add calendar</button>}>
-        <div className="stack">
-          {doc.calendars.length === 0 && <Empty title="No calendars yet">Connect school, waste collection, sport or work calendars. They are read-only.</Empty>}
-          {doc.calendars.map((calendar) => (
-            <CalendarCard key={calendar.client_id} calendar={calendar} doc={doc}
-              onChange={(next) => update({ calendars: doc.calendars.map((c) => (c.client_id === next.client_id ? next : c)) })}
-              onRemove={() => update({ calendars: doc.calendars.filter((c) => c.client_id !== calendar.client_id) })} />
-          ))}
+          <Section id="section-modules" eyebrow="03" title="Dashboard modules">
+            <ModulesSection doc={doc} catalog={catalog} onChange={setDoc} />
+          </Section>
+
         </div>
-      </Section>
+        <div className="form-col">
+          <Section id="section-members" eyebrow="04" title="Household members"
+            actions={<div className="row">
+              <button type="button" className="btn" onClick={() => update({ members: [...doc.members, newAdult('', doc.members)] })}>Add adult</button>
+              <button type="button" className="btn" onClick={() => update({ members: [...doc.members, newChild('', doc.members)] })}>Add child</button>
+            </div>}>
+            <div className="stack">
+              {doc.members.map((member) => (
+                <MemberCard key={member.client_id} member={member} doc={doc} catalog={catalog}
+                  isOwner={member.client_id === doc.owner_client_id}
+                  canRemove={member.client_id !== doc.owner_client_id && (member.role === 'child' || adults.length > 1)}
+                  onChange={(next) => update({ members: doc.members.map((m) => (m.client_id === next.client_id ? next : m)) })}
+                  onRemove={() => setDoc(removeMember(doc, member.client_id))}
+                  onMakeOwner={() => update({ owner_client_id: member.client_id })} />
+              ))}
+        </div>
+          </Section>
 
-      <Section id="section-modules" eyebrow="04" title="Dashboard modules">
-        <ModulesSection doc={doc} catalog={catalog} onChange={setDoc} />
-      </Section>
+          {/* Sections other modules contribute (chores, reminders). They save themselves, so they work on saved members only. */}
+          <SettingsSections target="household" ready={mode === 'edit'} />
 
-      {/* Sections other modules contribute (chores, reminders). They save themselves, so they work on saved members only. */}
-      <SettingsSections target="household" ready={mode === 'edit'} />
+        </div>
+      </div>
 
       {problems.length > 0 && (
         <Notice tone="error">

@@ -4,7 +4,8 @@ const base = { width: 20, height: 20, viewBox: '0 0 24 24', fill: 'none', stroke
 const make = (path: ReactNode) => () => <svg {...base} aria-hidden>{path}</svg>;
 
 export const HomeIcon = make(<><path d="M3 11l9-8 9 8" /><path d="M5 10v10h14V10" /><path d="M10 20v-6h4v6" /></>);
-export const SettingsIcon = make(<><circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1" /></>);
+export const SettingsIcon = make(<><path d="M4 7h9M17 7h3M4 17h3M11 17h9" /><circle cx="15" cy="7" r="2" /><circle cx="9" cy="17" r="2" /></>);   // sliders: edit the household
+export const ArrowUpIcon = make(<path d="M12 19V5M5 12l7-7 7 7" />);
 export const GridIcon = make(<><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></>);
 
 export const CalendarIcon = make(<><rect x="3" y="5" width="18" height="16" rx="3" /><path d="M8 3v4M16 3v4M3 10h18" /></>);
