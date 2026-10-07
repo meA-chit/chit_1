@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
 const root = fileURLToPath(new URL('../..', import.meta.url));
+const lan = process.env.CHIT_LAN === '1'; // opt-in: serve the web client to the local network (the hub itself stays on loopback)
 const hub = `http://127.0.0.1:${process.env.CHIT_PORT ?? 8765}`; // ADR-0007: loopback only
 
 export default defineConfig({
@@ -16,6 +17,8 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    host: lan ? true : 'localhost',
+    allowedHosts: lan ? true : undefined, // lets a hostname such as my-mac.local through, not just an IP
     fs: { allow: [root] },
     proxy: { '/api': hub, '/legacy': hub },
   },

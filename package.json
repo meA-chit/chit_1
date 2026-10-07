@@ -5,6 +5,7 @@
   "type": "module",
   "description": "Chit household OS: web client (apps/web) composed from core/web and modules/*/submodules/*/web",
   "scripts": {
+    "dev:lan": "CHIT_LAN=1 vite --config apps/web/vite.config.ts",
     "dev": "vite --config apps/web/vite.config.ts",
     "build": "tsc --noEmit && vite build --config apps/web/vite.config.ts",
     "preview": "vite preview --config apps/web/vite.config.ts",
