@@ -1,7 +1,7 @@
 """German-style averages (scale 1 best to 6). Pure functions.
 
 A subject has two graded types, written exam and oral / short test. Each type is averaged on its own, then the two are
-combined with the household's weights for the subject kind (main or other). A subject with only one type uses it alone.
+combined with the household's weights for the subject type (core, minor or elective). A subject with only one type uses it alone.
 """
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ def mean(values):
 def subject_average(kind, grades, weights):
     written = mean([g["grade"] for g in grades if g["grade_type"] == "written"])
     oral = mean([g["grade"] for g in grades if g["grade_type"] == "oral"])
-    pct = weights["main_written_pct" if kind == "main" else "other_written_pct"]
+    pct = weights["%s_written_pct" % kind]
     if written is not None and oral is not None:
         average = (written * pct + oral * (100 - pct)) / 100
     else:

@@ -7,6 +7,8 @@ export interface AgendaEvent {
   all_day: boolean;
   source: string;
   members: string[];
+  /** Emoji chosen by the hub from the event's name (the football for "Football training"); absent when nothing fits. */
+  icon?: string | null;
 }
 
 export interface Agenda {

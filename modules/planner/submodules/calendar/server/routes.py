@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from pathlib import Path
 
+from chit_server.icons import icon_for
 from chit_server.loader import load_file_module
 
 reader = load_file_module(Path(__file__).with_name("reader.py"))
@@ -21,7 +22,8 @@ def agenda(ctx, request):
             source_events = reader.read_calendar_events(source["subscription_url"], household["timezone"])
             ctx.store.record_calendar_check(source["id"], "available")
             for event in source_events:
-                event.update(source=source["name"], category=source["category"], members=source["members"])
+                event.update(source=source["name"], category=source["category"], members=source["members"], member_ids=source["member_ids"],
+                             icon=icon_for(event["title"], source["category"]))
                 events.append(event)
             summaries.append({"name": source["name"], "state": "available", "event_count": len(source_events)})
         except Exception as error:

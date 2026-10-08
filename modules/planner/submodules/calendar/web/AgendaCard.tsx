@@ -68,7 +68,7 @@ export default function AgendaCard({ card }: CardProps) {
               <div key={`${event.start}${event.title}`} className="ev" data-next={isNext} data-past={past}>
                 <div className="ev__time">{clockOf(event)}{!event.all_day && <small>{event.end.slice(11, 16)}</small>}</div>
                 <div style={{ minWidth: 0 }}>
-                  <div className="ev__title">{event.title}</div>
+                  <div className="ev__title">{event.icon && <span className="ev__icon" aria-hidden>{event.icon}</span>}{event.title}</div>
                   <div className="ev__meta"><span className="tag">{event.source}</span>{isNext && <span className="pill-next">Next</span>}</div>
                 </div>
                 <div className="person-stack">{people.map((p) => <PersonAvatar key={p.id} kind={p.avatar} color={p.color} size={24} />)}</div>

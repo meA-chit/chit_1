@@ -98,3 +98,30 @@ class Reminders:
         rows = [r for r in self._rows(household_id) if r["on_date"] and after.isoformat() < r["on_date"] <= end]
         rows.sort(key=lambda r: (r["on_date"], _PART_RANK[r["day_part"]]))
         return [{k: v for k, v in row.items() if k != "_csv"} for row in rows]
+
+    # ---------- done / not relevant for a day ----------
+    def set_reminder_state(self, household_id: str, reminder_id: str, day: date, state: "str | None", member_id: str = "") -> None:
+        """Mark a reminder done or not relevant for one day (None clears it). `member_id` '' is the household dashboard; a child's id is that
+        child's phone, so what a child ticks does not change what a parent sees."""
+        if state not in (None, "done", "na"):
+            raise ValueError("state must be done, na or null")
+        with self._connection() as connection:
+            if not connection.execute("SELECT 1 FROM reminders WHERE id = ? AND household_id = ? AND archived = 0", (reminder_id, household_id)).fetchone():
+                raise LookupError("reminder does not exist in this household")
+            if member_id and not connection.execute("SELECT 1 FROM household_members WHERE id = ? AND household_id = ?", (member_id, household_id)).fetchone():
+                raise LookupError("no such member in this household")
+            if state is None:
+                connection.execute("DELETE FROM reminder_states WHERE reminder_id = ? AND member_id = ? AND day = ?", (reminder_id, member_id, day.isoformat()))
+            else:
+                connection.execute(
+                    "INSERT INTO reminder_states(household_id, reminder_id, member_id, day, state, updated_at) VALUES (?, ?, ?, ?, ?, ?) "
+                    "ON CONFLICT(reminder_id, member_id, day) DO UPDATE SET state = excluded.state, updated_at = excluded.updated_at",
+                    (household_id, reminder_id, member_id, day.isoformat(), state, _now()))
+            connection.execute("DELETE FROM reminder_states WHERE household_id = ? AND day < ?", (household_id, date.fromordinal(day.toordinal() - 14).isoformat()))
+
+    def reminder_states_for_day(self, household_id: str, day: date, member_id: str = "") -> "dict[str, str]":
+        """{reminder id: 'done' | 'na'} for the dashboard ('') or one child's phone."""
+        with self._connection() as connection:
+            return dict(connection.execute("SELECT reminder_id, state FROM reminder_states WHERE household_id = ? AND member_id = ? AND day = ?",
+                                           (household_id, member_id, day.isoformat())).fetchall())
+

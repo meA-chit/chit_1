@@ -103,18 +103,38 @@ class ChitHandler(BaseHTTPRequestHandler):
             if length <= 0 or length > MAX_REQUEST_BYTES:
                 raise HTTPError(413, "Request body must be between 1 byte and 1 MiB")
             body = self.rfile.read(length)
-        request = Request(method, path, parse_query(query), self.headers.get_content_type(), body, params)
-        ctx = Context(store=self.server.store, manifests=self.server.manifests, log=lambda message: self.log_error("%s", message))
+        request = Request(method, path, parse_query(query), self.headers.get_content_type(), body, params,
+                          {name.lower(): value for name, value in self.headers.items()})
+        ctx = Context(store=self.server.store, manifests=self.server.manifests, log=lambda message: self.log_error("%s", message),
+                      read=self._reader())
         status, payload = handler(ctx, request)
         self._json(status, payload)
 
+    def _reader(self):
+        """In-process GET of a public read API. Resolves in the hub's full router even when this listener (the phone gateway) serves less."""
+        full: Router = getattr(self.server, "full_router", self.server.router)
+
+        def read(path: str, query: "dict | None" = None) -> dict:
+            resolved = full.resolve("GET", path)
+            if resolved is None:
+                raise HTTPError(404, "No such read API")
+            handler, params = resolved
+            ctx = Context(store=self.server.store, manifests=self.server.manifests, log=lambda message: self.log_error("%s", message), read=read)
+            status, payload = handler(ctx, Request("GET", path, dict(query or {}), "", b"", params, {}))
+            return payload
+        return read
+
     def _static(self, path: str) -> None:
-        file_path = safe_file(WEB_DIST, path) if path != "/" else None
+        root = getattr(self.server, "static_root", WEB_DIST)
+        allow = getattr(self.server, "static_allow", None)   # the phone gateway serves an explicit list of files only
+        file_path = safe_file(root, path) if path != "/" else None
+        if file_path is not None and allow is not None and file_path.relative_to(root.resolve()).as_posix() not in allow:
+            file_path = None
         if file_path is None:
             if "." in path.rsplit("/", 1)[-1] and path != "/":
                 raise HTTPError(404, "Not found")
             # Single-page app: unknown routes fall back to the shell.
-            file_path = safe_file(WEB_DIST, "index.html")
+            file_path = safe_file(root, "index.html")
             if file_path is None:
                 raise HTTPError(503, "Web client not built. Run `npm run build` or use `npm run dev`.")
         self._file(file_path)
@@ -127,7 +147,7 @@ class ChitHandler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header("Content-Type", mime)
         self.send_header("Content-Length", str(len(content)))
-        for name, value in SECURITY_HEADERS.items():
+        for name, value in {**SECURITY_HEADERS, **getattr(self.server, "extra_headers", {})}.items():
             self.send_header(name, value)
         self.end_headers()
         self.wfile.write(content)
@@ -137,7 +157,7 @@ class ChitHandler(BaseHTTPRequestHandler):
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
-        for name, value in SECURITY_HEADERS.items():
+        for name, value in {**SECURITY_HEADERS, **getattr(self.server, "extra_headers", {})}.items():
             self.send_header(name, value)
         self.end_headers()
         self.wfile.write(body)
@@ -168,6 +188,10 @@ def main() -> None:
         print("Empty development database seeded: %s" % seed_all(store))
     server = make_server(store)
     print("Chit hub: http://%s:%d  (loopback only, ADR-0007)" % (HOST, PORT))
+    from . import gateway
+
+    if gateway.enabled():
+        gateway.start(store, server.manifests, server.router)
     try:
         server.serve_forever()
     except KeyboardInterrupt:

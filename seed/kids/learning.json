@@ -2,13 +2,13 @@
   "household_id": "hh-meyer",
   "member_id": "mila",
   "weights": {
-    "main_written_pct": 50,
-    "other_written_pct": 30
+    "core_written_pct": 50,
+    "minor_written_pct": 30,
+    "elective_written_pct": 30
   },
   "subjects": [
     {
       "name": "German",
-      "kind": "main",
       "grades": [
         {
           "type": "written",
@@ -35,7 +35,6 @@
     },
     {
       "name": "Maths",
-      "kind": "main",
       "grades": [
         {
           "type": "written",
@@ -61,30 +60,7 @@
       ]
     },
     {
-      "name": "English",
-      "kind": "main",
-      "grades": [
-        {
-          "type": "written",
-          "grade": 3,
-          "days_ago": 45
-        },
-        {
-          "type": "oral",
-          "grade": 3,
-          "days_ago": 7,
-          "note": "Vocabulary"
-        },
-        {
-          "type": "oral",
-          "grade": 4,
-          "days_ago": 30
-        }
-      ]
-    },
-    {
       "name": "Geography",
-      "kind": "other",
       "grades": [
         {
           "type": "written",
@@ -100,7 +76,6 @@
     },
     {
       "name": "Biology",
-      "kind": "other",
       "grades": [
         {
           "type": "written",
@@ -121,19 +96,7 @@
       ]
     },
     {
-      "name": "Music",
-      "kind": "other",
-      "grades": [
-        {
-          "type": "oral",
-          "grade": 2,
-          "days_ago": 33
-        }
-      ]
-    },
-    {
       "name": "Sport",
-      "kind": "other",
       "grades": [
         {
           "type": "oral",
@@ -141,17 +104,51 @@
           "days_ago": 30
         }
       ]
+    }
+  ],
+  "tasks": [
+    {
+      "kind": "homework",
+      "subject": "Maths",
+      "title": "Worksheet 4: fractions",
+      "days_ahead": 1,
+      "by": "child"
     },
     {
-      "name": "Art",
-      "kind": "other",
-      "grades": [
-        {
-          "type": "oral",
-          "grade": 1,
-          "days_ago": 36
-        }
-      ]
+      "kind": "homework",
+      "subject": "German",
+      "title": "Read chapter 3 and write a summary",
+      "days_ahead": 2,
+      "by": "parent"
+    },
+    {
+      "kind": "test",
+      "subject": "German",
+      "title": "Spelling test, unit 5",
+      "days_ahead": 6,
+      "by": "child"
+    },
+    {
+      "kind": "test",
+      "subject": "Biology",
+      "title": "Cells and organs",
+      "days_ahead": 11,
+      "by": "parent"
+    },
+    {
+      "kind": "homework",
+      "subject": "Geography",
+      "title": "Map of Europe, colour the rivers",
+      "days_ahead": -1,
+      "by": "child"
+    },
+    {
+      "kind": "homework",
+      "subject": "Geography",
+      "title": "Bring a drawing of your street",
+      "days_ahead": 3,
+      "by": "parent",
+      "done_days_ago": 0
     }
   ]
 }

@@ -15,5 +15,6 @@ Product-wide architecture decision records. Module-level decisions live in `docs
 | [0009](0009-hub-first-deployment-and-data-residency.md) | Hub-first deployment, data classes, optional cloud | Accepted (direction) |
 | [0010](0010-dev-data-store-sqlite-runtime-with-json-seed-documents.md) | Dev/pilot store: SQLite at runtime, committed JSON household documents as seed/export | Accepted |
 | [0011](0011-energy-provider-connections.md) | Energy provider connections: server-side keys per household, verified before storing | Accepted |
+| [0012](0012-kid-phone-pairing-and-gateway.md) | Kid phone: parent-enabled QR + code pairing, device tokens, isolated phone gateway | Accepted |
 
 Pending decisions are tracked in [`docs/00-overview/open-decisions.md`](../00-overview/open-decisions.md). Supersede ADRs; do not rewrite history.

@@ -1,0 +1,22 @@
+{
+  "name": "Chit Kids",
+  "short_name": "Chit",
+  "description": "My school day, stars, grades and reminders",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f5faf8",
+  "theme_color": "#00695c",
+  "icons": [
+    {
+      "src": "icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

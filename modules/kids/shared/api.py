@@ -68,6 +68,8 @@ def checked(call, *args, **kwargs):
     """Run a store call and turn its validation errors into HTTP errors."""
     try:
         return call(*args, **kwargs)
+    except PermissionError as error:
+        raise HTTPError(403, str(error)) from None
     except LookupError as error:
         raise HTTPError(404, str(error)) from None
     except ValueError as error:

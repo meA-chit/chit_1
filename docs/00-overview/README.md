@@ -22,6 +22,7 @@ Shared behaviour (UI shell, enablement, trust labels, connectors, attention card
 |---|---|
 | [`personas.md`](personas.md), [`customer-journey.md`](customer-journey.md), [`glossary.md`](glossary.md) | Users, journeys, terms |
 | [`market-synthesis.md`](market-synthesis.md) | Directional competitor and segment research |
+| [`market-research/`](market-research/01-market-research-report.md) | Competitor and user-voice research, tier pricing hypotheses, missing-feature ranking (2026-10-07, directional) |
 | [`ecosystem-vision.md`](ecosystem-vision.md) | Long-term agent/messaging ecosystem (directional, not pilot) |
 
 Decisions: [`docs/decisions/`](../decisions/README.md). Backlog index: [`docs/backlog/`](../backlog/README.md). Releases: [`docs/releases/`](../releases/).

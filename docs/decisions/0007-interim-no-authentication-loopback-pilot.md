@@ -21,5 +21,8 @@ ADR-0005 required a single local owner login, sessions and CSRF. The implementat
 
 The replacement design must cover identity (households, members, devices/surfaces), transport security, authorisation per audience, shared-display credentials, and recovery.
 
+## Update 2026-10-07
+[ADR-0012](0012-kid-phone-pairing-and-gateway.md) allows one opt-in exception: a child's own phone through the isolated phone gateway (`CHIT_PHONE=1`), with parent-enabled pairing and device tokens. The hub itself, and every adult route, remain loopback-only and unauthenticated.
+
 ## Consequences
 Simpler pilot; the security-privacy rules that assume authentication are marked as **target state** until a new ADR lands. Tests assert public access (`server/tests/test_http_auth.py`); `server/tests/test_auth.py` is a placeholder and should be removed or replaced.

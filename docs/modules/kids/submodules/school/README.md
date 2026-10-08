@@ -23,3 +23,10 @@ Lessons, recess, meals and after-school care per weekday, typed in by a parent (
 
 ## Status
 Implemented (first version).
+
+## Bag items (2026-10-08)
+Table `kid_bag_items` (migration 014): items a child takes for a lesson or an activity (PE: sports kit), written by the child or a parent (`created_by`); a child can delete only their own. Ticks of the daily checklist are in `kid_bag_ticks` (per child, day and lower-case label). Nothing is added silently: suggestions such as "Sports kit" are one-tap buttons. The checklist itself is derived on the hub by `kid-view` (`shared/plan.py`). Routes: `GET /api/kids/bag`, `POST /api/kids/bag/items`, `DELETE /api/kids/bag/items/{id}`. Parent UI: the "Bag checklist" panel in the Kids manage section. Tests: `kid-view/tests/test_plan.py`.
+
+## Lessons create subjects (2026-10-08)
+A lesson is how a subject comes to exist (`kids/learning` grades attach to subjects). `POST` and `PUT /api/kids/school/slots` accept `subject_kind` (core, minor, elective) and `subject_code` for lessons; the plan response returns both on each lesson. Subject type, archiving and renaming rules: `../../decisions/0001-subjects-come-from-the-plan.md`.
+

@@ -10,6 +10,7 @@ from datetime import date, datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
+from chit_server.icons import icon_for
 from chit_server.loader import load_file_module
 
 from chit_server.router import HTTPError
@@ -40,13 +41,16 @@ def build_lanes(document, weekday):
         "avatar": m.get("avatar"), "color": m.get("color"), "blocks": [],
     } for m in members}
 
-    def add(member_id, start, end, title, kind, row, start_unknown=False):
+    def add(member_id, start, end, title, kind, row, start_unknown=False, icon=None):
         if member_id in lanes and (end is not None):
-            lanes[member_id]["blocks"].append({
+            block = {
                 "id": "%s-%d" % (member_id, len(lanes[member_id]["blocks"])),
                 "title": title, "kind": kind, "row": row, "source": "routine",
                 "start": None if start_unknown else _hhmm(start), "end": _hhmm(end),
-            })
+            }
+            if icon:
+                block["icon"] = icon          # e.g. the football for "Football training"
+            lanes[member_id]["blocks"].append(block)
 
     for member in members:
         profile = member["profile"]
@@ -87,7 +91,7 @@ def build_lanes(document, weekday):
             a_start, a_end = _minutes(activity.get("start_time")), _minutes(activity.get("end_time"))
             if weekday not in (activity.get("days") or []) or a_start is None or a_end is None or a_end <= a_start:
                 continue
-            add(member["client_id"], a_start, a_end, activity["name"], "activity", 1)
+            add(member["client_id"], a_start, a_end, activity["name"], "activity", 1, icon=icon_for(activity["name"], "sport_activity"))
             a_mode = activity.get("commute_mode")
             a_travel = activity.get("travel_minutes")
             if a_mode is None or not a_travel:

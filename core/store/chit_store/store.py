@@ -26,12 +26,15 @@ from .common import (  # noqa: E402
 from .chore_series import ChoreSeries  # noqa: E402
 from .documents import HouseholdDocuments  # noqa: E402
 from .energy_connections import EnergyConnections  # noqa: E402
+from .kid_bag import KidBag  # noqa: E402
+from .kid_phone import KidPhone  # noqa: E402
+from .kid_tasks import KidTasks  # noqa: E402
 from .kids import Kids  # noqa: E402
 from .reminders import Reminders  # noqa: E402
 from .skips import Skips  # noqa: E402
 
 MIGRATIONS = Path(__file__).parent / "migrations"
-class EncryptedHouseholdStore(HouseholdDocuments, ChoreSeries, Reminders, Skips, EnergyConnections, Kids):
+class EncryptedHouseholdStore(HouseholdDocuments, ChoreSeries, Reminders, Skips, EnergyConnections, Kids, KidPhone, KidTasks, KidBag):
     """Encrypted SQLite persistence; access policy belongs to the application layer."""
 
     def __init__(self, path: str | Path | None = None, key_hex: str | None = None, plain: bool | None = None):
@@ -525,6 +528,8 @@ class EncryptedHouseholdStore(HouseholdDocuments, ChoreSeries, Reminders, Skips,
                         "JOIN household_members hm ON hm.id = csm.member_id "
                         "WHERE csm.source_id = ? ORDER BY hm.name", (row[0],)
                     )],
+                    "member_ids": [member for (member,) in connection.execute(
+                        "SELECT member_id FROM calendar_source_members WHERE source_id = ? ORDER BY member_id", (row[0],))],
                 })
             return {"id": household[0], "name": household[1], "timezone": household[2], "sources": sources}
     def latest_household_summary(self) -> dict[str, Any] | None:

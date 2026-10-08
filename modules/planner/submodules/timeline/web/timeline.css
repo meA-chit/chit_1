@@ -67,3 +67,5 @@
 .tl-nav button:hover:not(:disabled) { color: var(--accent); border-color: var(--line-strong); }
 .tl-nav button:disabled { opacity: 0.35; cursor: not-allowed; }
 .tl-nav .tl-today { font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); border-color: var(--line-strong); background: rgb(77 240 255 / 0.08); }
+
+.tl__icon { margin-right: 5px; }

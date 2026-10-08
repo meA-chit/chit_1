@@ -23,5 +23,8 @@ _To be defined._
 - UI: the Stars tab and Today panels of the Kids page, and the dashboard card `kids-goals` (a child viewing as themselves sees only their own row).
 - Data: `kid_star_chores`, `kid_chore_outcomes`, `kid_goals` (migration 010). Seed: `seed/kids/rewards.json`.
 
+## Not built (despite the Purpose line)
+The Purpose mentions allowance and a perks catalogue with redemption. Neither exists: only stars and goals are built, and stars are never spent. There is no pocket-money balance, no list of extra jobs and no redemption. Options are discussed in `docs/modules/kids/kid-experience.md` (section 6).
+
 ## Status
 Implemented (first version).

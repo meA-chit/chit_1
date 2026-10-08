@@ -38,3 +38,20 @@
 .upnext b { font-family: var(--font-mono); font-weight: 500; font-size: 0.7rem; color: var(--text-faint); min-width: 64px; }
 .add-menu { display: flex; gap: 8px; margin-bottom: 12px; }
 .form-wrap { padding: 12px; margin-bottom: 12px; border: 1px solid var(--line); border-radius: 14px; background: rgb(5 7 13 / 0.3); }
+
+/* the two-column card layout: each chore or reminder with Done, Not relevant and a bin */
+.tgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 6px; }
+.tcardw { display: flex; flex-direction: column; gap: 6px; padding: 12px; min-width: 0; border: 1px solid var(--line); border-radius: 14px; background: rgb(5 7 13 / 0.3); }
+.tcardw[data-done='true'] { opacity: 0.6; }
+.tcardw[data-done='true'] .tcardw__title { text-decoration: line-through; }
+.tcardw__top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.tcardw__ic { width: 30px; height: 30px; border-radius: 10px; display: grid; place-items: center; color: var(--c, var(--lime)); background: color-mix(in srgb, var(--c, var(--lime)) 14%, transparent); }
+.tcardw__title { font-size: 0.92rem; font-weight: 500; line-height: 1.25; overflow-wrap: anywhere; }
+.tcardw__act { display: grid; grid-template-columns: 1fr auto; gap: 6px; margin-top: auto; padding-top: 8px; }
+.tcardw__ok { grid-column: 1 / -1; justify-content: center; }
+.tcardw__act .btn { justify-content: center; }
+.tcardw__trash { padding: 6px 10px; }
+.tcardw__trash svg { width: 16px; height: 16px; }
+.rem[data-done='true'] .chore__title { text-decoration: line-through; opacity: 0.55; }
+@media (max-width: 520px) { .tgrid { grid-template-columns: 1fr 1fr; } }
+

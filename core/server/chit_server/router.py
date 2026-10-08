@@ -24,6 +24,7 @@ class Request:
     content_type: str
     body: bytes = b""
     params: dict[str, str] = field(default_factory=dict)
+    headers: dict[str, str] = field(default_factory=dict)   # lower-case names
 
     def json(self) -> Any:
         if self.content_type != "application/json":
@@ -40,6 +41,9 @@ class Context:
     store: Any
     manifests: dict[str, Any] = field(default_factory=dict)
     log: Callable[[str], None] = lambda message: None
+    # Public read APIs of other modules (docs/core/cross-module-contracts.md, rule 1): read("/api/planner/calendar/agenda") calls the owner's
+    # GET route in-process and returns its payload. Only what the owner lists in its contracts.md may be read this way.
+    read: "Callable[[str, dict | None], dict] | None" = None
 
 
 Handler = Callable[[Context, Request], "tuple[int, dict[str, Any]]"]

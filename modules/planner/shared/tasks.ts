@@ -13,7 +13,7 @@ export interface ChoresToday {
 }
 export interface ChoreRow { id: string; title: string; assignee_id: string | null; weekdays: string[]; day_part: string | null }
 
-export interface Reminder { id: string; title: string; member_id: string | null; on_date: string | null; weekdays: string[]; day_part: string | null }
+export interface Reminder { id: string; title: string; member_id: string | null; on_date: string | null; weekdays: string[]; day_part: string | null; done?: boolean }
 export interface RemindersToday { state: string; date?: string; reminders: Reminder[]; skipped: Reminder[]; upcoming: Reminder[]; day_parts?: DayPart[] }
 
 export const KEYS = {
@@ -80,3 +80,13 @@ export function useSkip(kind: 'chores' | 'reminders') {
     onSuccess: invalidate,
   });
 }
+
+/** Mark a reminder done for today on the dashboard (or undo). The reminder stays listed; a child's phone has its own marks. */
+export function useReminderDone() {
+  const invalidate = usePlannerInvalidate();
+  return useMutation({
+    mutationFn: ({ id, done }: { id: string; done: boolean }) => api(`/api/planner/reminders/${id}/done`, { method: 'POST', body: JSON.stringify({ done }) }),
+    onSuccess: invalidate,
+  });
+}
+

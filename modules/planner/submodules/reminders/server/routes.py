@@ -38,7 +38,8 @@ def today(ctx, request):
     household_id, day = _context(ctx)
     if household_id is None:
         return 200, {"state": "unconfigured", "reminders": []}
-    everything = [_out(r) for r in ctx.store.list_reminders_for_day(household_id, day)]
+    states = ctx.store.reminder_states_for_day(household_id, day)        # the dashboard's own done marks (a child's phone has its own)
+    everything = [{**_out(r), "done": states.get(r["id"]) == "done"} for r in ctx.store.list_reminders_for_day(household_id, day)]
     return 200, {
         "state": "manual", "date": day.isoformat(), "day_parts": schedule.DAY_PARTS,
         "reminders": [r for r in everything if not r["skipped"]],
@@ -61,6 +62,21 @@ def skip(ctx, request):
     except LookupError:
         raise HTTPError(404, "Reminder not found") from None
     return 200, {"id": request.params["id"], "skipped": body["skipped"], "date": day.isoformat()}
+
+
+def mark_done(ctx, request):
+    """Mark a reminder done for today on the dashboard (or undo). A reminder is a nudge: this does not remove it, and a child's phone is separate."""
+    household_id, day = _context(ctx)
+    if household_id is None:
+        raise HTTPError(404, "No household")
+    body = request.json()
+    if not isinstance(body, dict) or not isinstance(body.get("done"), bool):
+        raise HTTPError(400, "done must be true or false")
+    try:
+        ctx.store.set_reminder_state(household_id, request.params["id"], day, "done" if body["done"] else None)
+    except LookupError:
+        raise HTTPError(404, "Reminder not found") from None
+    return 200, {"id": request.params["id"], "done": body["done"], "date": day.isoformat()}
 
 
 def _fields(body):
@@ -116,3 +132,4 @@ def register(router) -> None:
     router.put("/api/planner/reminders/{id}")(update)
     router.delete("/api/planner/reminders/{id}")(archive)
     router.post("/api/planner/reminders/{id}/skip")(skip)
+    router.post("/api/planner/reminders/{id}/done")(mark_done)

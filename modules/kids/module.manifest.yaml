@@ -32,4 +32,11 @@ views:
     title: Kids
     path: /kids
     surfaces: [tablet, web, mobile-adult, mobile-kid]
+settings_sections:           # contributed to the household settings screen
+  - id: kid-phone
+    submodule: kid-view
+    title: Kids' phones
+    target: household
+    order: 40
+    surfaces: [tablet, web]
 permissions: []

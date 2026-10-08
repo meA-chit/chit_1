@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { ApiError, CardFrame, ChipGroup, Empty, Notice, PlusIcon, SelectField, Skeleton, TextField } from '@chit/core';
-import { dayShort, useSchoolPlan, useSend, WEEKDAY_NAMES, type Slot } from '../../../shared/kids';
+import { ApiError, CardFrame, ChipGroup, Empty, Notice, PlusIcon, SelectField, Skeleton, TextField, TrashIcon } from '@chit/core';
+import { dayShort, SUBJECT_KIND_LABEL, SUBJECT_KINDS, useSchoolPlan, useSend, WEEKDAY_NAMES, type Slot, type SubjectKind } from '../../../shared/kids';
 
 const KINDS: [string, string][] = [['lesson', 'Lesson'], ['break', 'Recess or break'], ['meal', 'Meal'], ['care', 'After-school care']];
 const KIND_LABEL: Record<string, string> = { lesson: 'Lesson', break: 'Recess', meal: 'Meal', care: 'Care' };
-interface Draft { id: string | null; start: string; end: string; title: string; kind: string; note: string }
-const blank = (start = '08:00'): Draft => ({ id: null, start, end: '', title: '', kind: 'lesson', note: '' });
+interface Draft { id: string | null; start: string; end: string; title: string; kind: string; note: string; subjectKind: SubjectKind | null; subjectCode: string | null }
+const blank = (start = '08:00'): Draft => ({ id: null, start, end: '', title: '', kind: 'lesson', note: '', subjectKind: null, subjectCode: null });
 
 /** The whole week as a grid: one row per time slot, one column per weekday. Today's column and the running lesson stand out. */
 export function SchoolWeek({ memberId }: { memberId: string }) {
@@ -94,13 +94,19 @@ export default function SchoolPlan({ memberId, name, adult }: { memberId: string
   const slots = plan.data.slots.filter((slot) => slot.weekday === weekday);
   const now = weekday === today ? plan.data.now : undefined;
 
+  // A lesson is how a subject comes to exist. A title already in the plan is the same subject: its type is shown and changing it changes it for every lesson of that subject.
+  const sameSubject = draft ? plan.data.slots.find((slot) => slot.kind === 'lesson' && slot.title.trim().toLowerCase() === draft.title.trim().toLowerCase()) : undefined;
+  const subjectKind: SubjectKind = draft?.subjectKind ?? sameSubject?.subject_kind ?? 'minor';
+  const subjectCode = draft?.subjectCode ?? sameSubject?.code ?? '';
+
   const save = () => {
     if (!draft) return;
-    const body = { member_id: memberId, weekday, start: draft.start, end: draft.end, title: draft.title, kind: draft.kind, note: draft.note || null };
+    const body = { member_id: memberId, weekday, start: draft.start, end: draft.end, title: draft.title, kind: draft.kind, note: draft.note || null,
+      subject_kind: draft.kind === 'lesson' ? subjectKind : undefined, subject_code: draft.kind === 'lesson' && subjectCode.trim() ? subjectCode.trim() : undefined };
     send.mutate(draft.id ? { method: 'PUT', path: `/api/kids/school/slots/${draft.id}`, body } : { method: 'POST', path: '/api/kids/school/slots', body },
       { onSuccess: () => { setDraft(null); setError(null); }, onError: fail });
   };
-  const edit = (slot: Slot) => { setError(null); setDraft({ id: slot.id, start: slot.start, end: slot.end, title: slot.title, kind: slot.kind, note: slot.note ?? '' }); };
+  const edit = (slot: Slot) => { setError(null); setDraft({ id: slot.id, start: slot.start, end: slot.end, title: slot.title, kind: slot.kind, note: slot.note ?? '', subjectKind: slot.subject_kind, subjectCode: slot.code }); };
 
   return (
     <CardFrame title="Edit the school day" state="manual" subtitle={`${name} · typed in by a parent, not read from the school`} tone="#8b7bff"
@@ -117,7 +123,8 @@ export default function SchoolPlan({ memberId, name, adult }: { memberId: string
               <span className="mono" style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>{slot.start} to {slot.end}</span>
               <span className="kd-slot__dot" aria-hidden />
               <div className="kd-row__main"><div className="kd-row__title">{slot.title}{active ? ' · now' : ''}</div>{slot.note && <div className="kd-row__sub">{slot.note}</div>}</div>
-              {adult ? <button type="button" className="btn btn--ghost kd-small" onClick={() => edit(slot)}>Edit</button> : <span className="eyebrow">{KIND_LABEL[slot.kind]}</span>}
+              {slot.subject_kind && <span className="eyebrow" title="Subject type">{SUBJECT_KIND_LABEL[slot.subject_kind]}</span>}
+              {adult ? <button type="button" className="btn btn--ghost kd-small" onClick={() => edit(slot)}>Edit</button> : !slot.subject_kind && <span className="eyebrow">{KIND_LABEL[slot.kind]}</span>}
             </div>
           );
         })}
@@ -126,15 +133,25 @@ export default function SchoolPlan({ memberId, name, adult }: { memberId: string
             <div className="form-grid">
               <TextField label="From" type="time" value={draft.start} onChange={(start) => setDraft({ ...draft, start })} />
               <TextField label="Until" type="time" value={draft.end} onChange={(end) => setDraft({ ...draft, end })} />
-              <TextField label="What" value={draft.title} placeholder="Maths" onChange={(title) => setDraft({ ...draft, title })} />
+              <TextField label="What" value={draft.title} placeholder="Maths" onChange={(title) => setDraft({ ...draft, title })}
+                hint={draft.kind === 'lesson' ? 'Every lesson title is a subject. A new title adds a subject for grades; a title already in the plan is the same subject.' : undefined} />
               <SelectField label="Kind" value={draft.kind} options={KINDS} onChange={(kind) => setDraft({ ...draft, kind })} />
               <TextField label="Note" value={draft.note} placeholder="Room, what to bring" onChange={(note) => setDraft({ ...draft, note })} wide />
             </div>
+            {draft.kind === 'lesson' && (
+              <ChipGroup single label="Subject type" selected={[subjectKind]} onChange={(v) => v[0] && setDraft({ ...draft, subjectKind: v[0] as SubjectKind })}
+                hint={sameSubject && draft.title.trim() ? `${draft.title.trim()} is already a subject in this plan: the type applies to all its lessons.` : 'Core, minor or elective. The type sets how written and spoken grades are weighted.'}
+                options={SUBJECT_KINDS.map(([value, label]) => ({ value, label }))} />
+            )}
+            {draft.kind === 'lesson' && (
+              <TextField label="Code on the phone" value={subjectCode} placeholder="Leave empty for an automatic code" onChange={(code) => setDraft({ ...draft, subjectCode: code })}
+                hint="Up to 6 characters, no spaces. The phone shows it in the week plan with c, m or e beside it (core, minor, elective). The full name stays in lists." />
+            )}
             {error && <Notice tone="error">{error}</Notice>}
             <div className="row">
               <button type="button" className="btn" disabled={!draft.title.trim() || !draft.end || send.isPending} onClick={save}>Save</button>
               <button type="button" className="btn btn--ghost" onClick={() => { setDraft(null); setError(null); }}>Cancel</button>
-              {draft.id && <button type="button" className="btn btn--danger" onClick={() => send.mutate({ method: 'DELETE', path: `/api/kids/school/slots/${draft.id}` }, { onSuccess: () => setDraft(null) })}>Remove</button>}
+              {draft.id && <button type="button" className="btn btn--danger kd-trash" aria-label="Remove this lesson" title="Remove this lesson" onClick={() => send.mutate({ method: 'DELETE', path: `/api/kids/school/slots/${draft.id}` }, { onSuccess: () => setDraft(null) })}><TrashIcon /></button>}
             </div>
           </div>
         )}

@@ -1,0 +1,409 @@
+{
+  "_about": "Which icon an activity or calendar event gets, chosen from its name. The first rule with a matching word wins, so put specific rules (football) before general ones (sport, training). Occasions that matter more than the subject (exam, parents' evening, doctor, trip, holiday) come first. Words of 4+ letters match inside a word (Fussballtraining); shorter words must be a whole word. Matching ignores case, accents and the German ss/ß. Edit freely; no code change needed.",
+  "rules": [
+    {
+      "icon": "📝",
+      "words": [
+        "exam",
+        "klausur",
+        "pruefung",
+        "prüfung",
+        "schulaufgabe",
+        "leistungsnachweis",
+        "ex",
+        "test",
+        "quiz",
+        "arbeit"
+      ]
+    },
+    {
+      "icon": "👪",
+      "words": [
+        "parent",
+        "eltern",
+        "sprechtag",
+        "elternsprechtag"
+      ]
+    },
+    {
+      "icon": "🩺",
+      "words": [
+        "doctor",
+        "arzt",
+        "dentist",
+        "zahnarzt",
+        "kinderarzt",
+        "checkup",
+        "impf",
+        "vaccin",
+        "physio",
+        "orthopaed"
+      ]
+    },
+    {
+      "icon": "🎂",
+      "words": [
+        "birthday",
+        "geburtstag",
+        "party"
+      ]
+    },
+    {
+      "icon": "🚌",
+      "words": [
+        "trip",
+        "excursion",
+        "ausflug",
+        "exkursion",
+        "klassenfahrt",
+        "wandertag",
+        "austausch",
+        "exchange"
+      ]
+    },
+    {
+      "icon": "🏖️",
+      "words": [
+        "holiday",
+        "vacation",
+        "ferien",
+        "urlaub",
+        "feiertag"
+      ]
+    },
+    {
+      "icon": "🎄",
+      "words": [
+        "christmas",
+        "weihnacht",
+        "advent",
+        "nikolaus"
+      ]
+    },
+    {
+      "icon": "🐣",
+      "words": [
+        "easter",
+        "ostern"
+      ]
+    },
+    {
+      "icon": "🎃",
+      "words": [
+        "halloween"
+      ]
+    },
+    {
+      "icon": "⚽",
+      "words": [
+        "football",
+        "soccer",
+        "fussball",
+        "fußball",
+        "kicker"
+      ]
+    },
+    {
+      "icon": "🏀",
+      "words": [
+        "basketball"
+      ]
+    },
+    {
+      "icon": "🎾",
+      "words": [
+        "tennis",
+        "badminton",
+        "squash"
+      ]
+    },
+    {
+      "icon": "🏐",
+      "words": [
+        "volleyball"
+      ]
+    },
+    {
+      "icon": "🤾",
+      "words": [
+        "handball"
+      ]
+    },
+    {
+      "icon": "🏊",
+      "words": [
+        "swim",
+        "schwimm",
+        "pool",
+        "aqua"
+      ]
+    },
+    {
+      "icon": "🏒",
+      "words": [
+        "hockey",
+        "eishockey"
+      ]
+    },
+    {
+      "icon": "🏈",
+      "words": [
+        "rugby",
+        "american football"
+      ]
+    },
+    {
+      "icon": "🥋",
+      "words": [
+        "judo",
+        "karate",
+        "taekwondo",
+        "martial",
+        "kampfsport",
+        "aikido",
+        "ju-jitsu"
+      ]
+    },
+    {
+      "icon": "🤸",
+      "words": [
+        "gymnastic",
+        "turnen",
+        "cheer",
+        "parkour",
+        "trampolin",
+        "akrobatik"
+      ]
+    },
+    {
+      "icon": "🩰",
+      "words": [
+        "ballet",
+        "dance",
+        "tanz"
+      ]
+    },
+    {
+      "icon": "🎹",
+      "words": [
+        "piano",
+        "klavier",
+        "keyboard"
+      ]
+    },
+    {
+      "icon": "🎸",
+      "words": [
+        "guitar",
+        "gitarre"
+      ]
+    },
+    {
+      "icon": "🎻",
+      "words": [
+        "violin",
+        "geige",
+        "cello",
+        "orchestra",
+        "orchester"
+      ]
+    },
+    {
+      "icon": "🥁",
+      "words": [
+        "drum",
+        "schlagzeug"
+      ]
+    },
+    {
+      "icon": "🎤",
+      "words": [
+        "choir",
+        "chor",
+        "sing",
+        "gesang"
+      ]
+    },
+    {
+      "icon": "🎵",
+      "words": [
+        "music",
+        "musik",
+        "band",
+        "recorder",
+        "floete",
+        "flöte"
+      ]
+    },
+    {
+      "icon": "🎨",
+      "words": [
+        "paint",
+        "malen",
+        "kunst",
+        "craft",
+        "basteln",
+        "pottery",
+        "toepfern",
+        "art"
+      ]
+    },
+    {
+      "icon": "🎭",
+      "words": [
+        "theatre",
+        "theater",
+        "drama",
+        "schauspiel"
+      ]
+    },
+    {
+      "icon": "🚴",
+      "words": [
+        "cycling",
+        "bike",
+        "radfahren",
+        "radtour",
+        "mountainbike"
+      ]
+    },
+    {
+      "icon": "🏇",
+      "words": [
+        "riding",
+        "reiten",
+        "reitstunde",
+        "pony",
+        "horse",
+        "pferd"
+      ]
+    },
+    {
+      "icon": "⛷️",
+      "words": [
+        "ski",
+        "snowboard",
+        "skilager",
+        "skikurs"
+      ]
+    },
+    {
+      "icon": "🧗",
+      "words": [
+        "climb",
+        "kletter",
+        "boulder"
+      ]
+    },
+    {
+      "icon": "♟️",
+      "words": [
+        "chess",
+        "schach"
+      ]
+    },
+    {
+      "icon": "🤖",
+      "words": [
+        "robot",
+        "coding",
+        "programm",
+        "informatik",
+        "lego"
+      ]
+    },
+    {
+      "icon": "🔬",
+      "words": [
+        "science",
+        "chemie",
+        "physik",
+        "labor",
+        "experiment",
+        "forschen"
+      ]
+    },
+    {
+      "icon": "🏕️",
+      "words": [
+        "scout",
+        "pfadfinder",
+        "camp",
+        "zelt",
+        "ferienlager"
+      ]
+    },
+    {
+      "icon": "🎬",
+      "words": [
+        "cinema",
+        "kino",
+        "movie",
+        "film"
+      ]
+    },
+    {
+      "icon": "📚",
+      "words": [
+        "library",
+        "bibliothek",
+        "buecherei",
+        "bücherei",
+        "lesen",
+        "reading"
+      ]
+    },
+    {
+      "icon": "🍽️",
+      "words": [
+        "lunch",
+        "mittagessen",
+        "dinner",
+        "abendessen",
+        "brunch",
+        "picnic"
+      ]
+    },
+    {
+      "icon": "🏃",
+      "words": [
+        "athletic",
+        "leichtathletik",
+        "laufen",
+        "running",
+        "jogging",
+        "sport"
+      ]
+    },
+    {
+      "icon": "🏫",
+      "words": [
+        "school",
+        "schule",
+        "schul",
+        "unterricht",
+        "klassenarbeit"
+      ]
+    },
+    {
+      "icon": "🏅",
+      "words": [
+        "training",
+        "match",
+        "tournament",
+        "turnier",
+        "wettkampf",
+        "spiel",
+        "game",
+        "club",
+        "verein",
+        "ag"
+      ]
+    }
+  ],
+  "categories": {
+    "sport_activity": "🏅",
+    "school_care": "🏫",
+    "family": "👪"
+  }
+}

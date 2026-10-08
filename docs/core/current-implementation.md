@@ -18,7 +18,7 @@ Purpose: give the code-rework phase an accurate baseline. Not a requirements doc
 | Reminders | `core/store/chit_store/reminders.py` (+ migrations 006, 007), `planner/reminders` routes | One-off on a picked date, by day part; shown in timeline zone bands and the to-do card |
 | Energy | `modules/energy/{shared,submodules/{pricing,solar,appliance-planner,connections,overview}}`, `core/store/chit_store/energy_connections.py` (migration 009) | Tibber hourly price + consumption, SolarEdge production, expected-solar estimate, best-two-windows suggestions; keys set in household energy settings (ADR-0011) |
 | Child commute | migration 008, `planner/timeline` routes, `household/setup/web/MemberCard.tsx` | School trips by walk/cycle/car; activities with commute mode, travel time and independent or parent-accompanied |
-| Kids | `core/store/chit_store/kids.py` (migration 010), `modules/kids/{shared,submodules/*}` | Stars and goals, grades (German scale, written/oral, main/other), school-day plan, medication; `/kids` page (parents manage, a child sees their own) and the `kids-goals` dashboard card; seed in `seed/kids/` |
+| Kids | `core/store/chit_store/kids.py` (migration 010), `modules/kids/{shared,submodules/*}` | Stars and goals, grades (German scale, written/oral, subjects from the school plan as core/minor/elective), school-day plan, medication; `/kids` page (parents manage, a child sees their own) and the `kids-goals` dashboard card; seed in `seed/kids/` |
 | Skips | `core/store/chit_store/skips.py` (+ migration 007) | Skip a chore or reminder for one day; undoable; does not break streaks |
 
 ## Commands

@@ -137,7 +137,7 @@ function Grid({ lanes, now, reminders, zones }: { lanes: Lane[]; now: number; re
                   <div key={block.id} className="tl__blk" data-past={past} data-active={active} data-open={openStart} data-compact={width < 8} data-kind={block.kind}
                     title={`${block.title} · ${block.start ?? 'start not set'} to ${block.end}${block.source === 'feed' ? ' · calendar feed' : ''}`}
                     style={{ left: `${left}%`, width: `${width}%`, top: 6 + row * ROW, ['--c' as string]: lane.color ?? 'var(--violet)' }}>
-                    {width < 8 ? <KindGlyph kind={block.kind} /> : block.title}
+                    {width < 8 ? (block.icon ? <span aria-hidden>{block.icon}</span> : <KindGlyph kind={block.kind} />) : <>{block.icon && <span className="tl__icon" aria-hidden>{block.icon}</span>}{block.title}</>}
                   </div>
                 ))}
               </div>

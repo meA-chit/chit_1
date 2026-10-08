@@ -13,6 +13,7 @@ export interface Block {
   source: 'routine' | 'feed' | 'reminder';
   start: string | null; // HH:MM; null = start unknown (never invented)
   end: string;
+  icon?: string; // emoji for an activity, chosen by the hub from its name
 }
 
 export interface Lane {

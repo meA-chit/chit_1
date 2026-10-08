@@ -11,7 +11,7 @@ Chit is a modular household operating system. A household enables the modules it
 ## Submodules
 - **school** — School timetable, school calendar, term and holiday plans, school-to-home reminders.
 - **activities** — Sports events plans, clubs, festivals and family/cultural events relevant to the child.
-- **learning** — Exam and homework tracker; later tutor support and exam preparation planning.
+- **learning** — Grades and the exam and homework tracker; later tutor support and exam preparation planning. Subjects come from the school plan (core, minor, elective).
 - **rewards** — Stars or allowance for completed chores, perks/goodies catalogue and redemption. Reads chores from planner; owns reward data.
 - **health** — Medication and pill reminders with a given/missed log and supply tracking; strictest privacy (proposed, see `docs/design/kids-module/`).
 - **kid-view** — Composition of the child's own mobile view: which modules and cards appear, as configured by an adult in household settings.
@@ -20,7 +20,7 @@ Each submodule has its own folder: `docs/modules/kids/submodules/<name>/` and `m
 
 ## Audiences and surfaces
 - Audiences: adult (manage), child (own view only)
-- Surfaces: mobile-kid (primary), tablet, web (adult management)
+- Surfaces: mobile-kid (primary: phone or tablet), tablet, web (adult management). The built child app is portrait-only on phones and has no tablet layout yet; experience design, age tiers and journeys: [`kid-experience.md`](kid-experience.md)
 - Enablement is configured per household, per member and per surface (see `docs/core/enablement-and-audiences.md`). Do not hard-code who sees what.
 
 ## Data this module owns
@@ -41,7 +41,7 @@ Strict (children's data) — least-data default; adults control what a child's d
 _None beyond `docs/00-overview/non-negotiable-rules.md` yet. Add rules here, not in code comments._
 
 ## Status
-- Stage: implemented (first version): school-day plan, star chores and goals, grades, medication, the Kids page and a dashboard goals card. Design: `docs/design/kids-module/`. Previously: documentation structure only; no stories yet
+- Stage: implemented (first version): school-day plan, star chores and goals, grades, homework and tests, bag checklist, activities on the child's phone, medication, the Kids page, a dashboard goals card, and the child's own phone app (pairing, offline snapshot, six screens; audit in `submodules/kid-view/README.md`). Design: `docs/design/kids-module/`. Previously: documentation structure only; no stories yet
 - Owner: TBD
 - Stories: none yet — folder `docs/modules/kids/stories/` · Decisions: `docs/modules/kids/decisions/`
 

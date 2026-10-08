@@ -226,7 +226,7 @@ class HubHTTPTests(unittest.TestCase):
     def test_shell_lists_settings_sections_for_the_household_screen(self):
         self.request("POST", "/api/household/setup", json.dumps(self.seed()), {"Content-Type": "application/json"})
         shell = json.loads(self.request("GET", "/api/shell?surface=web")[1])
-        self.assertEqual([(s["id"], s["target"]) for s in shell["settings_sections"]], [("chores", "household"), ("reminders", "household"), ("energy", "household")])
+        self.assertEqual([(s["id"], s["target"]) for s in shell["settings_sections"]], [("chores", "household"), ("reminders", "household"), ("energy", "household"), ("kid-phone", "household")])
         document = json.loads(self.request("GET", "/api/household/current")[1])["document"]
         document["modules"] = ["household"]
         for member in document["members"]:

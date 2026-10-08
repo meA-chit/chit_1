@@ -23,6 +23,12 @@ export const SunIcon = make(<><circle cx="12" cy="12" r="4" /><path d="M12 2v3M1
 export const StarIcon = make(<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z" />);
 export const PillIcon = make(<><rect x="3" y="8.5" width="18" height="7" rx="3.5" transform="rotate(-35 12 12)" /><path d="M9.2 7.6l5.6 8.2" /></>);
 export const BookIcon = make(<><path d="M4 5.5A2.5 2.5 0 016.5 3H20v16H6.5A2.5 2.5 0 004 21.5z" /><path d="M4 19V5.5" /></>);
+export const TrashIcon = make(<><path d="M4 7h16" /><path d="M9 7V4.5h6V7" /><path d="M6 7l1 13h10l1-13" /><path d="M10 11v6M14 11v6" /></>);
+export const XIcon = make(<path d="M6 6l12 12M18 6L6 18" />);
+export const ListIcon = make(<><path d="M9 6h11M9 12h11M9 18h11" /><path d="M4 6h.01M4 12h.01M4 18h.01" /></>);
+export const CardsIcon = make(<><rect x="3" y="3" width="8" height="8" rx="2" /><rect x="13" y="3" width="8" height="8" rx="2" /><rect x="3" y="13" width="8" height="8" rx="2" /><rect x="13" y="13" width="8" height="8" rx="2" /></>);
+export const UndoIcon = make(<><path d="M9 14L4 9l5-5" /><path d="M4 9h10a6 6 0 010 12h-3" /></>);
+export const MergeIcon = make(<><path d="M6 4v4a6 6 0 006 6h0a6 6 0 006-6V4" /><path d="M12 14v6" /><path d="M9 17l3 3 3-3" /></>);
 export const SparkIcon = make(<path d="M12 3l2.2 5.8L20 11l-5.8 2.2L12 19l-2.2-5.8L4 11l5.8-2.2z" />);
 
 /** Module id -> nav icon. Unknown modules fall back to a grid. */

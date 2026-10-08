@@ -67,6 +67,8 @@ paths:
   /planner/reminders/{id}:
     put: { operationId: updateReminder, x-implemented: true, x-module: planner/reminders, parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: Saved }, '404': { description: Not found } } }
     delete: { operationId: archiveReminder, x-implemented: true, x-module: planner/reminders, parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: Archived }, '404': { description: Not found } } }
+  /planner/reminders/{id}/done:
+    post: { operationId: markReminderDone, x-implemented: true, x-module: planner/reminders, description: 'Body {done: boolean}. Mark a reminder done for today on the dashboard (or undo). The reminder stays listed; a child''s phone keeps its own marks.', parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: OK } } }
   /planner/chores/{id}/toggle:
     post: { operationId: toggleChore, x-implemented: true, x-module: planner/chores, description: 'Body {done: boolean} for today.', parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: Updated }, '404': { description: Not found } } }
   /planner/weather/now:
@@ -101,25 +103,77 @@ paths:
   /kids/grades/overview:
     get: { operationId: getGrades, x-implemented: true, x-module: kids/learning, description: 'Subjects with written and oral averages and the weighted average, latest entries and weights. ?member=', responses: { '200': { description: OK } } }
   /kids/grades/weights:
-    put: { operationId: setGradeWeights, x-implemented: true, x-module: kids/learning, description: 'Body {main_written_pct, other_written_pct}.', responses: { '200': { description: OK } } }
-  /kids/grades/subjects:
-    post: { operationId: addSubject, x-implemented: true, x-module: kids/learning, description: 'Body {member_id, name, kind: main|other}.', responses: { '200': { description: OK } } }
+    put: { operationId: setGradeWeights, x-implemented: true, x-module: kids/learning, description: 'Body {core_written_pct, minor_written_pct, elective_written_pct}: the written share of a subject average per subject type.', responses: { '200': { description: OK } } }
   /kids/grades/subjects/{id}:
-    put: { operationId: updateSubject, x-implemented: true, x-module: kids/learning, description: 'Body {name, kind}.', parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: OK } } }
-    delete: { operationId: removeSubject, x-implemented: true, x-module: kids/learning, description: 'Archive a subject.', parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: OK } } }
+    put: { operationId: updateSubject, x-implemented: true, x-module: kids/learning, description: 'Body {name?, code?, kind?: core|minor|elective}: full name, short code (1-6 characters, unique per child) and type. A new name is carried to the subject lessons, homework and bag items. A subject cannot be added or removed here: it exists because a lesson with its title is in the school-day plan (POST /kids/school/slots).', parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: OK } } }
+    delete: { operationId: removeSubject, x-implemented: true, x-module: kids/learning, description: 'Remove a subject for good with its lessons in the plan, its grades and bag items; homework that named it loses the subject. Returns how many lessons and grades were removed.', parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: OK } } }
+  /kids/grades/subjects/{id}/merge:
+    post: { operationId: mergeSubject, x-implemented: true, x-module: kids/learning, description: 'Body {into: id}. Fold this duplicate subject into another of the same child: lessons, grades, homework and bag items move; the kept subject keeps its name, code and type.', parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: OK } } }
   /kids/grades:
     post: { operationId: addGrade, x-implemented: true, x-module: kids/learning, description: 'Body {subject_id, grade_type: written|oral, grade: 1-6, date?, note?}.', responses: { '200': { description: OK } } }
   /kids/grades/{id}:
     delete: { operationId: removeGrade, x-implemented: true, x-module: kids/learning, description: 'Delete a grade.', parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: OK } } }
   /kids/school/plan:
-    get: { operationId: getSchoolPlan, x-implemented: true, x-module: kids/school, description: 'Slots for a child (?member=), optionally one weekday (?weekday=0-6|today).', responses: { '200': { description: OK } } }
+    get: { operationId: getSchoolPlan, x-implemented: true, x-module: kids/school, description: 'Slots for a child (?member=), optionally one weekday (?weekday=0-6|today). Lessons carry subject_kind (core|minor|elective) and code.', responses: { '200': { description: OK } } }
   /kids/school/slots:
-    post: { operationId: addSchoolSlot, x-implemented: true, x-module: kids/school, description: 'Body {member_id, weekday, start, end, title, kind: lesson|break|meal|care, note?}.', responses: { '200': { description: OK } } }
+    post: { operationId: addSchoolSlot, x-implemented: true, x-module: kids/school, description: 'Body {member_id, weekday, start, end, title, kind: lesson|break|meal|care, note?, subject_kind?: core|minor|elective, subject_code?}. A lesson creates its subject if the title is new; subject_kind and subject_code set the subject type and code (a new subject starts as minor with a generated code).', responses: { '200': { description: OK } } }
   /kids/school/slots/{id}:
-    put: { operationId: updateSchoolSlot, x-implemented: true, x-module: kids/school, description: 'Body {start, end, title, kind, note?}.', parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: OK } } }
+    put: { operationId: updateSchoolSlot, x-implemented: true, x-module: kids/school, description: 'Body {start, end, title, kind, note?, subject_kind?}. Renaming the last lesson of a subject renames the subject and keeps its grades.', parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: OK } } }
     delete: { operationId: removeSchoolSlot, x-implemented: true, x-module: kids/school, description: 'Remove a slot.', parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: OK } } }
   /kids/school/copy:
     post: { operationId: copySchoolDay, x-implemented: true, x-module: kids/school, description: 'Body {member_id, from_weekday, to_weekdays}. Replaces the target days.', responses: { '200': { description: OK } } }
+  /kids/homework:
+    get: { operationId: getHomework, x-implemented: true, x-module: kids/learning, description: 'Homework and tests for a child (?member=) with summary tiles and the child''s subjects to pick from.', responses: { '200': { description: OK } } }
+    post: { operationId: addHomework, x-implemented: true, x-module: kids/learning, description: 'Body {member_id, kind: homework|test, subject?, title, due_on, note?}. subject must be one of the child''s subjects (name or code); it is stored as the subject name.', responses: { '200': { description: OK } } }
+  /kids/homework/{id}:
+    put: { operationId: updateHomework, x-implemented: true, x-module: kids/learning, description: 'Body {done: boolean} ticks or reopens it; {dismissed: boolean} marks it not relevant or brings it back (done and dismissed exclude each other); a full body {kind, subject?, title, due_on, note?} edits it.', parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: OK } } }
+    delete: { operationId: removeHomework, x-implemented: true, x-module: kids/learning, description: 'Remove a task.', parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: OK } } }
+  /kids/bag:
+    get: { operationId: getBagItems, x-implemented: true, x-module: kids/school, description: 'Bag items per lesson or activity for a child (?member=), with the names they can attach to.', responses: { '200': { description: OK } } }
+  /kids/bag/items:
+    post: { operationId: addBagItem, x-implemented: true, x-module: kids/school, description: 'Body {member_id, subject, label}. subject is a lesson or activity name.', responses: { '200': { description: OK } } }
+  /kids/bag/items/{id}:
+    delete: { operationId: removeBagItem, x-implemented: true, x-module: kids/school, description: 'Remove a bag item.', parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: OK } } }
+  /kids/phone/settings:
+    get: { operationId: getPhoneSettings, x-implemented: true, x-module: kids/kid-view, description: 'Per child: phone view on or off, what it shares (timetable, stars, reminders, homework, activities, bag, grades, health), paired phones and the open pairing. Also gateway and phone_url.', responses: { '200': { description: OK } } }
+  /kids/phone/settings/{id}:
+    put: { operationId: setPhoneSettings, x-implemented: true, x-module: kids/kid-view, description: 'Body {enabled?: boolean, share?: {timetable|stars|reminders|homework|activities|bag|grades|health: boolean}}. Turning it off signs out every phone of that child.', parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: OK } } }
+  /kids/phone/pairings:
+    post: { operationId: startPhonePairing, x-implemented: true, x-module: kids/kid-view, description: 'Body {member_id}. Returns once: url (QR), code (6 digits), link_code, expires_at. Needs the phone gateway (CHIT_PHONE=1).', responses: { '200': { description: OK } } }
+  /kids/phone/pairings/{id}:
+    delete: { operationId: cancelPhonePairing, x-implemented: true, x-module: kids/kid-view, description: 'Cancel the open pairing of child {id}.', parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: OK } } }
+  /kids/phone/devices/{id}:
+    delete: { operationId: revokePhone, x-implemented: true, x-module: kids/kid-view, description: 'Remove a paired phone.', parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: OK } } }
+  /kids/phone/device/pair:
+    post: { operationId: devicePair, x-implemented: true, x-module: kids/kid-view, description: 'Phone gateway route (/api/kids/phone/device/*, device token). Body {secret or link, code, label?}: the QR secret or the typed link code plus the 6 digits. Returns {token}.', responses: { '200': { description: OK } } }
+  /kids/phone/device/handoff:
+    post: { operationId: deviceHandoff, x-implemented: true, x-module: kids/kid-view, description: 'Phone gateway route (/api/kids/phone/device/*, device token). A one-use link to carry the pairing from Safari to the Home Screen app.', responses: { '200': { description: OK } } }
+  /kids/phone/device/exchange:
+    post: { operationId: deviceExchange, x-implemented: true, x-module: kids/kid-view, description: 'Phone gateway route (/api/kids/phone/device/*, device token). Body {handoff}. Returns a rotated token.', responses: { '200': { description: OK } } }
+  /kids/phone/device/unpair:
+    post: { operationId: deviceUnpair, x-implemented: true, x-module: kids/kid-view, description: 'Phone gateway route (/api/kids/phone/device/*, device token). The phone removes itself.', responses: { '200': { description: OK } } }
+  /kids/phone/device/manifest:
+    get: { operationId: deviceManifest, x-implemented: true, x-module: kids/kid-view, description: 'Phone gateway route (/api/kids/phone/device/*, device token). Web app manifest whose start_url carries ?h=<handoff>.', responses: { '200': { description: OK } } }
+  /kids/phone/device/view:
+    get: { operationId: deviceView, x-implemented: true, x-module: kids/kid-view, description: 'Phone gateway route (/api/kids/phone/device/*, device token). Everything this phone may show, built from the parent''s settings: school, reminders, stars, homework, activities (weekly, calendar events), bag, grades, health and the subject list (name, code, type). A section that is not shared is absent.', responses: { '200': { description: OK } } }
+  /kids/phone/device/chores/{id}/done:
+    post: { operationId: deviceTickChore, x-implemented: true, x-module: kids/kid-view, description: 'Phone gateway route (/api/kids/phone/device/*, device token). Body {done: boolean}. The star stays a parent decision.', parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: OK } } }
+  /kids/phone/device/homework:
+    post: { operationId: deviceAddHomework, x-implemented: true, x-module: kids/kid-view, description: 'Phone gateway route (/api/kids/phone/device/*, device token). Same body as POST /kids/homework without member_id.', responses: { '200': { description: OK } } }
+  /kids/phone/device/homework/{id}/done:
+    post: { operationId: deviceTickHomework, x-implemented: true, x-module: kids/kid-view, description: 'Phone gateway route (/api/kids/phone/device/*, device token). Body {done: boolean}.', parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: OK } } }
+  /kids/phone/device/homework/{id}:
+    delete: { operationId: deviceRemoveHomework, x-implemented: true, x-module: kids/kid-view, description: 'Phone gateway route (/api/kids/phone/device/*, device token). Only tasks the child wrote.', parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: OK } } }
+  /kids/phone/device/bag/tick:
+    post: { operationId: deviceTickBag, x-implemented: true, x-module: kids/kid-view, description: 'Phone gateway route (/api/kids/phone/device/*, device token). Body {date, key, done}.', responses: { '200': { description: OK } } }
+  /kids/phone/device/bag/items:
+    post: { operationId: deviceAddBagItem, x-implemented: true, x-module: kids/kid-view, description: 'Phone gateway route (/api/kids/phone/device/*, device token). Body {subject, label}.', responses: { '200': { description: OK } } }
+  /kids/phone/device/bag/items/{id}:
+    delete: { operationId: deviceRemoveBagItem, x-implemented: true, x-module: kids/kid-view, description: 'Phone gateway route (/api/kids/phone/device/*, device token). Only items the child added.', parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: OK } } }
+  /kids/phone/device/homework/{id}/dismiss:
+    post: { operationId: deviceDismissHomework, x-implemented: true, x-module: kids/kid-view, description: 'Phone gateway route (/api/kids/phone/device/*, device token). Body {dismissed: boolean}: not relevant, or bring it back.', parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: OK } } }
+  /kids/phone/device/reminders/{id}/state:
+    post: { operationId: deviceReminderState, x-implemented: true, x-module: kids/kid-view, description: 'Phone gateway route (/api/kids/phone/device/*, device token). Body {state: done|na|null, date?}: this child''s mark on a reminder for a day from today to a week ahead. Only this phone changes.', parameters: [{ name: id, in: path, required: true, schema: { type: string } }], responses: { '200': { description: OK } } }
   /kids/health/meds:
     get: { operationId: getMeds, x-implemented: true, x-module: kids/health, description: 'Medication for a child with the week log and supply. Parents only.', responses: { '200': { description: OK } } }
     post: { operationId: addMed, x-implemented: true, x-module: kids/health, description: 'Body {member_id, name, dose?, time, weekdays, remind_member_id?, supply?}.', responses: { '200': { description: OK } } }

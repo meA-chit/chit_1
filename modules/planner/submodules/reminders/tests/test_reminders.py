@@ -89,6 +89,40 @@ class ReminderStoreTests(unittest.TestCase):
         with self.assertRaises(LookupError):
             self.store.set_skipped("other-household", "reminder", "rem-vitamins", TODAY, True)
 
+    def test_done_is_per_day_and_per_screen_and_does_not_remove_the_reminder(self):
+        self.store.add_reminder("hh-meyer", "Hand in the trip form", None, TODAY.isoformat(), (), None, reminder_id="rem-form")
+        self.store.set_reminder_state("hh-meyer", "rem-form", TODAY, "done")                       # the dashboard
+        self.assertEqual(self.store.reminder_states_for_day("hh-meyer", TODAY), {"rem-form": "done"})
+        self.assertIn("Hand in the trip form", self.titles(TODAY))                                # still listed: done is not deleted
+        self.assertEqual(self.store.reminder_states_for_day("hh-meyer", TODAY + timedelta(days=1)), {})     # another day is untouched
+        self.assertEqual(self.store.reminder_states_for_day("hh-meyer", TODAY, "mila"), {})       # Mila's phone is separate
+        self.store.set_reminder_state("hh-meyer", "rem-form", TODAY, None)
+        self.assertEqual(self.store.reminder_states_for_day("hh-meyer", TODAY), {})
+        with self.assertRaises(ValueError):
+            self.store.set_reminder_state("hh-meyer", "rem-form", TODAY, "later")
+        with self.assertRaises(LookupError):
+            self.store.set_reminder_state("hh-meyer", "nope", TODAY, "done")
+
+    def test_done_route_and_the_today_payload(self):
+        import json
+        from datetime import datetime
+        from chit_server.router import Context, Request
+        routes = load_file_module(Path(__file__).parents[1] / "server" / "routes.py")
+        today = datetime.now().date()
+        self.store.add_reminder("hh-meyer", "Bring the form", None, today.isoformat(), (), None, reminder_id="rem-now")
+        ctx = Context(store=self.store)
+        post = lambda body, rid: Request("POST", "/x", {}, "application/json", json.dumps(body).encode(), params={"id": rid})
+        routes.mark_done(ctx, post({"done": True}, "rem-now"))
+        item = next(r for r in routes.today(ctx, Request("GET", "/x", {}, ""))[1]["reminders"] if r["id"] == "rem-now")
+        self.assertTrue(item["done"])
+        routes.mark_done(ctx, post({"done": False}, "rem-now"))
+        item = next(r for r in routes.today(ctx, Request("GET", "/x", {}, ""))[1]["reminders"] if r["id"] == "rem-now")
+        self.assertFalse(item["done"])
+        from chit_server.router import HTTPError
+        for body, rid in (({"done": "yes"}, "rem-now"), ({"done": True}, "nope")):
+            with self.assertRaises(HTTPError):
+                routes.mark_done(ctx, post(body, rid))
+
     def test_upcoming_lists_future_one_offs_soonest_first(self):
         today = date.today()
         titles = [r["title"] for r in self.store.list_upcoming_reminders("hh-meyer", today, 7)]

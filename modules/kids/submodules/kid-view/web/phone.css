@@ -1,0 +1,13 @@
+/* Kids' phones settings (kids/kid-view). Tokens only. */
+.kp__who { display: flex; align-items: center; gap: 12px; }
+.kp__shares { display: grid; gap: 10px; margin-top: 14px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.kp__devices { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 8px; }
+.kp__devices li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; border: 1px solid var(--line, rgba(255,255,255,.12)); border-radius: 10px; }
+.kp__pair { margin-top: 16px; padding: 16px; border-radius: 14px; border: 1px solid var(--line, rgba(255,255,255,.12)); display: grid; gap: 14px; }
+.kp__steps { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
+.kp__grid { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; }
+.kp__qr { background: #fff; border-radius: 12px; padding: 4px; image-rendering: pixelated; }
+.kp__codebox { display: grid; gap: 6px; }
+.kp__code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 2.4rem; letter-spacing: .12em; font-weight: 700; }
+.kp__link { margin-top: 6px; display: grid; gap: 4px; max-width: 360px; }
+.kp__linkcode { font-family: var(--font-mono, ui-monospace, monospace); font-size: 1.4rem; letter-spacing: .14em; font-weight: 700; }

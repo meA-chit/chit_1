@@ -47,6 +47,9 @@ class TimelineTests(unittest.TestCase):
         self.assertNotIn("Swimming", [b["title"] for b in lane(routes.build_lanes(document(), "tuesday"), "mila")["blocks"]])
         wed = lane(routes.build_lanes(document(), "wednesday"), "mila")["blocks"]
         self.assertIn("Swimming", [b["title"] for b in wed])
+        swim = next(b for b in wed if b["title"] == "Swimming")
+        self.assertEqual(swim["icon"], "🏊")                                              # an activity carries the icon of its name
+        self.assertNotIn("icon", next(b for b in wed if b["kind"] == "commute"))          # blocks that are not activities have none
 
     def test_independent_activity_has_the_childs_own_commute(self):
         wed = {b["title"]: (b["start"], b["end"]) for b in lane(routes.build_lanes(document(), "wednesday"), "mila")["blocks"]}

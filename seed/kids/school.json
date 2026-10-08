@@ -77,5 +77,44 @@
       "kind": "care",
       "note": "Care group B"
     }
-  ]
+  ],
+  "bag_items": [
+    {
+      "subject": "Sport",
+      "label": "Sports kit",
+      "by": "parent"
+    },
+    {
+      "subject": "Sport",
+      "label": "Water bottle",
+      "by": "child"
+    },
+    {
+      "subject": "Maths",
+      "label": "Geometry set",
+      "by": "parent"
+    },
+    {
+      "subject": "Biology",
+      "label": "Textbook",
+      "by": "child"
+    },
+    {
+      "subject": "Swimming",
+      "label": "Swim bag",
+      "by": "parent"
+    },
+    {
+      "subject": "Swimming",
+      "label": "Towel",
+      "by": "parent"
+    }
+  ],
+  "subject_kinds": {
+    "German": "core",
+    "Maths": "core",
+    "Biology": "minor",
+    "Geography": "minor",
+    "Sport": "minor"
+  }
 }

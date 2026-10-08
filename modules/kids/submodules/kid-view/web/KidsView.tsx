@@ -3,9 +3,11 @@ import { CardFrame, ClockIcon, Empty, PersonAvatar, Skeleton, StarIcon, SunIcon,
 import { firstName, useStars } from '../../../shared/kids';
 import { GradesSettings } from '../../learning/web/GradesPanel';
 import GradesOverview from '../../learning/web/GradesPanel';
+import HomeworkPanel from '../../learning/web/HomeworkPanel';
 import MedsWeek from '../../health/web/HealthPanel';
 import { GoalList } from '../../rewards/web/GoalList';
 import { StarsSummary, StarsSettings, TodayStars } from '../../rewards/web/StarsPanel';
+import BagPanel from '../../school/web/BagPanel';
 import SchoolPlan, { SchoolToday, SchoolWeek } from '../../school/web/SchoolPlan';
 import '../../../shared/kids.css';
 
@@ -69,6 +71,8 @@ export default function KidsView() {
           ) : <Skeleton lines={4} />}
         </CardFrame></div>
 
+        <div className="kd-board__homework"><HomeworkPanel memberId={current.id} name={name} /></div>
+
         {adultView && (
           <>
             <div className="kd-board__week"><MedsWeek memberId={current.id} name={name} adults={adults} /></div>
@@ -82,7 +86,7 @@ export default function KidsView() {
           <div className="kd-manage__head"><div className="eyebrow">Manage</div><h2>{name}: school, stars and grades</h2></div>
           <div className="kd-manage__cols">
             <div className="kd"><SchoolPlan memberId={current.id} name={name} adult />{child && <StarsSettings child={child} />}</div>
-            <div className="kd"><GradesSettings memberId={current.id} /></div>
+            <div className="kd"><BagPanel memberId={current.id} name={name} /><GradesSettings memberId={current.id} /></div>
           </div>
         </section>
       )}

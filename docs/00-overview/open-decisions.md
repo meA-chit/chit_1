@@ -6,7 +6,7 @@ Do not assume an answer to any item here. Resolve through an ADR (product-wide) 
 |---|---|---|---|---|
 | 1 | ~~Technology stack~~ — **resolved** by ADR-0008 (React/TS client, Python hub kept) | — | — | — |
 | 2 | **Identity and access** — households, members, device pairing, TLS, per-surface credentials (replaces ADR-0007). **Now the critical path**: blocks mobile apps, TV over LAN and `hosted` profile (ADR-0009) | Any non-loopback exposure; finance, health, kids data | TBD |
-| 3 | **Mobile client** — approach decided in ADR-0008/0009 (Capacitor + PWA over a paired hub). Still open: how kid devices are provisioned and constrained | kids/kid-view, mobile-kid | kids module | TBD |
+| 3 | **Mobile client** — approach decided in ADR-0008/0009 (Capacitor + PWA over a paired hub). Kid devices: provisioned by parent-enabled QR + code pairing (ADR-0012). Still open: HTTPS, push, adult devices | kids/kid-view, mobile-kid | kids module | TBD |
 | 4 | **Display delivery** — how the TV/Pi reaches the server | ADR-0007 conditions | TV rollout | TBD |
 | 5 | **Module owners** (four people) and module order | CODEOWNERS, parallel branches | Parallel work | Product owner |
 | 6 | **Module sequencing after the pilot** — see `docs/releases/roadmap.md` (proposed) | Scope of next stories | Story writing | Product owner |

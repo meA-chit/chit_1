@@ -5,6 +5,8 @@ Modules are decoupled. Allowed interactions:
 2. **Domain events** (publish/subscribe) listed in the owner's `contracts.md`, e.g. `chore.completed`, `bill.due`, `event.upcoming`.
 3. **Shared types** in `core/contracts/` (member reference, data state, provenance envelope).
 
+**In-process reads.** A module reads another module's public read API with `ctx.read(path)` (`core/server/chit_server/router.py`). It calls the owner's GET route inside the hub and returns the payload; it works the same behind the phone gateway, which serves fewer routes to the network but resolves server-side reads against the full router. Only routes listed under "Read APIs" in the owner's `contracts.md` may be read this way.
+
 Not allowed: importing another module's code, reading its tables directly, or reaching into its UI.
 
 ## Example flows
