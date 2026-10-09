@@ -26,7 +26,7 @@ npm run dev:all   # unencrypted dev database, auto-seeded with the sample househ
 npm run check     # isolation + typecheck + vitest + python tests
 ```
 `dev:all` runs the hub on `127.0.0.1:8765` (loopback only, ADR-0007) with `CHIT_STORAGE=plain` and the Vite client. For the encrypted store use `npm run hub` with `CHIT_DB_KEY_HEX` and `CHIT_DB_PATH` (see `core/store/README.md`). Sample data: `seed/README.md`.
-`npm run build` produces `apps/web/dist`, which the hub serves at `/`.
+`npm run build` type-checks and produces `apps/web/dist`. The hub no longer serves that build (it is API-only; open the web app on port 5173 with `npm run dev`). Serving the built client from the hub, for local-network or wall-display use, is deferred.
 
 ## Repository layout
 

@@ -1,5 +1,6 @@
 import type { ComponentType } from 'react';
 import type { ManifestCard, Person } from '../api/types';
+import type { MomentProvider } from '../moments/types';
 
 export interface CardProps {
   card: ManifestCard;
@@ -23,4 +24,6 @@ export interface ModuleWeb {
   views?: Record<string, ComponentType>;
   /** Sections contributed to another module's settings screen, keyed by the manifest's `settings_sections` ids. */
   settings?: Record<string, ComponentType<SettingsSectionProps>>;
+  /** Candidates for the Now panel, keyed by a provider id. The panel runs them only while the module is enabled. */
+  moments?: Record<string, MomentProvider>;
 }

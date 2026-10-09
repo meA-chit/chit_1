@@ -59,7 +59,8 @@ export interface Subject {
 }
 export interface GradeEntry { id: string; subject: string; subject_id: string; grade_type: 'written' | 'oral'; grade: number; given_on: string; note: string | null }
 export interface GradesOverview {
-  state: DataState; member_id?: string; weights: { core_written_pct: number; minor_written_pct: number; elective_written_pct: number }; subjects: Subject[]; entries: GradeEntry[]; scale?: string;
+  /** `private`: the child keeps grades to themselves; the hub then sends the subjects only, no grade, average or trend. */
+  state: DataState | 'private'; member_id?: string; weights: { core_written_pct: number; minor_written_pct: number; elective_written_pct: number }; subjects: Subject[]; entries: GradeEntry[]; scale?: string;
 }
 
 export interface Slot { id: string; weekday: number; start: string; end: string; title: string; kind: 'lesson' | 'break' | 'meal' | 'care'; note: string | null; subject_kind: SubjectKind | null; code: string | null }
@@ -68,10 +69,12 @@ export interface SchoolPlanData { state: DataState; member_id?: string; today_we
 export type DoseStatus = 'given' | 'missed' | null;
 export interface Med {
   id: string; name: string; dose: string | null; time: string; weekdays: string[]; remind_member_id: string | null; supply: number | null;
+  /** A parent marked it safety-critical: a child cannot hide it. */
+  critical: boolean;
   days_left: number | null; refill_soon: boolean; today: { due: boolean; status: DoseStatus };
   week: { day: string; due: boolean; status: DoseStatus }[];
 }
-export interface MedsOverview { state: DataState; member_id?: string; date?: string; now?: string; meds: Med[] }
+export interface MedsOverview { state: DataState | 'private'; hidden?: number; member_id?: string; date?: string; now?: string; meds: Med[] }
 
 export interface HomeworkTask {
   id: string; kind: 'homework' | 'test'; subject: string | null; title: string; due_on: string; note: string | null;
@@ -94,6 +97,14 @@ export const useGrades = (member: string) => useQuery({ queryKey: ['kids', 'grad
 export const useSchoolPlan = (member: string) => useQuery({ queryKey: ['kids', 'school', member], queryFn: () => get<SchoolPlanData>(`/api/kids/school/plan?member=${member}`) });
 export const useHomework = (member: string) => useQuery({ queryKey: ['kids', 'homework', member], queryFn: () => get<HomeworkOverview>(`/api/kids/homework?member=${member}`) });
 export const useBag = (member: string) => useQuery({ queryKey: ['kids', 'bag', member], queryFn: () => get<BagOverview>(`/api/kids/bag?member=${member}`) });
+/** The privacy rules and, per child, which sections the child has taken private. Never the content. */
+export type PrivacySection = 'grades' | 'health';
+export interface KidsPrivacy {
+  policy: Record<PrivacySection, number>;
+  children: { member_id: string; name: string; sections: Record<PrivacySection, { age: number | null; eligible: boolean; private: boolean }> }[];
+}
+export const PRIVACY_KEY = ['kids', 'privacy'];
+export const usePrivacy = () => useQuery({ queryKey: PRIVACY_KEY, queryFn: () => get<KidsPrivacy>('/api/kids/privacy') });
 export const useMeds = (member: string) => useQuery({ queryKey: ['kids', 'health', member], queryFn: () => get<MedsOverview>(`/api/kids/health/meds?member=${member}`) });
 
 /** A change anywhere in kids refreshes every kids panel; chores are planner data, so planner views refresh too. */

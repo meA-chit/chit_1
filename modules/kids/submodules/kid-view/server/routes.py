@@ -172,6 +172,7 @@ def view(ctx, request):
         payload["grades"] = _grades(store, household_id, member)
     if share["health"]:
         payload["health"] = _health(store, household_id, member, document, now)
+    payload["privacy"] = store.kid_privacy(household_id, member, today)
     return 200, payload
 
 
@@ -415,12 +416,40 @@ def remove_homework(ctx, request):
     return 200, {"id": request.params["id"], "removed": True}
 
 
+# ---------- the child's own privacy ----------
+def set_privacy(ctx, request):
+    """The child takes grades or medicine private from their parents ({section, private}), once they are old enough. Only this child's phone."""
+    device = _device(ctx, request)
+    data = api.body(request)
+    _, _, now = api.latest(ctx)
+    result = api.checked(ctx.store.set_kid_privacy, device["household_id"], device["member_id"], data.get("section"), data.get("private"), now.date())
+    return 200, {"privacy": result}
+
+
+def privacy(ctx, request):
+    """What the parent may know: the age rule per section and, per child, whether a section is private right now. Never what is in it."""
+    household_id, kids, now = _children(ctx)
+    store = ctx.store
+    return 200, {"policy": store.privacy_policy(household_id),
+                 "children": [{"member_id": kid["client_id"], "name": kid["name"],
+                               "sections": {k: {"age": v["age"], "eligible": v["eligible"], "private": v["private"]}
+                                            for k, v in store.kid_privacy(household_id, kid["client_id"], now.date()).items()}} for kid in kids]}
+
+
+def update_privacy_policy(ctx, request):
+    household_id, _, _ = api.need_household(ctx)
+    data = api.body(request)
+    return 200, {"policy": api.checked(ctx.store.set_privacy_policy, household_id, data.get("section"), data.get("min_age"))}
+
+
 def register(router) -> None:
     router.get("/api/kids/phone/settings")(settings)
     router.put("/api/kids/phone/settings/{id}")(update_settings)
     router.post("/api/kids/phone/pairings")(start_pairing)
     router.delete("/api/kids/phone/pairings/{id}")(cancel_pairing)
     router.delete("/api/kids/phone/devices/{id}")(revoke_device)
+    router.get("/api/kids/privacy")(privacy)
+    router.put("/api/kids/privacy/policy")(update_privacy_policy)
     # The phone gateway exposes exactly the routes below (prefix /api/kids/phone/device/) and nothing else.
     router.post("/api/kids/phone/device/pair")(pair)
     router.post("/api/kids/phone/device/handoff")(handoff)
@@ -428,6 +457,7 @@ def register(router) -> None:
     router.post("/api/kids/phone/device/unpair")(unpair)
     router.get("/api/kids/phone/device/manifest")(manifest)
     router.get("/api/kids/phone/device/view")(view)
+    router.put("/api/kids/phone/device/privacy")(set_privacy)
     router.post("/api/kids/phone/device/chores/{id}/done")(tick_chore)
     router.post("/api/kids/phone/device/bag/tick")(tick_bag)
     router.post("/api/kids/phone/device/bag/items")(add_bag_item)

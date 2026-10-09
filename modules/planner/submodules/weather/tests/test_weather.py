@@ -10,7 +10,7 @@ weather = load_file_module(Path(__file__).parents[1] / "server" / "routes.py")
 
 API_BODY = json.dumps({
     "current": {"time": "2026-10-06T12:00", "temperature_2m": 14.2, "weather_code": 2},
-    "daily": {"temperature_2m_max": [17.4], "temperature_2m_min": [8.1], "precipitation_probability_max": [20]},
+    "daily": {"time": ["2026-10-06", "2026-10-07"], "weather_code": [2, 63], "temperature_2m_max": [17.4, 13.6], "temperature_2m_min": [8.1, 7.9], "precipitation_probability_max": [20, 80]},
 }).encode()
 
 
@@ -54,6 +54,13 @@ class WeatherTests(unittest.TestCase):
         self.assertEqual((payload["high"], payload["low"], payload["rain_pct"]), (17, 8, 20))
         self.assertEqual(payload["source"], "Open-Meteo")
         self.assertIn("api.open-meteo.com", opened.call_args[0][0].full_url)
+
+    def test_week_lists_each_forecast_day(self):
+        with patch.object(weather, "urlopen", return_value=Response(API_BODY)):
+            _, payload = weather.now(Ctx({"latitude": 48.1, "longitude": 11.6}), None)
+        self.assertEqual([day["date"] for day in payload["week"]], ["2026-10-06", "2026-10-07"])
+        self.assertEqual((payload["week"][1]["condition"], payload["week"][1]["icon"], payload["week"][1]["high"], payload["week"][1]["rain_pct"]),
+                         ("Rain", "rain", 14, 80))
 
     def test_second_call_uses_the_cache(self):
         place = {"latitude": 48.1, "longitude": 11.6}

@@ -4,7 +4,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#05070d" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/icon-180.png" />
     <title>Chit</title>
+    <script>
+      // Apply the saved appearance before first paint so a light or spectrum choice does not flash dark.
+      try {
+        var a = JSON.parse(localStorage.getItem('chit.appearance') || 'null') || {};
+        var m = a.mode === 'light' || a.mode === 'auto' ? a.mode : 'dark';
+        if (m === 'auto') m = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.dataset.theme = m;
+        document.documentElement.dataset.palette = a.palette === 'spectrum' ? 'spectrum' : 'classic';
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

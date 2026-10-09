@@ -1,27 +1,16 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { api, ApiError, ArrowUpIcon, Empty, Field, Notice, Section, SelectField, SettingsSections, Skeleton, TextField, useNavigate, useSearchParams, useShell } from '@chit/core';
+import { api, ApiError, AppearanceSettings, Empty, Field, Notice, Section, SecondClockSettings, SelectField, SettingsSections, Skeleton, TextField, useNavigate, useSearchParams, useShell } from '@chit/core';
 import { CalendarCard } from './CalendarCard';
+import HouseholdTypeStep, { HouseholdTypeCards } from './HouseholdTypeStep';
 import { MemberCard } from './MemberCard';
 import { ModulesSection } from './ModulesSection';
 import {
-  emptyDocument, newAdult, newCalendar, newChild, removeMember, toPayload, validate,
-  type CatalogModule, type HouseholdDocument,
+  allowsChildren, allowsMoreAdults, documentForType, newAdult, newCalendar, newChild, removeMember, toPayload, typeProblem, validate, withoutChildlessModules, HOUSEHOLD_TYPES,
+  type CatalogModule, type HouseholdDocument, type HouseholdType,
 } from './model';
 
 interface Current { state: 'unconfigured' | 'configured'; document?: HouseholdDocument }
-
-/** Floating "Top" jump, shown once the page is scrolled down. */
-function useScrolledDown(threshold = 360) {
-  const [down, setDown] = useState(false);
-  useEffect(() => {
-    const onScroll = () => setDown(window.scrollY > threshold);
-    onScroll();
-    addEventListener('scroll', onScroll, { passive: true });
-    return () => removeEventListener('scroll', onScroll);
-  }, [threshold]);
-  return down;
-}
 
 const COUNTRIES: [string, string][] = [
   ['', 'Not set'], ['DE', 'Germany'], ['AT', 'Austria'], ['CH', 'Switzerland'], ['NL', 'Netherlands'], ['FR', 'France'],
@@ -33,6 +22,7 @@ const ZONES = ['Europe/Berlin', 'Europe/London', 'Europe/Paris', 'Europe/Amsterd
 export default function HouseholdView() {
   const [params] = useSearchParams();
   const forceNew = params.get('new') === '1';
+  const [type, setType] = useState<HouseholdType | null>(null);
   const current = useQuery({ queryKey: ['household', 'current'], queryFn: () => api<Current>('/api/household/current'), staleTime: 0 });
   const catalog = useQuery({ queryKey: ['modules'], queryFn: () => api<{ modules: CatalogModule[] }>('/api/modules'), staleTime: Infinity });
 
@@ -41,20 +31,24 @@ export default function HouseholdView() {
     return <Empty title="Household unavailable">The hub could not be reached, so nothing can be shown or saved.</Empty>;
   }
   const editing = !forceNew && current.data.state === 'configured' && current.data.document;
-  const initial = editing ? current.data.document! : emptyDocument(catalog.data.modules.map((module) => module.id));
+  const hasExisting = current.data.state === 'configured';
+  const modules = catalog.data.modules.map((module) => module.id);
+  // Creating a household starts with its type: it decides who is added to the draft.
+  if (!editing && !type) return <HouseholdTypeStep hasExisting={hasExisting} onPick={setType} />;
+  const initial = editing ? current.data.document! : withoutChildlessModules(documentForType(type!, modules), catalog.data.modules);
   // key: a different household (or create vs edit) must reset the draft
-  return <HouseholdForm key={editing ? initial.id : 'new'} initial={initial} catalog={catalog.data.modules}
-    mode={editing ? 'edit' : 'create'} hasExisting={current.data.state === 'configured'} />;
+  return <HouseholdForm key={editing ? initial.id : `new-${type}`} initial={initial} catalog={catalog.data.modules}
+    mode={editing ? 'edit' : 'create'} hasExisting={hasExisting} onChangeType={editing ? undefined : () => setType(null)} />;
 }
 
-function HouseholdForm({ initial, catalog, mode, hasExisting }: {
-  initial: HouseholdDocument; catalog: CatalogModule[]; mode: 'create' | 'edit'; hasExisting: boolean;
+function HouseholdForm({ initial, catalog, mode, hasExisting, onChangeType }: {
+  initial: HouseholdDocument; catalog: CatalogModule[]; mode: 'create' | 'edit'; hasExisting: boolean; onChangeType?: () => void;
 }) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [doc, setDoc] = useState(initial);
   const [problems, setProblems] = useState<string[]>([]);
-  const scrolled = useScrolledDown();
+  const [params, setParams] = useSearchParams();
   const dirty = useMemo(() => JSON.stringify(doc) !== JSON.stringify(initial), [doc, initial]);
 
   useEffect(() => {
@@ -86,6 +80,33 @@ function HouseholdForm({ initial, catalog, mode, hasExisting }: {
   const update = (patch: Partial<HouseholdDocument>) => setDoc((previous) => ({ ...previous, ...patch }));
   const adults = doc.members.filter((member) => member.role === 'adult');
   const extraSections = useShell().data?.settings_sections.filter((section) => section.target === 'household') ?? [];
+  // One topic at a time, as tabs (same pattern as the Kids page). The draft lives in this form, so switching tabs loses nothing.
+  // Related sections share a tab and sit in two columns: modules with appearance, chores with reminders.
+  const GROUP = ['chores', 'reminders'];
+  const grouped = extraSections.filter((section) => GROUP.includes(section.id));
+  const others = extraSections.filter((section) => !GROUP.includes(section.id));
+  const tabs = [
+    { id: 'household', label: 'Household' }, { id: 'members', label: 'Members' }, { id: 'calendars', label: 'Calendars' },
+    ...(grouped.length ? [{ id: 'routines', label: grouped.map((section) => section.title).join(' & ') }] : []),
+    ...others.map((section) => ({ id: section.id, label: section.title })),
+  ];
+  const tab = tabs.find((item) => item.id === params.get('tab'))?.id ?? 'household';
+  const go = (id: string) => setParams((old) => { const next = new URLSearchParams(old); if (id === 'household') next.delete('tab'); else next.set('tab', id); return next; }, { replace: true });
+  const type = doc.household.type;
+  const typeInfo = HOUSEHOLD_TYPES.find((item) => item.id === type)!;
+  const wide = tab === 'household' || (tab === 'members' && allowsChildren(type)) || tab === 'routines';
+  // Changing the type is the only way to unlock who can be added; a type the current members do not fit stays blocked, with the reason.
+  const blocked = Object.fromEntries(HOUSEHOLD_TYPES.map((item) => [item.id, typeProblem(item.id, doc)]).filter(([, reason]) => reason)) as Partial<Record<HouseholdType, string>>;
+  const changeType = (next: HouseholdType) => setDoc((previous) => withoutChildlessModules({ ...previous, household: { ...previous.household, type: next } }, catalog));
+  const setDocNormalised = (next: HouseholdDocument) => setDoc(withoutChildlessModules(next, catalog));
+  const members = (role: 'adult' | 'child') => doc.members.filter((member) => member.role === role).map((member) => (
+    <MemberCard key={member.client_id} member={member} doc={doc} catalog={catalog}
+      isOwner={member.client_id === doc.owner_client_id}
+      canRemove={member.client_id !== doc.owner_client_id && (member.role === 'child' || adults.length > 1)}
+      onChange={(next) => update({ members: doc.members.map((m) => (m.client_id === next.client_id ? next : m)) })}
+      onRemove={() => setDocNormalised(removeMember(doc, member.client_id))}
+      onMakeOwner={() => update({ owner_client_id: member.client_id })} />
+  ));
 
   return (
     <form className="form-page" onSubmit={(event) => { event.preventDefault(); submit(); }} noValidate>
@@ -98,20 +119,23 @@ function HouseholdForm({ initial, catalog, mode, hasExisting }: {
             : 'Add the people whose schedules matter, connect read-only calendars, then choose what appears on your dashboard. The newest household you save is the one Chit shows.'}
         </p>
         {mode === 'create' && hasExisting && <Notice>A household already exists. Saving creates a new one, which then becomes the household Chit shows.</Notice>}
+        {onChangeType && <button type="button" className="btn btn--ghost" style={{ marginTop: 8 }} onClick={() => { if (!dirty || window.confirm('Go back and choose a different household type? Your draft is cleared.')) onChangeType(); }}>← Household type</button>}
       </div>
 
-      <nav className="form-nav" aria-label="Sections">
-        <a href="#section-household">Household</a>
-        <a href="#section-calendars">Calendars</a>
-        <a href="#section-modules">Modules</a>
-        <a href="#section-members">Members</a>
-        {extraSections.map((section) => <a key={section.id} href={`#section-${section.id}`}>{section.title}</a>)}
-        {scrolled && <button type="button" className="form-nav__top" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}><ArrowUpIcon />Top</button>}
+      <nav className="tabnav" aria-label="Settings sections">
+        {tabs.map((item) => <button key={item.id} type="button" aria-current={item.id === tab ? 'page' : undefined} onClick={() => go(item.id)}>{item.label}</button>)}
       </nav>
 
-      <div className="form-cols">
-        <div className="form-col">
-          <Section id="section-household" eyebrow="01" title="Household">
+      <div className={wide ? 'form-panel form-panel--wide' : 'form-panel'}>
+        {tab === 'household' && (
+          <div className="form-cols">
+          <div className="form-col">
+          <Section id="section-household" title="Household">
+            <div className="stack">
+              <div className="htype__current">
+                <HouseholdTypeCards value={type} onChange={changeType} blocked={blocked} compact />
+                <p className="field__hint" style={{ margin: 0 }}>{typeInfo.label}: {typeInfo.note} Change the type to unlock other members. A type your members do not fit stays unavailable until you remove the extras.</p>
+              </div>
             <div className="form-grid">
               <TextField label="Household name" value={doc.household.name} placeholder="The Meyer family" required
                 onChange={(name) => update({ household: { ...doc.household, name } })} />
@@ -131,9 +155,20 @@ function HouseholdForm({ initial, catalog, mode, hasExisting }: {
               <TextField label="Longitude" type="number" value={doc.household.longitude} placeholder="11.58"
                 onChange={(value) => update({ household: { ...doc.household, longitude: value === '' ? null : Number(value) } })} />
         </div>
+            </div>
           </Section>
-
-          <Section id="section-calendars" eyebrow="02" title="Calendars"
+          </div>
+          <div className="form-col">
+            <Section id="section-modules" title="Dashboard modules">
+              <ModulesSection doc={doc} catalog={catalog} onChange={setDocNormalised} />
+            </Section>
+            <AppearanceSettings eyebrow="Look and feel" />
+            <SecondClockSettings />
+          </div>
+          </div>
+        )}
+        {tab === 'calendars' && (
+          <Section id="section-calendars" title="Calendars"
             actions={<button type="button" className="btn" onClick={() => update({ calendars: [...doc.calendars, newCalendar()] })}>Add calendar</button>}>
             <div className="stack">
               {doc.calendars.length === 0 && <Empty title="No calendars yet">Connect school, waste collection, sport or work calendars. They are read-only.</Empty>}
@@ -145,33 +180,32 @@ function HouseholdForm({ initial, catalog, mode, hasExisting }: {
         </div>
           </Section>
 
-          <Section id="section-modules" eyebrow="03" title="Dashboard modules">
-            <ModulesSection doc={doc} catalog={catalog} onChange={setDoc} />
-          </Section>
-
-        </div>
-        <div className="form-col">
-          <Section id="section-members" eyebrow="04" title="Household members"
-            actions={<div className="row">
-              <button type="button" className="btn" onClick={() => update({ members: [...doc.members, newAdult('', doc.members)] })}>Add adult</button>
-              <button type="button" className="btn" onClick={() => update({ members: [...doc.members, newChild('', doc.members)] })}>Add child</button>
-            </div>}>
-            <div className="stack">
-              {doc.members.map((member) => (
-                <MemberCard key={member.client_id} member={member} doc={doc} catalog={catalog}
-                  isOwner={member.client_id === doc.owner_client_id}
-                  canRemove={member.client_id !== doc.owner_client_id && (member.role === 'child' || adults.length > 1)}
-                  onChange={(next) => update({ members: doc.members.map((m) => (m.client_id === next.client_id ? next : m)) })}
-                  onRemove={() => setDoc(removeMember(doc, member.client_id))}
-                  onMakeOwner={() => update({ owner_client_id: member.client_id })} />
-              ))}
-        </div>
-          </Section>
-
-          {/* Sections other modules contribute (chores, reminders). They save themselves, so they work on saved members only. */}
-          <SettingsSections target="household" ready={mode === 'edit'} />
-
-        </div>
+        )}
+        {tab === 'members' && (
+          <div className={allowsChildren(type) ? 'form-cols' : 'form-col'}>
+            <Section id="section-adults" title="Adults"
+              actions={allowsMoreAdults(type, doc) ? <button type="button" className="btn" onClick={() => update({ members: [...doc.members, newAdult('', doc.members)] })}>Add adult</button> : undefined}>
+              <div className="stack">
+                {members('adult')}
+                {!allowsMoreAdults(type, doc) && <p className="field__hint" style={{ margin: 0 }}>A {typeInfo.label.toLowerCase()} household has {type === 'single' ? 'one adult' : 'two adults'}. To add more people, change the household type under Household.</p>}
+              </div>
+            </Section>
+            {allowsChildren(type) && (
+              <Section id="section-children" title="Children"
+                actions={<button type="button" className="btn" onClick={() => update({ members: [...doc.members, newChild('', doc.members)] })}>Add child</button>}>
+                <div className="stack">
+                  {doc.members.some((member) => member.role === 'child') ? members('child') : <Empty title="No children">Add a child to plan school, chores and stars.</Empty>}
+                </div>
+              </Section>
+            )}
+          </div>
+        )}
+        {tab === 'routines' && (
+          <div className="form-cols">
+            {grouped.map((section) => <div key={section.id}><SettingsSections target="household" ready={mode === 'edit'} only={section.id} /></div>)}
+          </div>
+        )}
+        {others.some((section) => section.id === tab) && <SettingsSections target="household" ready={mode === 'edit'} only={tab} />}
       </div>
 
       {problems.length > 0 && (

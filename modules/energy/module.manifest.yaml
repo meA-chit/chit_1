@@ -1,7 +1,7 @@
 # Module manifest — read by the module registry (see docs/core/module-contract.md and core/contracts/module-manifest.schema.yaml)
 id: energy
-title: Energy
-short_title: Energy
+title: Grid
+short_title: Grid
 nav_order: 30
 version: 0.0.0
 status: in-progress
@@ -16,7 +16,18 @@ submodules:
   - id: forecast
   - id: appliance-planner      # best windows, shown inside the Energy card
   - id: connections
+  - id: water                  # manual water meter readings: total, garden, household = total - garden
+  - id: grid                   # the Grid page: insights, key devices, automations and costs (energy + devices in one view)
 cards:
+  - id: energy-ribbon
+    submodule: overview
+    title: Power today
+    slot: topbar
+    order: 8
+    sizes: [s]
+    surfaces: [tablet, web, mobile-adult]
+    permissions: []
+    data_states: [available, stale, unavailable, unconfigured]   # cost of today's measured Tibber consumption, with the price now
   - id: energy-now
     submodule: overview
     title: Energy
@@ -37,7 +48,12 @@ cards:
     surfaces: [tv, tablet, web, mobile-adult]
     permissions: []
     data_states: [available, stale, demo, unavailable, unconfigured]   # SolarEdge production; demo example day until connected
-views: []     # full-screen pages
+views:
+  - id: grid
+    submodule: grid
+    title: Grid
+    path: /grid
+    surfaces: [tablet, web, mobile-adult]
 settings_sections:           # contributed to the household settings screen
   - id: energy
     submodule: connections

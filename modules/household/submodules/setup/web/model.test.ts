@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  emptyDocument, newActivity, newAdult, newCalendar, newChild, nextIdentity, removeMember, toggleModule, toPayload, validate, type CatalogModule,
+  allowsChildren, allowsMoreAdults, documentForType, emptyDocument, typeProblem, withoutChildlessModules, newActivity, newAdult, newCalendar, newChild, nextIdentity, removeMember, toggleModule, toPayload, validate, type CatalogModule,
 } from './model';
 
 const catalog: CatalogModule[] = [
@@ -112,5 +112,61 @@ describe('household model', () => {
     expect(validate(doc)).toEqual([]);
     doc.household.latitude = 123;
     expect(validate(doc).join()).toMatch(/Latitude/);
+  });
+});
+
+describe('documentForType', () => {
+  it('adds the people a household type usually has, with distinct avatars and colours', () => {
+    const counts = (type: Parameters<typeof documentForType>[0]) => {
+      const doc = documentForType(type, null);
+      return [doc.members.filter((m) => m.role === 'adult').length, doc.members.filter((m) => m.role === 'child').length];
+    };
+    expect(counts('single')).toEqual([1, 0]);
+    expect(counts('couple')).toEqual([2, 0]);
+    expect(counts('family')).toEqual([2, 1]);
+    expect(counts('shared')).toEqual([3, 0]);
+    const family = documentForType('family', null);
+    expect(new Set(family.members.map((m) => m.avatar)).size).toBe(3);
+    expect(new Set(family.members.map((m) => m.color)).size).toBe(3);
+    expect(family.owner_client_id).toBe(family.members[0]!.client_id);
+  });
+});
+
+describe('household type rules', () => {
+  const kidsCatalog: CatalogModule[] = [
+    ...catalog,
+    { id: 'children', title: 'Children', status: 'x', privacy_class: 'strict', audiences: ['adult', 'child'], depends_on: ['household', 'planner'], submodules: [], required: false, needs_children: true },
+  ];
+  it('only a family may have children, and only a family or flat may add adults freely', () => {
+    expect(allowsChildren('family')).toBe(true);
+    expect(['single', 'couple', 'shared'].some((t) => allowsChildren(t as 'single'))).toBe(false);
+    expect(allowsMoreAdults('single', documentForType('single', null))).toBe(false);
+    expect(allowsMoreAdults('couple', documentForType('couple', null))).toBe(false);
+    expect(allowsMoreAdults('shared', documentForType('shared', null))).toBe(true);
+    expect(allowsMoreAdults('family', documentForType('family', null))).toBe(true);
+  });
+  it('explains why a household cannot become a type', () => {
+    const family = documentForType('family', null);
+    expect(typeProblem('family', family)).toBeNull();
+    expect(typeProblem('couple', family)).toMatch(/Remove the child/);
+    const couple = documentForType('couple', null);
+    expect(typeProblem('single', couple)).toMatch(/Remove 1 adult/);
+    expect(typeProblem('family', couple)).toBeNull();
+    expect(typeProblem('shared', couple)).toBeNull();
+    expect(typeProblem('shared', documentForType('single', null))).toMatch(/two or more/);
+  });
+  it('switches a module that needs children off when there are none, and leaves it when there are', () => {
+    const none = withoutChildlessModules(documentForType('couple', null), kidsCatalog);
+    expect(none.modules).not.toContain('children');
+    expect(none.modules).toContain('planner');
+    const withChild = documentForType('family', null);
+    expect(withoutChildlessModules(withChild, kidsCatalog)).toBe(withChild);
+  });
+  it('validates that members fit the type', () => {
+    const doc = documentForType('couple', null);
+    doc.members.forEach((m, i) => (m.name = `P${i}`));
+    doc.household.name = 'X';
+    expect(validate(doc)).toEqual([]);
+    expect(validate({ ...doc, household: { ...doc.household, type: 'single' } })).toContain('Remove 1 adult first: a single household has one adult.');
   });
 });

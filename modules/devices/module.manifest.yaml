@@ -3,6 +3,7 @@ id: devices
 title: Devices & IoT
 short_title: Devices
 nav_order: 40
+nav: false           # presented inside the Grid page (energy module); cards still show on Home
 version: 0.0.0
 status: in-progress
 depends_on: [household]

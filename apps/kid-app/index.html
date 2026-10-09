@@ -189,6 +189,7 @@ nav button:active .pl{transform:scale(.92)}
 .perm{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--surface);border-radius:16px;margin-bottom:6px}
 .perm .g{flex:1;font-weight:700}
 .perm small{display:block;color:var(--muted);font-weight:500;font-size:12.5px}
+.perm .btn{width:auto;margin:0;padding:9px 14px;font-size:14px;flex:none}
 .steps{counter-reset:s;padding:0;list-style:none;margin:0}
 .steps li{counter-increment:s;display:flex;gap:12px;align-items:center;padding:10px 0;font-size:15px}
 .steps li::before{content:counter(s);width:28px;height:28px;border-radius:50%;background:var(--pc);color:var(--on-pc);display:grid;place-items:center;font-weight:800;flex:none}
@@ -204,7 +205,7 @@ nav button:active .pl{transform:scale(.92)}
 .screen.center{min-height:100%;padding:calc(env(safe-area-inset-top) + 56px) 24px 24px;text-align:center;display:flex;flex-direction:column;align-items:stretch}
 .screen.center h1{margin:14px 0 6px;font-size:32px;letter-spacing:-.02em;font-weight:800}
 .logo{width:76px;height:76px;border-radius:24px;margin:0 auto;display:grid;place-items:center;background:linear-gradient(135deg,#00a38f,#00574b);color:#ffd34d;box-shadow:var(--shadow)}
-.logo svg{width:40px;height:40px}.logo svg:not(.f){color:#fff}
+.logo svg{width:40px;height:40px}.logo svg.m{width:52px;height:52px}.logo svg:not(.f){color:#fff}
 .lead{color:var(--muted);font-size:16px;line-height:1.4;margin:0}
 #code{width:100%;margin-top:22px;text-align:center;font:800 40px/1.2 var(--font);letter-spacing:.18em;padding:16px 8px;border-radius:22px;border:2px solid var(--line);background:var(--card);color:var(--text);outline:none}
 #code:focus{border-color:var(--primary)}
@@ -381,7 +382,7 @@ const DEMO = (() => {
                   subj('Geography','minor',[3],[2]),subj('Music','elective',[],[1,1]),subj('Art','elective',[],[2]),subj('Sport','minor',[],[1])];
   const wk=i=>{ const d=new Date(); d.setDate(d.getDate()-6+i); return {day:d.toISOString().slice(0,10),due:true,status:i===3?null:'given'}; };
   return {
-    demo:true, child:{name:'Mila'}, subjects:Object.entries(META).map(([name,[code,kind]])=>({name,code,kind})), share:{timetable:true,stars:true,reminders:true,homework:true,activities:true,bag:true,grades:true,health:true},
+    demo:true, privacy:{grades:{min_age:10,age:10,eligible:true,chosen:false,private:false},health:{min_age:14,age:10,eligible:false,chosen:false,private:false}}, child:{name:'Mila'}, subjects:Object.entries(META).map(([name,[code,kind]])=>({name,code,kind})), share:{timetable:true,stars:true,reminders:true,homework:true,activities:true,bag:true,grades:true,health:true},
     school:{slots},
     reminders:{today:[{id:'r1',title:'Bring your recorder',day_part:'morning',state:null},{id:'r3',title:'Pack the swim bag',day_part:'evening',state:null}],tomorrow:[{id:'r2',title:'Hand in the trip form',day_part:null,state:null}]},
     stars:{total:23,week:[1,1,0,1,0,0,0],goals:[
@@ -451,6 +452,8 @@ const P = {
 };
 const ic = (n,extra='') => `<svg class="i ${extra}" viewBox="0 0 24 24" aria-hidden="true">${P[n]}</svg>`;
 const star = (cls='') => `<svg class="i f ${cls}" viewBox="0 0 24 24" aria-hidden="true">${P.star}</svg>`;
+// The Chit mark: five stars traced into a lowercase c, the newest one lit.
+const mark = () => `<svg class="m" viewBox="0 0 100 100" aria-hidden="true"><polyline points="70.6,25.5 34,22.3 18,50 34,77.7 70.6,74.5" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><g fill="currentColor"><circle cx="34" cy="22.3" r="6"/><circle cx="18" cy="50" r="6"/><circle cx="34" cy="77.7" r="6"/><circle cx="70.6" cy="74.5" r="6"/></g><circle cx="70.6" cy="25.5" r="17" fill="none" stroke="#ffd34d" stroke-width="3" opacity=".55"/><circle cx="70.6" cy="25.5" r="10" fill="#ffd34d"/></svg>`;
 const emojiOr = (icon,fallback) => icon ? `<span class="em" aria-hidden="true">${esc(icon)}</span>` : ic(fallback);
 const reminderIcon = t => /bag|pack|pe |sport|gym/i.test(t)?'bag':/music|recorder|instrument/i.test(t)?'music':'doc';
 
@@ -880,7 +883,7 @@ function viewHealth(){
 /* ---------- screens before pairing ---------- */
 function viewWelcome(){
   const app=isStandalone();
-  return `<div class="screen center"><div class="logo">${star()}</div><h1>${app?'Pair this app':'Chit Kids'}</h1>
+  return `<div class="screen center"><div class="logo">${mark()}</div><h1>${app?'Pair this app':'Chit Kids'}</h1>
     <p class="lead">${state.error?esc(state.error):app?'This app is on your Home Screen but not linked to your plan yet.':'Your school day, stars and reminders, on your phone.'}</p>
     ${app?`<button class="btn" data-act="manual">Type the codes from my parent's screen</button>`:''}
     <div class="card" style="text-align:left;margin:20px 0 8px"><b style="font-size:16px">${app?'Your parent can show you the codes':'Set this phone up'}</b>
@@ -934,7 +937,7 @@ function render(keepScroll){
   } else {
     v.classList.remove('wide');
     nav.hidden=true; document.getElementById('fab').hidden=true;
-    v.innerHTML = state.mode==='pair'?viewPair() : state.mode==='boot'?'<div class="screen center"><div class="logo">'+star()+'</div></div>' : viewWelcome();
+    v.innerHTML = state.mode==='pair'?viewPair() : state.mode==='boot'?'<div class="screen center"><div class="logo">'+mark()+'</div></div>' : viewWelcome();
     if(state.mode==='pair'){ const f=document.getElementById('link')||document.getElementById('code'); if(f&&!(state.busy)) f.focus(); }
   }
   if(keepScroll){ v.scrollTop=y; v.querySelectorAll('.pane').forEach((p,i)=>{ p.scrollTop=ys[i]||0; }); } else v.scrollTop=0;
@@ -990,12 +993,28 @@ function gradeSheet(i){
   openSheet(`<span class="tag" style="--ac:${accent(s.name)};font-size:15px">${esc(s.name)}</span><h2 style="margin-top:12px">${s.average.toFixed(1)} · ${gradeWord(s.average)}</h2>
     <p class="sub2">${KIND_WORD[s.kind]||'Subject'} subject. ${weightText(s.kind)}</p>${list('written','Written')}${list('oral','Spoken')}<button class="btn t" data-act="close">Close</button>`);
 }
+/* What you can keep private from your parents (grades, medicine): allowed from the age your parents set. Parents then see "private", never what is in it. */
+function privacyRows(v){
+  const p=v.privacy; if(!p) return '';
+  const rows=[['grades','Grades','Your marks and averages'],['health','Medicine','Your medicine reminders']];
+  return `<h3 style="margin:16px 0 8px;font-size:15px;color:var(--muted)">Keep private from your parents</h3>`+rows.map(([k,t,sub])=>{
+    const x=p[k];
+    if(!x.eligible) return `<div class="perm"><div class="bk">${ic('lock')}</div><div class="g">${t}<small>Your parents keep this until you are ${x.min_age}${x.chosen?'. They changed the age, so it is not private any more.':''}</small></div></div>`;
+    return `<div class="perm"><div class="bk" style="${x.private?'background:var(--pc);color:var(--on-pc)':''}">${ic(x.private?'lock':'check')}</div><div class="g">${t}<small>${x.private?'Only you can see this':sub+'. Your parents can see this'}</small></div><button class="btn t" data-act="privacy" data-k="${k}" data-on="${x.private?0:1}">${x.private?'Share again':'Make private'}</button></div>`;
+  }).join('')+(p.health&&p.health.eligible?`<p class="sub2" style="margin:2px 0 0">Medicine your parents marked as safety-critical always stays visible to them.</p>`:'');
+}
+async function setPrivacy(section,on){
+  if(state.view.demo){ state.view.privacy[section].private=!!on; state.view.privacy[section].chosen=!!on; meSheet(); return; }
+  try{ const r=await call('PUT','/privacy',{section,private:!!on}); state.server.privacy=r.privacy; state.view.privacy=r.privacy; store.set('snapshot',state.server); meSheet(); }
+  catch(e){ if(e instanceof Unpaired) return unpaired('This phone is not paired any more. Ask a parent for a new QR code.'); toast(e.status?e.message:'Cannot reach Chit. Try again on the home Wi-Fi.'); }
+}
 function meSheet(){
   const v=state.view, sh=v.share;
   const rows=[['timetable','Timetable','Lessons and rooms'],['stars','Stars and chores','Goals and what you earn'],['reminders','Reminders','Things to bring'],['homework','Homework and tests','Your list, written by you or a parent'],['activities','Activities and calendar','Training times and when to leave'],['bag','Bag checklist','What to pack for tomorrow'],['grades','Grades','Averages per subject'],['health','Health','Medicine reminders']];
   openSheet(`<h2>Hi ${esc(v.child.name)}</h2><p class="sub2">This is your own view. You can look and tick off your chores. Your parents plan everything else.</p>
     <h3 style="margin:0 0 8px;font-size:15px;color:var(--muted)">Your parents are sharing</h3>
     ${rows.map(([k,t,s])=>`<div class="perm"><div class="bk" style="${sh[k]?'background:var(--pc);color:var(--on-pc)':''}">${ic(sh[k]?'check':'lock')}</div><div class="g">${t}<small>${sh[k]?s:'Hidden by your parents'}</small></div></div>`).join('')}
+    ${privacyRows(v)}
     ${v.demo?'':`<button class="btn" data-act="install">${ic('share')} Add to Home Screen</button><button class="btn t" data-act="unpair">Remove this phone</button>`}
     <button class="btn t" data-act="close">Close</button>`);
 }
@@ -1211,6 +1230,7 @@ document.addEventListener('click',async e=>{
   else if(a==='cell') lessonSheet(+b.dataset.d,b.dataset.s);
   else if(a==='sub') gradeSheet(+b.dataset.i);
   else if(a==='me') meSheet();
+  else if(a==='privacy') setPrivacy(b.dataset.k,b.dataset.on==='1');
   else if(a==='install') installSheet();
   else if(a==='hideinstall'){ store.set('hideInstall',true); closeSheet(); render(true); }
   else if(a==='demo'){ location.search='?demo=1'; }

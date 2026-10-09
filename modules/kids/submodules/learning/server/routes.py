@@ -33,6 +33,11 @@ def overview(ctx, request):
     member = api.child_id(document, request)
     weights = ctx.store.get_grade_weights(household_id)
     raw = ctx.store.list_subjects_with_grades(household_id, member) if member else []
+    if member and ctx.store.is_private(household_id, member, "grades", now.date()):
+        # The child keeps their grades to themselves. Subjects (name, code, type) are the timetable's, so they stay editable; no grade, average or trend is sent.
+        subjects = [{"id": s["id"], "name": s["name"], "code": s["code"], "kind": s["kind"], "lessons": s["lessons"]} for s in raw]
+        return 200, {"state": "private", "member_id": member, "weights": weights, "subjects": subjects, "entries": [],
+                     "source": "the child keeps their grades private"}
     entries = sorted(({**g, "subject": s["name"], "subject_id": s["id"]} for s in raw for g in s["grades"]),
                      key=lambda g: (g["given_on"], g["id"]), reverse=True)[:12]
     return 200, {"state": "manual", "member_id": member, "weights": weights, "subjects": build_subjects(raw, weights),

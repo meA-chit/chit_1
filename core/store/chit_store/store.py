@@ -28,13 +28,15 @@ from .documents import HouseholdDocuments  # noqa: E402
 from .energy_connections import EnergyConnections  # noqa: E402
 from .kid_bag import KidBag  # noqa: E402
 from .kid_phone import KidPhone  # noqa: E402
+from .kid_privacy import KidPrivacy  # noqa: E402
 from .kid_tasks import KidTasks  # noqa: E402
 from .kids import Kids  # noqa: E402
+from .meter_readings import MeterReadings  # noqa: E402
 from .reminders import Reminders  # noqa: E402
 from .skips import Skips  # noqa: E402
 
 MIGRATIONS = Path(__file__).parent / "migrations"
-class EncryptedHouseholdStore(HouseholdDocuments, ChoreSeries, Reminders, Skips, EnergyConnections, Kids, KidPhone, KidTasks, KidBag):
+class EncryptedHouseholdStore(HouseholdDocuments, ChoreSeries, Reminders, Skips, EnergyConnections, MeterReadings, Kids, KidPhone, KidPrivacy, KidTasks, KidBag):
     """Encrypted SQLite persistence; access policy belongs to the application layer."""
 
     def __init__(self, path: str | Path | None = None, key_hex: str | None = None, plain: bool | None = None):

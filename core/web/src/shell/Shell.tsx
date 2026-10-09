@@ -1,15 +1,19 @@
-import { NavLink, Route, Routes, useParams } from 'react-router-dom';
+import type { CSSProperties } from 'react';
+import { Link, NavLink, Route, Routes, useParams } from 'react-router-dom';
 import type { ShellConfig } from '../api/types';
-import { hhmm } from '../lib/time';
+
 import { useClock } from '../lib/useClock';
 import { getViewComponent } from '../registry';
-import { HouseholdMark, PersonAvatar } from '../ui/Avatar';
 import { Suspense } from 'react';
 import { Empty, Skeleton } from '../ui/CardFrame';
-import { BellIcon, GridIcon, MODULE_ICONS, PlusIcon, SettingsIcon } from '../ui/icons';
+import { useNowPanel } from '../moments/useNowPanel';
+import { ChitMark } from '../ui/ChitMark';
+import { BellIcon, GridIcon, HomeIcon, MODULE_ICONS, SettingsIcon } from '../ui/icons';
 import { CardHost } from './CardHost';
 import { Dashboard } from './Dashboard';
-import { useViewer } from './viewer';
+import { HomeClock, SecondClockView } from './SecondClock';
+import { ThemeSwitch } from './ThemeSwitch';
+import { ViewerMenu } from './ViewerMenu';
 
 function ViewHost({ module, id }: { module: string; id: string }) {
   const Component = getViewComponent(module, id);
@@ -32,30 +36,38 @@ function ModulePage({ shell }: { shell: ShellConfig }) {
   );
 }
 
-function Rail({ shell }: { shell: ShellConfig }) {
-  const { memberId, setViewer } = useViewer();
+/** Module colours, used by the Spectrum palette (classic keeps the single accent). */
+const MODULE_COLOR: Record<string, string> = {
+  home: 'var(--cyan)', planner: 'var(--lime)', kids: 'var(--amber)', energy: 'var(--violet)', devices: 'var(--magenta)', finance: 'var(--red)',
+};
+
+/** The one place to move between modules: a floating dock at the foot of the screen. Who you are viewing as, and the theme, live in the ribbon. */
+function Dock({ shell }: { shell: ShellConfig }) {
   const canEditHousehold = shell.views.some((view) => view.id === 'household'); // adult-only module
+  const modules = shell.modules.filter((module) => module.id !== 'household' && module.nav !== false);
+  const routedViews = shell.views.filter((view) => view.path);
+  const item = (key: string, to: string, label: string, Icon: () => JSX.Element, end?: boolean) => (
+    <NavLink key={key} to={to} end={end} className="navitem" style={{ '--mod': MODULE_COLOR[key] ?? 'var(--accent)' } as CSSProperties}>
+      <Icon /><span>{label}</span>
+    </NavLink>
+  );
   return (
-    <nav className="rail" aria-label="Household members">
-      <div className="rail__logo" aria-hidden>C</div>
+    <nav className="dock" aria-label="Modules">
       {shell.household && (
         <>
-          <button className="who" aria-pressed={!shell.member} onClick={() => setViewer(null)} aria-label="Whole household">
-            <HouseholdMark adults={shell.members.filter((m) => m.role === 'adult').length} kids={shell.members.filter((m) => m.role === 'child').length} size={44} selected={!shell.member} />
-            <span className="who__name">Everyone</span>
-          </button>
-          <div className="rail__sep" />
-          {shell.members.map((person) => (
-            <button key={person.id} className="who" aria-pressed={memberId === person.id} onClick={() => setViewer(person.id)} aria-label={`View as ${person.name}`}>
-              <PersonAvatar kind={person.avatar} color={person.color} size={44} selected={memberId === person.id} />
-              <span className="who__name">{person.name.split(' ')[0]}</span>
-            </button>
-          ))}
-          {canEditHousehold && <NavLink to="/household?new=1" className="iconbtn rail__hide-mobile" aria-label="Add a household" title="New household"><PlusIcon /></NavLink>}
+          {item('home', '/', 'Home', HomeIcon, true)}
+          {modules.map((module) => {
+            const page = routedViews.find((view) => view.module === module.id)?.path;   // a module with its own page links straight to it
+            return item(module.id, page ?? `/m/${module.id}`, module.short_title, MODULE_ICONS[module.id] ?? GridIcon);
+          })}
         </>
       )}
-      <div className="rail__spacer" />
-      {(canEditHousehold || !shell.household) && <NavLink to="/household" className="iconbtn" aria-label="Household settings" title="Household settings"><SettingsIcon /></NavLink>}
+      {(canEditHousehold || !shell.household) && <span className="dock__sep" aria-hidden />}
+      {(canEditHousehold || !shell.household) && (
+        <NavLink to="/household" className="navitem navitem--settings" aria-label="Household settings" title="Household settings" style={{ '--mod': 'var(--text-dim)' } as CSSProperties}>
+          <SettingsIcon /><span>Settings</span>
+        </NavLink>
+      )}
     </nav>
   );
 }
@@ -65,38 +77,37 @@ export function Shell({ shell }: { shell: ShellConfig }) {
   const hour = now.getHours();
   const greeting = hour < 5 ? 'Late night' : hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
   const who = shell.member?.name ?? shell.household?.name ?? 'home';
-  const modules = shell.modules.filter((module) => module.id !== 'household');
   const topbarCards = shell.cards.filter((card) => card.slot === 'topbar');
   const routedViews = shell.views.filter((view) => view.path);
+  const panel = useNowPanel(shell);
 
   return (
     <div className="shell">
-      {shell.interactive && <Rail shell={shell} />}
+      <header className="ribbon">
+        <Link to="/" className="brand" aria-label="Chit beta, home">
+          <ChitMark size={40} /><span className="brand__word">chit</span><span className="brand__beta" title="Chit is in beta: features change and data may be reset">Beta</span>
+        </Link>
+        <span className="ribbon__div" aria-hidden />
+        <div className="hello">
+          <h1>{greeting}, <em>{who}</em></h1>
+        </div>
+        <div className="ribbon__right">
+          {topbarCards.map((card) => <CardHost key={card.id} card={card} />)}
+          {shell.interactive && shell.household && <ViewerMenu shell={shell} />}
+          {shell.interactive && !shell.household && <ThemeSwitch orientation="horizontal" />}
+          <SecondClockView />
+          <HomeClock now={now} screenSafe={shell.screen_safe} />
+          {shell.interactive && (panel.available && !panel.wide ? (
+            <button className="iconbtn bell" data-urgent={panel.urgent || undefined} aria-label={`Now, ${panel.count} items`} onClick={panel.toggle}>
+              <BellIcon />{panel.count > 0 && <span className="bell__count">{panel.count}</span>}
+            </button>
+          ) : (
+            !panel.available && <button className="iconbtn rail__hide-mobile" aria-label="Notifications"><BellIcon /></button>
+          ))}
+        </div>
+      </header>
+      <div className="shell__body">
       <main className="main">
-        <header className="topbar">
-          <div className="hello">
-            <div className="eyebrow">{now.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })}</div>
-            <h1>{greeting}, <em>{who}</em></h1>
-          </div>
-          {shell.interactive && shell.household && (
-            <nav className="modnav" aria-label="Modules">
-              <NavLink to="/" end><GridIcon />Home</NavLink>
-              {modules.map((module) => {
-                const Icon = MODULE_ICONS[module.id] ?? GridIcon;
-                const page = routedViews.find((view) => view.module === module.id)?.path;   // a module with its own page links straight to it
-                return <NavLink key={module.id} to={page ?? `/m/${module.id}`}><Icon />{module.short_title}</NavLink>;
-              })}
-            </nav>
-          )}
-          <div className="topbar__right">
-            {topbarCards.map((card) => <CardHost key={card.id} card={card} />)}
-            <div className="clock">
-              <div className="clock__time" aria-label="Current time">{hhmm(now)}</div>
-              {shell.screen_safe && <div className="eyebrow">screen-safe</div>}
-            </div>
-            {shell.interactive && <button className="iconbtn rail__hide-mobile" aria-label="Notifications"><BellIcon /></button>}
-          </div>
-        </header>
         <Routes>
           <Route path="/" element={<Dashboard shell={shell} />} />
           <Route path="/m/:id" element={<ModulePage shell={shell} />} />
@@ -106,6 +117,9 @@ export function Shell({ shell }: { shell: ShellConfig }) {
           <Route path="*" element={<Empty title="Not found">That page is not enabled for this household or surface.</Empty>} />
         </Routes>
       </main>
+      {panel.node}
+      </div>
+      {shell.interactive && <Dock shell={shell} />}
     </div>
   );
 }

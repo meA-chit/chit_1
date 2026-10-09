@@ -29,6 +29,11 @@ export const ListIcon = make(<><path d="M9 6h11M9 12h11M9 18h11" /><path d="M4 6
 export const CardsIcon = make(<><rect x="3" y="3" width="8" height="8" rx="2" /><rect x="13" y="3" width="8" height="8" rx="2" /><rect x="3" y="13" width="8" height="8" rx="2" /><rect x="13" y="13" width="8" height="8" rx="2" /></>);
 export const UndoIcon = make(<><path d="M9 14L4 9l5-5" /><path d="M4 9h10a6 6 0 010 12h-3" /></>);
 export const MergeIcon = make(<><path d="M6 4v4a6 6 0 006 6h0a6 6 0 006-6V4" /><path d="M12 14v6" /><path d="M9 17l3 3 3-3" /></>);
+export const SunriseIcon = make(<><path d="M3 18h18M7 18a5 5 0 0110 0" /><path d="M12 6v3M4.5 11l2 2M19.5 11l-2 2M9 5l3-3 3 3" /></>);
+export const SunsetIcon = make(<><path d="M3 18h18M7 18a5 5 0 0110 0" /><path d="M12 6v3M4.5 11l2 2M19.5 11l-2 2M9 3l3 3 3-3" /></>);
+export const MoonIcon = make(<path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z" />);
+export const ThemeAutoIcon = make(<><circle cx="12" cy="12" r="8.5" /><path d="M12 3.5a8.5 8.5 0 010 17z" fill="currentColor" /></>);
+export const PaletteIcon = make(<><path d="M12 3a9 9 0 100 18c1.4 0 2-1 1.6-2.2-.4-1.2.4-2.3 1.7-2.3H17a4 4 0 004-4A9 9 0 0012 3z" /><path d="M7.5 11h.01M10 7.5h.01M14.5 7.5h.01" /></>);
 export const SparkIcon = make(<path d="M12 3l2.2 5.8L20 11l-5.8 2.2L12 19l-2.2-5.8L4 11l5.8-2.2z" />);
 
 /** Module id -> nav icon. Unknown modules fall back to a grid. */

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { api, ApiError, Empty, Notice, PersonAvatar, Skeleton, Toggle, useShell, type SettingsSectionProps } from '@chit/core';
+import { api, ApiError, Empty, Notice, PersonAvatar, Skeleton, Toggle, useShell } from '@chit/core';
+import { KidPrivacy } from './KidPrivacy';
 import './phone.css';
 
 type ShareKey = 'timetable' | 'stars' | 'reminders' | 'homework' | 'activities' | 'bag' | 'grades' | 'health';
@@ -19,8 +20,8 @@ const SHARES: { key: ShareKey; label: string; hint: string }[] = [
   { key: 'activities', label: 'Activities and calendar events', hint: 'Training times and when to leave, from the child\'s own calendars' },
   { key: 'bag', label: 'Bag checklist', hint: 'What to pack for tomorrow; needs the timetable' },
   { key: 'stars', label: 'Stars, goals and chores', hint: 'The child can tick a chore; a parent still gives the star' },
-  { key: 'grades', label: 'Grades', hint: 'Sensitive: off unless you choose' },
-  { key: 'health', label: 'Medicine', hint: 'Strictest class: off unless you choose' },
+  { key: 'grades', label: 'Grades', hint: 'Shows the child their own grades. Off unless you choose.' },
+  { key: 'health', label: 'Medicine', hint: 'Shows the child their own medicine. Off unless you choose.' },
 ];
 const KEY = ['kids', 'phone'];
 const spaced = (code: string) => `${code.slice(0, 3)} ${code.slice(3)}`;
@@ -31,11 +32,11 @@ const ago = (iso: string | null) => {
 };
 
 /**
- * Household settings, "Kids' phones" (ADR-0012). The parent turns the phone view on per child, chooses what it may show,
+ * The Phone tab of a child's Kids page (ADR-0012). The parent turns the phone view on per child, chooses what it may show,
  * and pairs a phone: the phone scans the QR code, then the 6 digits shown here are typed on the phone. The code is never
  * in the QR, so a photographed or shoulder-surfed QR alone does not pair anything.
  */
-export default function KidPhoneSettings(_: SettingsSectionProps) {
+export default function KidPhoneSettings({ memberId }: { memberId?: string }) {
   const queryClient = useQueryClient();
   const shell = useShell();
   const [pairing, setPairing] = useState<Pairing | null>(null);
@@ -80,7 +81,7 @@ export default function KidPhoneSettings(_: SettingsSectionProps) {
 
   if (settings.isPending) return <Skeleton lines={3} />;
   if (settings.isError || !settings.data) return <Empty title="Kids' phones unavailable">The hub could not be reached.</Empty>;
-  const kids = settings.data.children.filter((c) => shell.data?.members.some((m) => m.id === c.member_id));
+  const kids = settings.data.children.filter((c) => shell.data?.members.some((m) => m.id === c.member_id) && (!memberId || c.member_id === memberId));
   if (kids.length === 0) return <Empty title="No children yet">Add a child to the household first.</Empty>;
 
   return (
@@ -120,6 +121,7 @@ export default function KidPhoneSettings(_: SettingsSectionProps) {
 
             {kid.enabled && (
               <>
+                <div className="eyebrow">What the phone shows</div>
                 <div className="kp__shares" role="group" aria-label={`What ${kid.name}'s phone shows`}>
                   {SHARES.map((share) => (
                     <Toggle key={share.key} label={share.label} hint={share.hint} checked={kid.share[share.key]} disabled={save.isPending}
@@ -152,6 +154,7 @@ export default function KidPhoneSettings(_: SettingsSectionProps) {
           </div>
         );
       })}
+      <KidPrivacy memberId={memberId} />
     </div>
   );
 }

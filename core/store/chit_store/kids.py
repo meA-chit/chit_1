@@ -440,23 +440,23 @@ class Kids:
         return _required_text(name, "medication name"), _hhmm(time_of_day, "time"), _csv(weekdays), remind_member_id or None, supply
 
     def add_med(self, household_id: str, member_id: str, name: str, dose: "str | None", time_of_day: str, weekdays: Sequence[int],
-                remind_member_id: "str | None", supply: "int | None") -> str:
+                remind_member_id: "str | None", supply: "int | None", critical: bool = False) -> str:
         med_id = _member_id()
         with self._connection() as connection:
             self._child(connection, household_id, member_id)
             n, t, w, r, s = self._med_fields(connection, household_id, name, time_of_day, weekdays, remind_member_id, supply)
             connection.execute(
-                "INSERT INTO kid_meds(id, household_id, member_id, name, dose, time_of_day, weekdays, remind_member_id, supply, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                (med_id, household_id, member_id, n, _text(dose), t, w, r, s, _now()))
+                "INSERT INTO kid_meds(id, household_id, member_id, name, dose, time_of_day, weekdays, remind_member_id, supply, created_at, critical) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (med_id, household_id, member_id, n, _text(dose), t, w, r, s, _now(), int(bool(critical))))
         return med_id
 
     def update_med(self, household_id: str, med_id: str, name: str, dose: "str | None", time_of_day: str, weekdays: Sequence[int],
-                   remind_member_id: "str | None", supply: "int | None") -> None:
+                   remind_member_id: "str | None", supply: "int | None", critical: bool = False) -> None:
         with self._connection() as connection:
             self._owned(connection, "kid_meds", household_id, med_id)
             n, t, w, r, s = self._med_fields(connection, household_id, name, time_of_day, weekdays, remind_member_id, supply)
-            connection.execute("UPDATE kid_meds SET name = ?, dose = ?, time_of_day = ?, weekdays = ?, remind_member_id = ?, supply = ? WHERE id = ?",
-                               (n, _text(dose), t, w, r, s, med_id))
+            connection.execute("UPDATE kid_meds SET name = ?, dose = ?, time_of_day = ?, weekdays = ?, remind_member_id = ?, supply = ?, critical = ? WHERE id = ?",
+                               (n, _text(dose), t, w, r, s, int(bool(critical)), med_id))
 
     def archive_med(self, household_id: str, med_id: str) -> None:
         with self._connection() as connection:
@@ -487,11 +487,11 @@ class Kids:
     def list_meds(self, household_id: str, member_id: str, since: str) -> "list[dict[str, Any]]":
         with self._connection() as connection:
             rows = connection.execute(
-                "SELECT id, name, dose, time_of_day, weekdays, remind_member_id, supply FROM kid_meds "
+                "SELECT id, name, dose, time_of_day, weekdays, remind_member_id, supply, critical FROM kid_meds "
                 "WHERE household_id = ? AND member_id = ? AND archived = 0 ORDER BY time_of_day, name", (household_id, member_id)).fetchall()
             meds = []
-            for med_id, name, dose, tod, csv, remind, supply in rows:
+            for med_id, name, dose, tod, csv, remind, supply, critical in rows:
                 log = dict(connection.execute("SELECT day, status FROM kid_med_log WHERE med_id = ? AND day >= ?", (med_id, since)).fetchall())
                 meds.append({"id": med_id, "name": name, "dose": dose, "time": tod, "weekdays": [int(d) for d in csv.split(",") if d],
-                             "remind_member_id": remind, "supply": supply, "log": log})
+                             "remind_member_id": remind, "supply": supply, "critical": bool(critical), "log": log})
         return meds

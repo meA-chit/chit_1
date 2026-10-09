@@ -26,6 +26,31 @@ def _module_list(value: Any, field: str) -> "list[str] | None":
     return sorted(set(value))
 
 
+HOUSEHOLD_TYPES = ("single", "couple", "family", "shared")
+
+
+def default_household_type(members: "list[Mapping[str, Any]]") -> str:
+    """For documents that do not say: what the members already are."""
+    adults = sum(1 for m in members if m.get("role") == "adult")
+    if any(m.get("role") == "child" for m in members):
+        return "family"
+    return "single" if adults == 1 else "couple" if adults == 2 else "shared"
+
+
+def check_household_shape(kind: str, members: "list[Mapping[str, Any]]") -> None:
+    """Who each household type may contain. Only a family has children."""
+    adults = sum(1 for m in members if m.get("role") == "adult")
+    children = len(members) - adults
+    if kind == "single" and (adults != 1 or children):
+        raise ValueError("a single household has exactly one adult and no children")
+    if kind == "couple" and (adults != 2 or children):
+        raise ValueError("a couple household has exactly two adults and no children")
+    if kind == "shared" and (adults < 2 or children):
+        raise ValueError("a shared flat has two or more adults and no children")
+    if kind == "family" and adults < 1:
+        raise ValueError("a family needs at least one adult")
+
+
 class HouseholdDocuments:
     # ---------- create ----------
     def save_household_setup(self, setup: Mapping[str, Any], preserve_ids: bool = False) -> dict[str, Any]:
@@ -52,10 +77,10 @@ class HouseholdDocuments:
                 if connection.execute("SELECT 1 FROM households WHERE id = ?", (household_id,)).fetchone():
                     raise ValueError("household already exists")
                 connection.execute(
-                    "INSERT INTO households(id, name, timezone, country_code, region, owner_member_id, created_at, updated_at) "
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                    "INSERT INTO households(id, name, timezone, country_code, region, owner_member_id, created_at, updated_at, household_type) "
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     (household_id, household["name"], household["timezone"], household["country_code"],
-                     household["region"], member_ids[parsed["owner_client_id"]], now, now),
+                     household["region"], member_ids[parsed["owner_client_id"]], now, now, household["type"]),
                 )
                 self._sync_household(connection, household_id, parsed, member_ids, source_ids, now)
                 connection.commit()
@@ -119,6 +144,11 @@ class HouseholdDocuments:
             valid_avatar(member.get("avatar"), member["role"])
             valid_color(member.get("color"))
             member_by_client_id[client_id] = member
+        member_list = list(member_by_client_id.values())
+        household_type = household.get("type") or default_household_type(member_list)
+        if household_type not in HOUSEHOLD_TYPES:
+            raise ValueError("household type must be one of %s" % ", ".join(HOUSEHOLD_TYPES))
+        check_household_shape(household_type, member_list)
         owner_client_id = _required_text(str(setup.get("owner_client_id", "")), "household owner")
         owner = member_by_client_id.get(owner_client_id)
         if owner is None or owner.get("role") != "adult":
@@ -163,6 +193,7 @@ class HouseholdDocuments:
                 "region": household.get("region") or None,
                 "latitude": optional_coordinate(household.get("latitude"), -90, 90, "latitude"),
                 "longitude": optional_coordinate(household.get("longitude"), -180, 180, "longitude"),
+                "type": household_type,
             },
             "owner_client_id": owner_client_id,
             "members": member_by_client_id,
@@ -209,10 +240,10 @@ class HouseholdDocuments:
         household = parsed["household"]
         connection.execute(
             "UPDATE households SET name = ?, timezone = ?, country_code = ?, region = ?, latitude = ?, longitude = ?, "
-            "owner_member_id = ?, modules_configured = ?, updated_at = ? WHERE id = ?",
+            "owner_member_id = ?, modules_configured = ?, updated_at = ?, household_type = ? WHERE id = ?",
             (household["name"], household["timezone"], household["country_code"], household["region"],
              household["latitude"], household["longitude"],
-             member_ids[parsed["owner_client_id"]], int(parsed["modules"] is not None), now, household_id))
+             member_ids[parsed["owner_client_id"]], int(parsed["modules"] is not None), now, household["type"], household_id))
         for removed in set(existing_roles) - set(member_ids.values()):
             connection.execute("DELETE FROM household_members WHERE id = ?", (removed,))
 
@@ -319,7 +350,7 @@ class HouseholdDocuments:
         with self._connection() as connection:
             row = connection.execute(
                 "SELECT id, name, timezone, country_code, region, owner_member_id, modules_configured, "
-                "created_at, updated_at, latitude, longitude FROM households WHERE id = ?", (household_id,)).fetchone()
+                "created_at, updated_at, latitude, longitude, household_type FROM households WHERE id = ?", (household_id,)).fetchone()
             if not row:
                 raise LookupError("household does not exist")
             modules = [m for (m,) in connection.execute(
@@ -386,7 +417,7 @@ class HouseholdDocuments:
                 "created_at": row[7],
                 "updated_at": row[8],
                 "household": {"name": row[1], "timezone": row[2], "country_code": row[3], "region": row[4],
-                              "latitude": row[9], "longitude": row[10]},
+                              "latitude": row[9], "longitude": row[10], "type": row[11]},
                 "owner_client_id": row[5],
                 "modules": modules if row[6] else None,
                 "members": members,

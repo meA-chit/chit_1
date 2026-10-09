@@ -3,7 +3,7 @@
 .ev__time small { display: block; font-size: 0.66rem; color: var(--text-faint); }
 .ev__title { font-size: 0.9rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ev__meta { display: flex; align-items: center; gap: 6px; margin-top: 3px; font-size: 0.72rem; color: var(--text-dim); }
-.ev[data-next='true'] { background: rgb(77 240 255 / 0.08); border-color: var(--line-strong); box-shadow: 0 0 22px rgb(77 240 255 / 0.1); }
+.ev[data-next='true'] { background: var(--accent-soft); border-color: var(--line-strong); box-shadow: 0 0 22px var(--accent-soft); }
 .ev[data-past='true'] { opacity: 0.45; }
 .ev-day { margin: 14px 0 4px; }
 .ev-day:first-child { margin-top: 0; }

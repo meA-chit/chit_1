@@ -11,7 +11,7 @@ from .router import ModuleRouter, Router
 
 SURFACES = {"tv", "tablet", "web", "mobile-adult", "mobile-kid"}
 DATA_STATES = {"available", "stale", "partial", "unavailable", "unconfigured", "demo", "manual", "forecast"}
-SLOTS = {"topbar", "timeline", "left", "center", "right"}
+SLOTS = {"topbar", "timeline", "timeline-side", "left", "center", "right"}
 PRIVACY_RANK = {"normal": 0, "sensitive": 1, "strict": 2}
 
 
@@ -96,6 +96,7 @@ def module_catalog(manifests: dict[str, dict[str, Any]]) -> list[dict[str, Any]]
             "depends_on": [d for d in m.get("depends_on", []) if d != "core"],
             "submodules": [sub["id"] for sub in m.get("submodules", [])],
             "required": m["id"] == "household",
+            "needs_children": bool(m.get("needs_children")),
         }
         for m in manifests.values()
     ]
@@ -104,11 +105,16 @@ def module_catalog(manifests: dict[str, dict[str, Any]]) -> list[dict[str, Any]]
 def validate_module_selection(manifests: dict[str, dict[str, Any]], document: dict[str, Any]) -> dict[str, Any]:
     """Check a household document's `modules` (and each member's) against the manifests; returns it normalised."""
     modules = document.get("modules")
+    has_children = any(m.get("role") == "child" for m in document.get("members", []))
     if modules is not None:
         unknown = set(modules) - set(manifests)
         if unknown:
             raise ValueError("unknown modules: %s" % ", ".join(sorted(unknown)))
         modules = sorted(set(modules) | {"household"})
+        if not has_children:
+            for module_id in modules:
+                if manifests[module_id].get("needs_children"):
+                    raise ValueError("%s needs at least one child in the household" % manifests[module_id]["title"])
         for module_id in modules:
             missing = [d for d in manifests[module_id].get("depends_on", []) if d != "core" and d not in modules]
             if missing:
@@ -151,6 +157,8 @@ def resolve_shell(manifests: dict[str, dict[str, Any]], surface: str, preset: "s
                     "color": m.get("color")} for m in document["members"]]
         if enablement["modules"] is not None:
             enabled = set(enablement["modules"]) | {"household"}
+        if not any(m["role"] == "child" for m in members):   # a module that is about children has nothing to show without one
+            enabled = {m for m in enabled if not manifests.get(m, {}).get("needs_children")}
         if member_id:
             info = enablement["members"].get(member_id)
             if info is None:
@@ -198,7 +206,7 @@ def resolve_shell(manifests: dict[str, dict[str, Any]], surface: str, preset: "s
         "members": members,
         "modules": [
             {"id": m["id"], "title": m["title"], "short_title": m.get("short_title", m["title"]),
-             "privacy_class": m.get("privacy_class", "normal")}
+             "privacy_class": m.get("privacy_class", "normal"), "nav": m.get("nav", True)}
             for module_id, m in sorted(manifests.items(), key=lambda item: item[1].get("nav_order", 100)) if module_id in enabled
         ],
         "cards": cards,

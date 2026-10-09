@@ -8,7 +8,9 @@ export { Avatar, AVATARS, HouseholdMark, PERSON_COLORS, PersonAvatar } from './u
 export type { AvatarKind } from './ui/Avatar';
 export { useSurface } from './lib/useSurface';
 export { useViewer } from './shell/viewer';
-export { ArrowUpIcon, BellIcon, BoltIcon, BookIcon, CalendarIcon, CheckIcon, ChipIcon, ClockIcon, FlameIcon, ListIcon, CardsIcon, MergeIcon, PillIcon, PlusIcon, SparkIcon, StarIcon, SunIcon, ThermoIcon, TrashIcon, UndoIcon, XIcon } from './ui/icons';
+export { AppearanceSettings } from './shell/AppearanceSettings';
+export { useAppearance } from './theme/appearance';
+export { ArrowUpIcon, BellIcon, BoltIcon, BookIcon, CalendarIcon, CheckIcon, ChipIcon, ClockIcon, FlameIcon, ListIcon, CardsIcon, MergeIcon, MoonIcon, PaletteIcon, PillIcon, PlusIcon, SparkIcon, StarIcon, SunIcon, ThermoIcon, TrashIcon, UndoIcon, XIcon } from './ui/icons';
 export { api, ApiError, setHubBaseUrl } from './api/client';
 export { CardFrame, Empty, Skeleton } from './ui/CardFrame';
 export { StateBadge } from './ui/StateBadge';
@@ -19,3 +21,5 @@ export { useShell } from './shell/useShell';
 export { Link } from 'react-router-dom';
 export { useNavigate, useSearchParams } from 'react-router-dom';
 export { useClock } from './lib/useClock';
+export type { Moment, MomentProvider, MomentSource } from './moments/types';
+export { SecondClockSettings } from './shell/SecondClock';

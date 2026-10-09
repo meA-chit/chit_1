@@ -12,13 +12,17 @@ interface Props {
   tone?: string;
   /** One action on the right of the header (a link or button). */
   action?: ReactNode;
+  /** Controls that belong to the title itself (day arrows), shown right beside it rather than at the far edge. */
+  titleExtra?: ReactNode;
+  /** Leave out the data-state badge, for a card whose state is obvious from what it shows. */
+  hideState?: boolean;
   /** Provenance lines: source, observed/checked time. Required by ADR-0003 for normalized data. */
   provenance?: string[];
   /** Inside a tabbed panel the panel supplies the frame; the card renders only its body. */
   embedded?: boolean;
 }
 
-export function CardFrame({ title, state, children, subtitle, icon, tone, action, provenance = [], embedded }: Props) {
+export function CardFrame({ title, state, children, subtitle, icon, tone, action, titleExtra, hideState, provenance = [], embedded }: Props) {
   if (embedded) {
     return (
       <div>
@@ -35,11 +39,13 @@ export function CardFrame({ title, state, children, subtitle, icon, tone, action
       <header className="card__head">
         {icon && <div className="card__icon">{icon}</div>}
         <div className="card__titles">
-          <h2 className="card__title">{title}</h2>
+          {titleExtra
+            ? <div className="card__titlerow"><h2 className="card__title">{title}</h2>{titleExtra}</div>
+            : <h2 className="card__title">{title}</h2>}
           {subtitle && <p className="card__subtitle">{subtitle}</p>}
         </div>
         {action}
-        <StateBadge state={state} />
+        {!hideState && <StateBadge state={state} />}
       </header>
       <div className="card__body">{children}</div>
       {provenance.length > 0 && (

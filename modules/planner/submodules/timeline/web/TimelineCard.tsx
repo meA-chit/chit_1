@@ -44,21 +44,24 @@ export default function TimelineCard({ card }: CardProps) {
   const now = isToday ? hoursIn(data.timezone) : -1;
   const next = isToday ? nextUp(lanes, now) : null;
   const hasContent = lanes.some((lane) => lane.blocks.length > 0) || reminders.length > 0;
-  const provenance = ['source: routines and reminders entered in Chit', feedOk ? 'plus calendar feeds' : 'calendar feeds not included'];
 
   const nav = (
     <div className="tl-nav" role="group" aria-label="Choose day">
-      {next && <span className="tl-chip">Next <b>{next.title} · {next.who}</b> in {inText(next.minutes)}</span>}
-      {!isToday && <button type="button" className="tl-today" onClick={() => setDate(null)}>Back to today</button>}
       <button type="button" aria-label="Previous day" disabled={isToday} onClick={() => setDate(addDays(shown, -1) === today ? null : addDays(shown, -1))}>‹</button>
       <button type="button" aria-label="Next day" disabled={shown >= maxDate} onClick={() => setDate(addDays(shown, 1))}>›</button>
+      {!isToday && <button type="button" className="tl-today" onClick={() => setDate(null)}>Back to today</button>}
     </div>
   );
-  const frame = { ...base, title: dayTitle(shown, today), state: 'manual' as const, action: nav, provenance };
+  const nextChip = next ? <span className="tl-chip">Next <b>{next.title} · {next.who}</b> in {inText(next.minutes)}</span> : undefined;
+  // One line: "Today · Thu, Oct 8". A day that is already named by its date keeps that name.
+  const named = dayTitle(shown, today);
+  const dateText = new Date(`${shown}T12:00:00`).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+  const title = shown === today || named === 'Tomorrow' ? `${named} · ${dateText}` : named;
+  const frame = { ...base, title, state: 'manual' as const, hideState: true, titleExtra: nav, action: nextChip };
 
   if (!hasContent) {
     return (
-      <CardFrame {...frame} subtitle="06:00 to 22:00">
+      <CardFrame {...frame}>
         <Empty title={`Nothing is planned for ${isToday ? 'today' : dayTitle(shown, today).toLowerCase()}`} action={<Link className="btn" to="/household">Add routines</Link>}>
           Work hours, school times, activities and reminders show up here. An empty day means nothing was entered, not that everyone is free.
         </Empty>
@@ -67,7 +70,7 @@ export default function TimelineCard({ card }: CardProps) {
   }
   const mobile = surface === 'mobile-adult' || surface === 'mobile-kid';
   return (
-    <CardFrame {...frame} subtitle={mobile ? undefined : `${new Date(`${shown}T12:00:00`).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })} · 06:00 to 22:00`}>
+    <CardFrame {...frame}>
       {mobile ? <VerticalAgenda lanes={lanes} now={now} reminders={reminders} zones={data.zones ?? []} /> : <Grid lanes={lanes} now={now} reminders={reminders} zones={data.zones ?? []} />}
     </CardFrame>
   );

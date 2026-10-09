@@ -1,7 +1,7 @@
 .en-kpi { display: flex; align-items: baseline; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
 .en-kpi b { font-size: 2.1rem; font-weight: 600; line-height: 1; }
 .en-kpi span { color: var(--text-dim); font-size: 0.82rem; }
-.en-price { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: rgb(5 7 13 / 0.4); font-size: 0.8rem; }
+.en-price { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--inset); font-size: 0.8rem; }
 .sug { display: flex; gap: 12px; align-items: flex-start; padding: 11px 2px; border-top: 1px solid var(--line); }
 .sug:first-child { border-top: 0; }
 .sug__icon { width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; flex: none; color: var(--c); background: color-mix(in srgb, var(--c) 13%, transparent); border: 1px solid color-mix(in srgb, var(--c) 30%, transparent); }
@@ -35,7 +35,7 @@
 .pc__label--price { fill: var(--amber); opacity: 0.85; }
 .pc__line { stroke: var(--amber); stroke-width: 2; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
 .pc__avg { stroke: var(--text-dim); stroke-width: 1; stroke-dasharray: 4 4; vector-effect: non-scaling-stroke; opacity: 0.8; }
-.pc__now { fill: rgb(77 240 255 / 0.1); stroke: var(--line-strong); vector-effect: non-scaling-stroke; }
+.pc__now { fill: var(--accent-soft); stroke: var(--line-strong); vector-effect: non-scaling-stroke; }
 .pc__tick { fill: var(--text-faint); font-family: var(--font-mono); font-size: 9px; }
 .pc__hit { fill: transparent; cursor: pointer; outline: none; }
 .pc__hit:hover, .pc__hit:focus-visible, .pc__hit[data-selected] { fill: rgb(255 255 255 / 0.06); }
@@ -59,7 +59,14 @@
 .pc__tomorrow { color: #8f9bd6; font-family: var(--font-mono); font-size: 0.74rem; }
 .en-legend i[data-tomorrow] { height: 2px; border-radius: 0; vertical-align: 3px; background: #8f9bd6; opacity: 0.7; }
 .en-totals { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
-.en-total { padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: rgb(5 7 13 / 0.4); display: grid; gap: 2px; }
+.en-total { padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--inset); display: grid; gap: 2px; }
 .en-total small { font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-faint); }
 .en-total b { font-family: var(--font-mono); font-size: 1.05rem; font-weight: 500; color: var(--text); }
 .en-total span { font-size: 0.72rem; color: var(--text-dim); }
+
+/* key figure in the ribbon: today's power cost (a topbar card from the energy module) */
+.en-rib { display: flex; flex-direction: column; justify-content: center; gap: 1px; text-decoration: none; }
+.en-rib:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.en-rib small { font-size: 0.64rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-dim); }
+.en-rib__row { display: flex; align-items: baseline; gap: 8px; font-size: 0.74rem; color: var(--text-dim); white-space: nowrap; }
+.en-rib__row b { font-size: 1.15rem; font-weight: 600; color: var(--text); }

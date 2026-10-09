@@ -28,7 +28,7 @@ export interface Windows {
   tomorrow_included?: boolean; windows?: BestWindow[]; average_price?: number | null; checked_at?: string;
 }
 
-export const ENERGY_KEYS = { price: ['energy', 'pricing'], solar: ['energy', 'solar'], windows: ['energy', 'suggestions'], connections: ['energy', 'connections'] } as const;
+export const ENERGY_KEYS = { price: ['energy', 'pricing'], solar: ['energy', 'solar'], windows: ['energy', 'suggestions'], connections: ['energy', 'connections'], water: ['energy', 'water'] } as const;
 
 const REFRESH = 5 * 60_000;
 export const usePriceDay = (which: 'today' | 'tomorrow', enabled = true) =>
@@ -57,3 +57,24 @@ export function band(price: number | null, average: number | null | undefined): 
   const ratio = (price - average) / average;
   return ratio <= -0.1 ? 'cheap' : ratio >= 0.1 ? 'pricey' : 'normal';
 }
+
+/** Water from hand-entered meter readings (state `manual`). Household use is total minus garden; periods between readings are flagged. */
+export interface WaterUse { value: number; from: string; to: string; estimated: boolean; partial: boolean }
+export interface WaterPeriod { label: string; total: WaterUse | null; garden: WaterUse | null; household: WaterUse | null }
+export interface WaterReading { value: number; since: { from: string; days: number; used: number } | null }
+export interface WaterAmount { m3: number; litres_per_day: number }
+export interface WaterInterval { from: string; to: string; days: number; total: WaterAmount; garden?: WaterAmount; household?: WaterAmount }
+export interface WaterTrend { key: 'household' | 'total'; from: string; to: string; litres_per_day: number; previous: number; baseline: number; overall: number; vs_previous: number | null; vs_baseline: number | null; periods: number }
+export interface WaterView {
+  /** Average use per day between consecutive readings. `trend` appears only once there are two periods (three readings). */
+  intervals?: { basis: 'household' | 'total'; items: WaterInterval[]; trend: WaterTrend | null };
+  state: DataState; reason?: 'no_household' | 'no_readings'; unit: 'm3';
+  months?: WaterPeriod[]; years?: WaterPeriod[]; warnings?: string[]; first?: string; last?: string;
+  rows?: { read_on: string; note: string; total: WaterReading | null; garden: WaterReading | null }[];
+}
+export const useWater = () => useQuery({ queryKey: ENERGY_KEYS.water, queryFn: () => api<WaterView>('/api/energy/water/readings') });
+export const fmtM3 = (value: number | null | undefined) => (value === null || value === undefined ? '–' : `${value.toFixed(Math.abs(value) < 100 ? 2 : 1)} m³`);
+/** The newest month that the readings cover completely (so a few days after the last reading never headlines); falls back to the newest month. */
+export const latestFullMonth = (months: WaterPeriod[]): WaterPeriod | undefined =>
+  [...months].reverse().find((m) => m.total && !m.total.partial && (!m.household || !m.household.partial)) ?? months[months.length - 1];
+export const fmtLpd = (value: number | null | undefined) => (value === null || value === undefined ? '–' : `${Math.round(value)} L/day`);

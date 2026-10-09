@@ -1,0 +1,28 @@
+.htype { max-width: 760px; }
+.htype__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.htype__card {
+  display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 16px 12px 14px; cursor: pointer; text-align: center;
+  border-radius: var(--radius); border: 1px solid var(--line); background: var(--glass); color: var(--text);
+  transition: border-color 0.2s, background 0.2s;
+}
+.htype__card:hover { border-color: var(--line-strong); }
+.htype__card[aria-checked='true'] { border-color: var(--accent); background: var(--accent-soft); box-shadow: var(--glow); }
+.htype__card[data-blocked] { opacity: 0.55; cursor: not-allowed; }
+.htype__card[data-blocked] .htype__note { color: var(--amber); }
+.htype__card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.htype__art { display: flex; align-items: flex-end; justify-content: center; min-height: 84px; }
+.htype__person { display: block; margin: 0 -6px; border-radius: 50%; border: 2px solid var(--bg-void); }
+.htype__label { font-weight: 600; font-size: 1.02rem; }
+.htype__note { font-size: 0.78rem; color: var(--text-dim); max-width: 24ch; }
+.htype__next { min-width: 160px; }
+@media (min-width: 640px) { .htype__grid { gap: 16px; } }
+/* members page: adults and children side by side, grouped avatar picker */
+.picks__group { display: grid; gap: 6px; }
+.picks__group + .picks__group { margin-top: 8px; }
+
+/* in the settings page: four small cards, two by two */
+.htype__grid[data-compact] { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.htype__grid[data-compact] .htype__card { padding: 10px 8px 8px; gap: 3px; }
+.htype__grid[data-compact] .htype__art { min-height: 54px; }
+.htype__grid[data-compact] .htype__note { font-size: 0.7rem; }
+.htype__current { display: grid; gap: 8px; }

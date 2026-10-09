@@ -203,3 +203,59 @@ class AvatarAndLocationTests(unittest.TestCase):
             mutate(document)
             with self.assertRaises(ValueError):
                 self.store.save_household_setup(document, preserve_ids=True)
+
+
+class HouseholdTypeTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.store = EncryptedHouseholdStore(Path(self.temp.name) / "t.db", plain=True)
+
+    def tearDown(self):
+        self.temp.cleanup()
+
+    def _doc(self, kind=None, adults=2, children=0):
+        document = copy.deepcopy(SEED)
+        keep = [m for m in document["members"] if m["role"] == "adult"][:adults] + \
+               [m for m in document["members"] if m["role"] == "child"][:children]
+        document["members"] = keep
+        document["owner_client_id"] = keep[0]["client_id"]
+        document["modules"] = None
+        for calendar in document.get("calendars", []):
+            calendar["member_client_ids"] = []
+            calendar["chore_assignee_client_ids"] = []
+        for member in keep:
+            profile = member.get("profile") or {}
+            for key in ("pickup_adult_client_ids", "dropoff_adult_client_ids"):
+                profile[key] = [i for i in profile.get(key, []) if i in {m["client_id"] for m in keep}]
+            for activity in profile.get("activities", []) or []:
+                if activity.get("escort_adult_client_id") not in {m["client_id"] for m in keep}:
+                    activity["escort_adult_client_id"] = None
+        if kind:
+            document["household"]["type"] = kind
+        return document
+
+    def test_type_is_derived_for_documents_that_do_not_say(self):
+        seed_households(self.store)
+        self.assertEqual(self.store.get_household_document("hh-meyer")["household"]["type"], "family")
+
+    def test_each_type_allows_only_its_members(self):
+        cases = [("single", 1, 0, True), ("single", 2, 0, False), ("single", 1, 1, False),
+                 ("couple", 2, 0, True), ("couple", 1, 0, False), ("couple", 2, 1, False),
+                 ("shared", 3, 0, True), ("shared", 2, 1, False),
+                 ("family", 2, 2, True), ("family", 1, 1, True), ("family", 2, 0, True)]
+        for kind, adults, children, allowed in cases:
+            document = self._doc(kind, adults, children)
+            with self.subTest(kind=kind, adults=adults, children=children):
+                if allowed:
+                    self.store._parse_setup(document)
+                else:
+                    with self.assertRaises(ValueError):
+                        self.store._parse_setup(document)
+
+    def test_unknown_type_is_rejected_and_type_round_trips(self):
+        with self.assertRaises(ValueError):
+            self.store._parse_setup(self._doc("castle"))
+        document = self._doc("couple", 2, 0)
+        document["household"]["id"] = "hh-couple"
+        self.store.save_household_setup(document, preserve_ids=True)
+        self.assertEqual(self.store.get_household_document("hh-couple")["household"]["type"], "couple")

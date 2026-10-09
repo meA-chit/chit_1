@@ -74,9 +74,12 @@ export interface Calendar {
   connection_state?: string;
 }
 
+/** What kind of household this is. It decides who can be added: only a family has children. Stored by the hub. */
+export type HouseholdType = 'shared' | 'family' | 'couple' | 'single';
+
 export interface HouseholdDocument {
   id?: string;
-  household: { name: string; timezone: string; country_code: string | null; region: string | null; latitude: number | null; longitude: number | null };
+  household: { type: HouseholdType; name: string; timezone: string; country_code: string | null; region: string | null; latitude: number | null; longitude: number | null };
   owner_client_id: string;
   modules: string[] | null;
   members: Member[];
@@ -94,8 +97,9 @@ export const CATEGORIES: [string, string][] = [
 
 export const uid = (prefix: string) => `${prefix}-${Math.random().toString(36).slice(2, 9)}`;
 
-const ADULT_KINDS = ['a2', 'a1', 'a3', 'a4'];
-const CHILD_KINDS = ['k2', 'k3', 'k1', 'k4'];
+// Alternating women and men (boys and girls) so a new household looks varied from the first member on.
+const ADULT_KINDS = ['a2', 'a1', 'a4', 'a3', 'a6', 'a5', 'a8', 'a7'];
+const CHILD_KINDS = ['k2', 'k3', 'k4', 'k1', 'k6', 'k5', 'k8', 'k7'];
 const COLORS = ['#b79cff', '#4df0ff', '#ff8fb8', '#ffc857', '#8dffb0', '#ff9d5c'];
 
 /** First avatar of the role and first colour nobody in the household uses yet. */
@@ -130,10 +134,55 @@ export function newCalendar(): Calendar {
   };
 }
 
+/** The first question of setup, and a setting afterwards. `note` is shown on the card; the rules below are enforced by the hub too. */
+export const HOUSEHOLD_TYPES: { id: HouseholdType; label: string; note: string; adults: number; children: number }[] = [
+  { id: 'shared', label: 'Shared flat', note: 'Adults only, as many as live there.', adults: 3, children: 0 },
+  { id: 'family', label: 'Family', note: 'Adults and children. Needed for the Children module.', adults: 2, children: 1 },
+  { id: 'couple', label: 'Couple', note: 'Two adults, no children.', adults: 2, children: 0 },
+  { id: 'single', label: 'Single', note: 'Just you.', adults: 1, children: 0 },
+];
+
+/** A draft with the people a household type usually has. Names stay empty: the person fills them in. */
+export function documentForType(type: HouseholdType, modules: string[] | null): HouseholdDocument {
+  const shape = HOUSEHOLD_TYPES.find((item) => item.id === type)!;
+  const doc = emptyDocument(modules);
+  const members: Member[] = [doc.members[0]!];
+  while (members.filter((m) => m.role === 'adult').length < shape.adults) members.push(newAdult('', members));
+  for (let i = 0; i < shape.children; i++) members.push(newChild('', members));
+  return { ...doc, household: { ...doc.household, type }, members };
+}
+
+const adultsOf = (doc: HouseholdDocument) => doc.members.filter((member) => member.role === 'adult').length;
+const childrenOf = (doc: HouseholdDocument) => doc.members.filter((member) => member.role === 'child').length;
+
+export const allowsChildren = (type: HouseholdType) => type === 'family';
+/** Single and couple households have a fixed number of adults; a flat and a family can grow. */
+export const allowsMoreAdults = (type: HouseholdType, doc: HouseholdDocument) =>
+  type === 'family' || type === 'shared' || (type === 'couple' && adultsOf(doc) < 2) || (type === 'single' && adultsOf(doc) < 1);
+
+/** Why a household with these members cannot be this type (null when it can). The hub enforces the same rules. */
+export function typeProblem(type: HouseholdType, doc: HouseholdDocument): string | null {
+  const adults = adultsOf(doc);
+  const children = childrenOf(doc);
+  if (type === 'family') return adults >= 1 ? null : 'A family needs an adult.';
+  if (children > 0) return `Remove the ${children === 1 ? 'child' : 'children'} first: only a family has children.`;
+  if (type === 'single') return adults === 1 ? null : `Remove ${adults - 1} adult${adults === 2 ? '' : 's'} first: a single household has one adult.`;
+  if (type === 'couple') return adults === 2 ? null : adults > 2 ? `Remove ${adults - 2} adult${adults === 3 ? '' : 's'} first: a couple has two adults.` : 'A couple has two adults.';
+  return adults >= 2 ? null : 'A shared flat has two or more adults.';
+}
+
+/** A module that needs children (the manifest says which) is off, and cannot be on, while the household has none. */
+export function withoutChildlessModules(doc: HouseholdDocument, catalog: CatalogModule[]): HouseholdDocument {
+  if (childrenOf(doc) > 0) return doc;
+  const enabled = new Set(doc.modules ?? catalog.map((module) => module.id));
+  return catalog.filter((module) => module.needs_children && enabled.has(module.id))
+    .reduce((next, module) => toggleModule(next, catalog, module.id, false), doc);
+}
+
 export function emptyDocument(modules: string[] | null): HouseholdDocument {
   const first = newAdult();
   return {
-    household: { name: '', timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Berlin', country_code: null, region: null, latitude: null, longitude: null },
+    household: { type: 'family', name: '', timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Berlin', country_code: null, region: null, latitude: null, longitude: null },
     owner_client_id: first.client_id,
     modules,
     members: [first],
@@ -202,6 +251,8 @@ export interface CatalogModule {
   depends_on: string[];
   submodules: string[];
   required: boolean;
+  /** Only available to a household with at least one child. */
+  needs_children?: boolean;
 }
 
 export function validate(doc: HouseholdDocument): string[] {
@@ -213,6 +264,8 @@ export function validate(doc: HouseholdDocument): string[] {
   if (lon !== null && (Number.isNaN(lon) || lon < -180 || lon > 180)) problems.push('Longitude must be between -180 and 180.');
   if ((lat === null) !== (lon === null)) problems.push('Enter both latitude and longitude, or neither.');
   if (!doc.members.some((member) => member.role === 'adult')) problems.push('Add at least one adult.');
+  const shape = typeProblem(doc.household.type, doc);
+  if (shape) problems.push(shape);
   doc.members.forEach((member, index) => {
     if (!member.name.trim()) problems.push(`Member ${index + 1} needs a name.`);
   });
@@ -243,6 +296,7 @@ export function toPayload(doc: HouseholdDocument): HouseholdDocument {
   return {
     ...doc,
     household: {
+      type: doc.household.type,
       name: doc.household.name.trim(), timezone: doc.household.timezone.trim(),
       country_code: blank(doc.household.country_code), region: trim(doc.household.region),
       latitude: doc.household.latitude, longitude: doc.household.longitude,

@@ -1,3 +1,4 @@
+import './setup.css';
 import { useState } from 'react';
 import { AVATARS, Avatar, ChipGroup, Field, PERSON_COLORS, PersonAvatar, SelectField, TextField, Toggle, type ChipOption } from '@chit/core';
 import { COMMUTE_MODES, DAYS, dayLabel, newActivity, type Activity, type CatalogModule, type HouseholdDocument, type Member, type Profile } from './model';
@@ -59,13 +60,20 @@ export function MemberCard({ member, doc, catalog, isOwner, canRemove, onChange,
 
       {open && (
         <div className="stack">
-          <div className="picks" role="group" aria-label={`Avatar for ${member.name || 'this member'}`}>
-            {AVATARS[member.role].map((option) => (
-              <button key={option.kind} type="button" className="pick" aria-pressed={member.avatar === option.kind}
-                style={{ ['--c' as string]: member.color ?? 'var(--accent)' }} aria-label={option.label} onClick={() => onChange({ ...member, avatar: option.kind })}>
-                <Avatar kind={option.kind} size={64} />
-                <span>{option.label}</span>
-              </button>
+          <div className="stack" role="group" aria-label={`Avatar for ${member.name || 'this member'}`}>
+            {Array.from(new Set(AVATARS[member.role].map((option) => option.group))).map((group) => (
+              <div key={group} className="picks__group" role="group" aria-label={group}>
+                <span className="eyebrow">{group}</span>
+                <div className="picks">
+                  {AVATARS[member.role].filter((option) => option.group === group).map((option) => (
+                    <button key={option.kind} type="button" className="pick" aria-pressed={member.avatar === option.kind}
+                      style={{ ['--c' as string]: member.color ?? 'var(--accent)' }} aria-label={option.label} onClick={() => onChange({ ...member, avatar: option.kind })}>
+                      <Avatar kind={option.kind} size={64} />
+                      <span>{option.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
           <Field label="Colour on the dashboard" wide hint="Illustrations only, never photos. The colour follows this person on the timeline, calendar and chores.">

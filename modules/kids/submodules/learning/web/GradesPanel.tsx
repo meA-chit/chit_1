@@ -38,6 +38,15 @@ export default function GradesOverview({ memberId, name }: { memberId: string; n
   if (grades.isPending) return <CardFrame {...frame} state="unconfigured"><Skeleton lines={5} /></CardFrame>;
   if (grades.isError) return <CardFrame {...frame} state="unavailable"><Empty title="Grades unavailable">The hub could not be reached.</Empty></CardFrame>;
   const data = grades.data;
+  if (data.state === 'private') {
+    return (
+      <CardFrame {...frame} state="manual" hideState subtitle={`${name} · private`}>
+        <Empty title={`${name} keeps grades private`}>
+          Children can choose this from the age you set under Phone & privacy. Subjects and the school plan stay editable here; no grades, averages or trends are shown to anyone but {name}.
+        </Empty>
+      </CardFrame>
+    );
+  }
   const chosen = entry.subject_id || data.subjects[0]?.id || '';
   const ofKind = (kind: SubjectKind) => data.subjects.filter((s) => s.kind === kind);
 

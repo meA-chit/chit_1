@@ -32,7 +32,7 @@ events_consumed: [string]
 #   Routes: a submodule's server/routes.py defines register(router); every route must start with /api/<module-id>/
 #   Web: a submodule's web/index.ts default-exports ModuleWeb (core/web/src/registry/types.ts); the card/view
 #        ids in the manifest are the keys.
-#   cards[].slot: topbar|timeline|left|center|right   # where the shell places the card (required)
+#   cards[].slot: topbar|timeline|timeline-side|left|center|right   # where the shell places the card (required)
 #   cards[].group: string                               # cards sharing slot+group are shown as tabs of one panel
 #   cards[].order: int                                  # sort order across the dashboard (default 100)
 #   cards[].data_states may include manual (typed in by the household), forecast, demo (illustrative, never fact)
@@ -40,3 +40,5 @@ events_consumed: [string]
 #       A module contributes a section to another module's settings screen (e.g. planner chores and reminders appear in
 #       the household screen). The web side exports it under ModuleWeb.settings[id]. Sections save themselves via the
 #       contributing module's own API; the host screen never imports module code.
+#   nav: bool (default true)                          # false: no rail entry of its own; the module's cards still show on Home and another module's page presents it
+#   needs_children: bool (default false)               # true: the module is off, and cannot be switched on, in a household with no child

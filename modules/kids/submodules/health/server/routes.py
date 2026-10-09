@@ -25,7 +25,7 @@ def build(rows, now):
         left = meds.days_left(med["supply"], med["weekdays"])
         out.append({
             "id": med["id"], "name": med["name"], "dose": med["dose"], "time": med["time"], "weekdays": [api.WEEKDAYS[d] for d in med["weekdays"]],
-            "remind_member_id": med["remind_member_id"], "supply": med["supply"], "days_left": left,
+            "remind_member_id": med["remind_member_id"], "supply": med["supply"], "critical": med["critical"], "days_left": left,
             "refill_soon": left is not None and left <= meds.REFILL_WARNING_DAYS,
             "today": {"due": meds.due_on(med["weekdays"], today), "status": med["log"].get(today.isoformat())},
             "week": [{"day": d.isoformat(), "due": meds.due_on(med["weekdays"], d), "status": med["log"].get(d.isoformat())} for d in week],
@@ -40,6 +40,12 @@ def overview(ctx, request):
     member = api.child_id(document, request)
     monday = (now.date() - timedelta(days=now.weekday())).isoformat()
     rows = ctx.store.list_meds(household_id, member, monday) if member else []
+    if member and ctx.store.is_private(household_id, member, "health", now.date()):
+        # The child keeps their medicine to themselves, except what a parent marked safety-critical: that always stays visible to parents.
+        hidden = sum(1 for med in rows if not med["critical"])
+        return 200, {"state": "private", "member_id": member, "date": now.date().isoformat(), "now": now.strftime("%H:%M"),
+                     "meds": build([med for med in rows if med["critical"]], now), "hidden": hidden,
+                     "source": "the child keeps their medicine private, except what is marked safety-critical"}
     return 200, {"state": "manual", "member_id": member, "date": now.date().isoformat(), "now": now.strftime("%H:%M"),
                  "meds": build(rows, now), "source": "medication entered in Chit"}
 
@@ -48,7 +54,7 @@ def _fields(data):
     weekdays = data.get("weekdays", [])
     if not isinstance(weekdays, list):
         raise HTTPError(400, "weekdays must be a list of 0 (Monday) to 6 (Sunday)")
-    return (str(data.get("name", "")), data.get("dose"), data.get("time"), weekdays, data.get("remind_member_id") or None, data.get("supply"))
+    return (str(data.get("name", "")), data.get("dose"), data.get("time"), weekdays, data.get("remind_member_id") or None, data.get("supply"), data.get("critical") is True)
 
 
 def add(ctx, request):

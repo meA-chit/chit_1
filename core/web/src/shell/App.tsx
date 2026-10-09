@@ -2,9 +2,12 @@ import { Suspense, useEffect } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { ApiError } from '../api/client';
 import { useSurface } from '../lib/useSurface';
+import { initAppearance } from '../theme/appearance';
 import { Shell } from './Shell';
 import { useShell } from './useShell';
 import { useViewer } from './viewer';
+
+initAppearance();
 
 export function App() {
   const surface = useSurface();

@@ -1,5 +1,5 @@
 .zones { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.zone { padding: 12px 14px; border-radius: 14px; border: 1px solid var(--line); background: rgb(5 7 13 / 0.4); }
+.zone { padding: 12px 14px; border-radius: 14px; border: 1px solid var(--line); background: var(--inset); }
 .zone b { display: block; font-size: 1.6rem; font-weight: 600; margin: 6px 0 2px; }
 .zone small { font-size: 0.72rem; color: var(--text-dim); }
 .demo-note { margin: 12px 0 0; font-size: 0.72rem; color: var(--text-faint); line-height: 1.5; }

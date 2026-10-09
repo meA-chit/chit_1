@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { ApiError, CardFrame, CheckIcon, ChipGroup, Empty, Notice, PillIcon, PlusIcon, SelectField, Skeleton, TextField, type Person } from '@chit/core';
+import { ApiError, CardFrame, CheckIcon, ChipGroup, Empty, Notice, PillIcon, PlusIcon, SelectField, Skeleton, TextField, Toggle, type Person } from '@chit/core';
 import { dayShort, num, useMeds, useSend, WEEKDAY_NAMES, type DoseStatus, type Med } from '../../../shared/kids';
 
-interface Draft { id: string | null; name: string; dose: string; time: string; weekdays: string[]; remind: string; supply: string }
-const blank = (): Draft => ({ id: null, name: '', dose: '', time: '08:00', weekdays: [], remind: '', supply: '' });
+interface Draft { id: string | null; name: string; dose: string; time: string; weekdays: string[]; remind: string; supply: string; critical: boolean }
+const blank = (): Draft => ({ id: null, name: '', dose: '', time: '08:00', weekdays: [], remind: '', supply: '', critical: false });
 
 export function DoseButtons({ med }: { med: Med }) {
   const send = useSend();
@@ -34,10 +34,10 @@ export default function MedsWeek({ memberId, name, adults }: { memberId: string;
   if (meds.isError) return <CardFrame {...frame} state="unavailable"><Empty title="Medication unavailable">The hub could not be reached.</Empty></CardFrame>;
   const list = meds.data.meds;
   const who = (id: string | null) => adults.find((a) => a.id === id)?.name.split(' ')[0];
-  const edit = (m: Med) => { setError(null); setDraft({ id: m.id, name: m.name, dose: m.dose ?? '', time: m.time, weekdays: m.weekdays, remind: m.remind_member_id ?? '', supply: m.supply === null ? '' : String(m.supply) }); };
+  const edit = (m: Med) => { setError(null); setDraft({ id: m.id, name: m.name, dose: m.dose ?? '', time: m.time, weekdays: m.weekdays, remind: m.remind_member_id ?? '', supply: m.supply === null ? '' : String(m.supply), critical: m.critical }); };
   const save = () => {
     if (!draft) return;
-    const body = { member_id: memberId, name: draft.name, dose: draft.dose || null, time: draft.time, weekdays: draft.weekdays.map((d) => WEEKDAY_NAMES.indexOf(d)), remind_member_id: draft.remind || null, supply: num(draft.supply) };
+    const body = { member_id: memberId, name: draft.name, dose: draft.dose || null, time: draft.time, weekdays: draft.weekdays.map((d) => WEEKDAY_NAMES.indexOf(d)), remind_member_id: draft.remind || null, supply: num(draft.supply), critical: draft.critical };
     send.mutate(draft.id ? { method: 'PUT', path: `/api/kids/health/meds/${draft.id}`, body } : { method: 'POST', path: '/api/kids/health/meds', body }, { onSuccess: () => { setDraft(null); setError(null); }, onError: fail });
   };
 
@@ -45,11 +45,14 @@ export default function MedsWeek({ memberId, name, adults }: { memberId: string;
     <CardFrame {...frame} state="manual" subtitle={`${name} · parents only, never on a shared screen`} provenance={['entered in Chit, parents only']}>
       <div className="stack" style={{ gap: 10 }}>
         <div className="kd-dots kd-dots--head" aria-hidden>{WEEKDAY_NAMES.map((d) => <span key={d}>{dayShort(d).slice(0, 2)}</span>)}</div>
-        {list.length === 0 && !draft && <p className="field__hint" style={{ margin: 0 }}>No medication for {name}.</p>}
+        {meds.data.state === 'private' && (
+          <Notice tone="info">{name} keeps medicine private{meds.data.hidden ? `: ${meds.data.hidden} ${meds.data.hidden === 1 ? 'medicine is' : 'medicines are'} hidden` : ''}. Medicine marked safety-critical always stays here.</Notice>
+        )}
+        {list.length === 0 && !draft && meds.data.state !== 'private' && <p className="field__hint" style={{ margin: 0 }}>No medication for {name}.</p>}
         {list.map((med) => (
           <div key={med.id} className="kd-med">
             <div className="kd-row__main">
-              <div className="kd-row__title">{med.name} <span className="mono" style={{ color: 'var(--text-dim)', fontSize: '0.76rem' }}>{med.time}</span></div>
+              <div className="kd-row__title">{med.name}{med.critical && <span className="badge" data-state="stale" style={{ marginLeft: 8 }}>Safety-critical</span>} <span className="mono" style={{ color: 'var(--text-dim)', fontSize: '0.76rem' }}>{med.time}</span></div>
               <div className="kd-row__sub">{med.dose ?? 'No dose noted'}{who(med.remind_member_id) ? ` · reminds ${who(med.remind_member_id)}` : ''}</div>
             </div>
             <div className="kd-dots kd-dots--small" role="group" aria-label={`${med.name} this week`}>
@@ -76,6 +79,7 @@ export default function MedsWeek({ memberId, name, adults }: { memberId: string;
               <SelectField label="Reminds" value={draft.remind} options={[['', 'Nobody'], ...adults.map((a): [string, string] => [a.id, a.name])]} onChange={(remind) => setDraft({ ...draft, remind })} />
               <TextField label="Supply left (doses)" type="number" min={0} value={draft.supply} onChange={(supply) => setDraft({ ...draft, supply })} hint="Optional. Each dose given uses one." />
             </div>
+            <Toggle label="Safety-critical" checked={draft.critical} onChange={(critical) => setDraft({ ...draft, critical })} hint="A child cannot hide this medicine from you, even after they take medicine private." />
             <ChipGroup label="Days" selected={draft.weekdays} onChange={(weekdays) => setDraft({ ...draft, weekdays })} options={WEEKDAY_NAMES.map((d) => ({ value: d, label: dayShort(d) }))} hint="None selected means every day." />
             {error && <Notice tone="error">{error}</Notice>}
             <div className="row">

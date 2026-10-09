@@ -2,7 +2,7 @@
 export type DataState = 'available' | 'stale' | 'partial' | 'unavailable' | 'unconfigured' | 'demo' | 'manual' | 'forecast';
 export type Surface = 'tv' | 'tablet' | 'web' | 'mobile-adult' | 'mobile-kid';
 export type CardSize = 's' | 'm' | 'l' | 'xl';
-export type Slot = 'topbar' | 'timeline' | 'left' | 'center' | 'right';
+export type Slot = 'topbar' | 'timeline' | 'timeline-side' | 'left' | 'center' | 'right';
 
 export interface ManifestCard {
   id: string;
@@ -37,7 +37,7 @@ export interface ShellConfig {
   household: { id: string; name: string } | null;
   member: Person | null;
   members: Person[];
-  modules: { id: string; title: string; short_title: string; privacy_class: string }[];
+  modules: { id: string; title: string; short_title: string; privacy_class: string; /** false: no rail entry of its own (its cards and settings still work) */ nav?: boolean }[];
   cards: ManifestCard[];
   views: ManifestView[];
   settings_sections: SettingsSection[];

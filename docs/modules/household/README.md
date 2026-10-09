@@ -10,6 +10,7 @@ Chit is a modular household operating system. A household enables the modules it
 
 ## Submodules
 - **setup** — Create the household, choose its type (single, couple, family with children, shared flat) and apply a module preset.
+- **household type** — `single`, `couple`, `family` or `shared` (stored on the household, chosen first in setup, changeable in the household settings). It decides who can be added: single has one adult, couple two, a shared flat adults only, and only a family has children. A type the current members do not fit cannot be chosen until the extras are removed. The hub enforces the same rules (`documents.py`), and a module with `needs_children: true` in its manifest (Children) is off, and cannot be switched on, while the household has no child. `household` itself is always on and is not listed in the module switches.
 - **members** — Members and roles (adult, child, guest), relationships, birth dates. Members are data records, not necessarily login accounts.
 - **settings** — Per-person preferences: language, notifications, what appears on shared displays, which modules appear on their own devices (set by an adult for children).
 - **health** — OPT-IN health metrics from third-party sources (steps, sleep, HRV). Sensitive; per-person consent; hidden on shared displays by default.

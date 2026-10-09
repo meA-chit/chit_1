@@ -226,7 +226,7 @@ class HubHTTPTests(unittest.TestCase):
     def test_shell_lists_settings_sections_for_the_household_screen(self):
         self.request("POST", "/api/household/setup", json.dumps(self.seed()), {"Content-Type": "application/json"})
         shell = json.loads(self.request("GET", "/api/shell?surface=web")[1])
-        self.assertEqual([(s["id"], s["target"]) for s in shell["settings_sections"]], [("chores", "household"), ("reminders", "household"), ("energy", "household"), ("kid-phone", "household")])
+        self.assertEqual([(s["id"], s["target"]) for s in shell["settings_sections"]], [("chores", "household"), ("reminders", "household"), ("energy", "household")])
         document = json.loads(self.request("GET", "/api/household/current")[1])["document"]
         document["modules"] = ["household"]
         for member in document["members"]:
@@ -273,9 +273,11 @@ class HubHTTPTests(unittest.TestCase):
             status, body = self.request("GET", path)
             self.assertNotIn(b"Chit is a personal", body)
 
-    def test_unbuilt_client_is_a_clear_503_or_spa(self):
-        status, _ = self.request("GET", "/some/route")
-        self.assertIn(status, (200, 503))
+    def test_hub_serves_only_the_api(self):
+        for path in ("/", "/some/route"):
+            status, body = self.request("GET", path)
+            self.assertEqual(status, 404)
+            self.assertIn(b"only the API", body)
 
 
 if __name__ == "__main__":

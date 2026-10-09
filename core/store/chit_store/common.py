@@ -71,12 +71,12 @@ WEEKDAY_NAMES = {value: key for key, value in WEEKDAYS.items()}
 LATEST_HOUSEHOLD_ORDER = "ORDER BY created_at DESC, rowid DESC"
 
 
-ADULT_AVATARS = ("a1", "a2", "a3", "a4")
-CHILD_AVATARS = ("k1", "k2", "k3", "k4")
+ADULT_AVATARS = ("a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8")
+CHILD_AVATARS = ("k1", "k2", "k3", "k4", "k5", "k6", "k7", "k8")
 # One colour per person on every surface (avatar ring, timeline, calendar, chores).
 PERSON_COLORS = ("#b79cff", "#4df0ff", "#ff8fb8", "#ffc857", "#8dffb0", "#ff9d5c")
-_DEFAULT_ADULT_ORDER = ("a2", "a1", "a3", "a4")
-_DEFAULT_CHILD_ORDER = ("k2", "k3", "k1", "k4")
+_DEFAULT_ADULT_ORDER = ("a2", "a1", "a4", "a3", "a6", "a5", "a8", "a7")
+_DEFAULT_CHILD_ORDER = ("k2", "k3", "k4", "k1", "k6", "k5", "k8", "k7")
 
 
 def valid_avatar(avatar: "str | None", role: str) -> "str | None":

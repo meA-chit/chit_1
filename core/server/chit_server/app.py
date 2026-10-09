@@ -8,7 +8,6 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 from . import registry
-from .paths import WEB_DIST
 from .router import MAX_REQUEST_BYTES, Context, HTTPError, Request, Router, parse_query
 
 # ADR-0007: loopback only until the identity ADR lands. Do not make this configurable without it.
@@ -125,7 +124,9 @@ class ChitHandler(BaseHTTPRequestHandler):
         return read
 
     def _static(self, path: str) -> None:
-        root = getattr(self.server, "static_root", WEB_DIST)
+        root = getattr(self.server, "static_root", None)   # only the phone gateway serves files; the hub is API-only
+        if root is None:
+            raise HTTPError(404, "The hub serves only the API. Open the web app at http://localhost:5173 (npm run dev).")
         allow = getattr(self.server, "static_allow", None)   # the phone gateway serves an explicit list of files only
         file_path = safe_file(root, path) if path != "/" else None
         if file_path is not None and allow is not None and file_path.relative_to(root.resolve()).as_posix() not in allow:
@@ -136,7 +137,7 @@ class ChitHandler(BaseHTTPRequestHandler):
             # Single-page app: unknown routes fall back to the shell.
             file_path = safe_file(root, "index.html")
             if file_path is None:
-                raise HTTPError(503, "Web client not built. Run `npm run build` or use `npm run dev`.")
+                raise HTTPError(404, "Not found")
         self._file(file_path)
 
     def _file(self, file_path: Path) -> None:

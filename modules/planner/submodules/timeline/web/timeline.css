@@ -1,4 +1,4 @@
-.tl-chip { display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 12px; border: 1px solid var(--line); background: rgb(5 7 13 / 0.45); font-size: 0.8rem; color: var(--text-dim); }
+.tl-chip { display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--inset); font-size: 0.8rem; color: var(--text-dim); }
 .tl-chip b { color: var(--text); font-weight: 600; }
 .tl-scroll { overflow-x: auto; padding-bottom: 4px; }
 .tl { position: relative; display: grid; grid-template-columns: 84px minmax(720px, 1fr); }
@@ -16,9 +16,9 @@
 .tl__blk[data-active='true'] { box-shadow: 0 0 16px color-mix(in srgb, var(--c) 40%, transparent); }
 .tl__blk[data-open='true'] { border-left-style: dashed; mask-image: linear-gradient(90deg, transparent, #000 14%); }
 .tl__overlay { position: absolute; left: 84px; right: 0; top: 0; bottom: 0; pointer-events: none; }
-.tl__past { position: absolute; top: 20px; bottom: 0; left: 0; background: linear-gradient(90deg, rgb(5 7 13 / 0), rgb(5 7 13 / 0.38)); }
-.tl__now { position: absolute; top: 14px; bottom: 0; width: 0; border-left: 2px solid var(--cyan); box-shadow: 0 0 14px rgb(77 240 255 / 0.7); }
-.tl__nowtag { position: absolute; top: 0; transform: translateX(-50%); padding: 3px 9px; border-radius: 999px; background: var(--cyan); color: #04101a; font-family: var(--font-mono); font-size: 0.68rem; box-shadow: 0 0 18px rgb(77 240 255 / 0.5); }
+.tl__past { position: absolute; top: 20px; bottom: 0; left: 0; background: linear-gradient(90deg, rgb(5 7 13 / 0), var(--inset)); }
+.tl__now { position: absolute; top: 14px; bottom: 0; width: 0; border-left: 2px solid var(--cyan); box-shadow: 0 0 14px var(--accent-ring); }
+.tl__nowtag { position: absolute; top: 0; transform: translateX(-50%); padding: 3px 9px; border-radius: 999px; background: var(--cyan); color: #04101a; font-family: var(--font-mono); font-size: 0.68rem; box-shadow: 0 0 18px var(--accent-ring); }
 
 /* phone: vertical agenda with a NOW marker */
 .va-now { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
@@ -30,7 +30,7 @@
 .va__now::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--cyan), transparent); }
 .va__item { position: relative; display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px; border-radius: 12px; border: 1px solid transparent; }
 .va__item::before { content: ''; position: absolute; left: -19px; width: 8px; height: 8px; border-radius: 50%; background: var(--c); box-shadow: 0 0 8px var(--c); }
-.va__item[data-next='true'] { background: rgb(77 240 255 / 0.08); border-color: var(--line-strong); }
+.va__item[data-next='true'] { background: var(--accent-soft); border-color: var(--line-strong); }
 .va__time { font-family: var(--font-mono); font-size: 0.76rem; color: var(--cyan); }
 .va__title { font-size: 0.85rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .va__who { font-size: 0.68rem; color: var(--text-dim); }
@@ -47,7 +47,7 @@
 .tl__zone { min-width: 0; padding: 4px 6px 5px; border-radius: 10px; border: 1px dashed var(--line); background: rgb(120 150 255 / 0.04); display: flex; flex-direction: column; gap: 4px; min-height: 28px; }
 .tl__zone[data-zone='morning'] { background: rgb(255 200 87 / 0.05); }
 .tl__zone[data-zone='evening'] { background: rgb(139 123 255 / 0.07); }
-.tl__zone[data-zone='relax'] { background: rgb(77 240 255 / 0.04); border-style: dotted; }
+.tl__zone[data-zone='relax'] { background: var(--accent-soft); border-style: dotted; }
 .tl__zlabel { font-family: var(--font-mono); font-size: 0.56rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-faint); }
 .tl__zrems { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .tl__rem {
@@ -66,6 +66,6 @@
 }
 .tl-nav button:hover:not(:disabled) { color: var(--accent); border-color: var(--line-strong); }
 .tl-nav button:disabled { opacity: 0.35; cursor: not-allowed; }
-.tl-nav .tl-today { font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); border-color: var(--line-strong); background: rgb(77 240 255 / 0.08); }
+.tl-nav .tl-today { font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); border-color: var(--line-strong); background: var(--accent-soft); }
 
 .tl__icon { margin-right: 5px; }

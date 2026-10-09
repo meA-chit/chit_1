@@ -7,6 +7,7 @@ version: 0.0.0
 status: in-progress
 depends_on: [household, planner]
 privacy_class: strict
+needs_children: true       # only available to a household that has at least one child
 audiences: [adult, child]   # who may ever see this module; actual visibility comes from household/member/surface config
 surfaces: [tv, tablet, web, mobile-adult, mobile-kid]
 submodules:
@@ -32,11 +33,4 @@ views:
     title: Kids
     path: /kids
     surfaces: [tablet, web, mobile-adult, mobile-kid]
-settings_sections:           # contributed to the household settings screen
-  - id: kid-phone
-    submodule: kid-view
-    title: Kids' phones
-    target: household
-    order: 40
-    surfaces: [tablet, web]
 permissions: []

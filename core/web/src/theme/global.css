@@ -15,8 +15,8 @@ button { font: inherit; color: inherit; }
 .backdrop {
   position: fixed; inset: 0; z-index: -1; pointer-events: none;
   background:
-    radial-gradient(60vmax 40vmax at 85% -10%, rgb(139 123 255 / 0.18), transparent 60%),
-    radial-gradient(50vmax 40vmax at -10% 110%, rgb(77 240 255 / 0.12), transparent 60%),
+    radial-gradient(60vmax 40vmax at 85% -10%, var(--pool-a), transparent 60%),
+    radial-gradient(50vmax 40vmax at -10% 110%, var(--pool-b), transparent 60%),
     linear-gradient(var(--line) 1px, transparent 1px) 0 0 / 56px 56px,
     linear-gradient(90deg, var(--line) 1px, transparent 1px) 0 0 / 56px 56px,
     var(--bg-void);

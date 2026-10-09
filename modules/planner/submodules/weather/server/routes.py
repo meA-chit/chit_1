@@ -12,8 +12,8 @@ import time
 from urllib.request import Request, urlopen
 
 API = ("https://api.open-meteo.com/v1/forecast?latitude={lat:.4f}&longitude={lon:.4f}"
-       "&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,"
-       "precipitation_probability_max&timezone=auto&forecast_days=1")
+       "&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,"
+       "precipitation_probability_max&timezone=auto&forecast_days=7")
 CACHE_SECONDS = 15 * 60
 _cache = {}  # (lat, lon) -> (fetched_monotonic, payload)
 
@@ -33,11 +33,21 @@ def fetch(lat, lon):
         raw = json.loads(response.read(200_000).decode("utf-8"))
     code = int(raw["current"]["weather_code"])
     label, icon = CODES.get(code, ("Unknown", "cloud"))
+    daily = raw["daily"]
+    days = daily.get("time") or []
+    codes = daily.get("weather_code") or []
+    week = []
+    for i, day in enumerate(days):
+        day_label, day_icon = CODES.get(int(codes[i]) if i < len(codes) and codes[i] is not None else -1, ("Unknown", "cloud"))
+        week.append({"date": day, "condition": day_label, "icon": day_icon,
+                     "high": round(daily["temperature_2m_max"][i]), "low": round(daily["temperature_2m_min"][i]),
+                     "rain_pct": daily["precipitation_probability_max"][i]})
     return {
         "temperature": round(raw["current"]["temperature_2m"]),
         "condition": label, "icon": icon,
         "high": round(raw["daily"]["temperature_2m_max"][0]), "low": round(raw["daily"]["temperature_2m_min"][0]),
         "rain_pct": raw["daily"]["precipitation_probability_max"][0],
+        "week": week,
         "observed_at": raw["current"]["time"],
         "source": "Open-Meteo",
     }

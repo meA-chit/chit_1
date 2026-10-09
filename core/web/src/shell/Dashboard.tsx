@@ -55,14 +55,24 @@ export function Dashboard({ shell }: { shell: ShellConfig }) {
     );
   }
   const timeline = cards.filter((card) => card.slot === 'timeline');
+  const side = cards.filter((card) => card.slot === 'timeline-side');
   const columns = COLUMNS.map((slot) => cards.filter((card) => card.slot === slot)).filter((column) => column.length > 0);
   return (
     <div className="band">
-      {timeline.map((card, index) => (
-        <motion.div key={card.id} initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.07, duration: 0.5 }}>
-          <CardHost card={card} />
-        </motion.div>
-      ))}
+      {(timeline.length > 0 || side.length > 0) && (
+        <div className="herorow" data-side={side.length > 0 || undefined}>
+          {timeline.map((card, index) => (
+            <motion.div key={card.id} className="herorow__main" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.07, duration: 0.5 }}>
+              <CardHost card={card} />
+            </motion.div>
+          ))}
+          {side.length > 0 && (
+            <motion.div className="herorow__side" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.5 }}>
+              {side.map((card) => <CardHost key={card.id} card={card} />)}
+            </motion.div>
+          )}
+        </div>
+      )}
       {columns.length > 0 && (
         <div className="cols" data-n={columns.length} style={{ ['--n' as string]: columns.length }}>
           {columns.map((column, index) => <Column key={column[0]!.slot} cards={column} index={index} />)}
