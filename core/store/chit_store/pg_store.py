@@ -7,8 +7,13 @@ the default backend and the standby.
 Configuration (environment):
   CHIT_DB_URL        application connection URL (the restricted chit_app role)
   CHIT_DB_OWNER_URL  optional; when set, pending migrations are applied at start-up with this role
-  CHIT_PG_TEST=1     test mode: connect with CHIT_PG_TEST_APP_URL / CHIT_PG_TEST_OWNER_URL and give every store path
-                     its own throw-away schema (dropped at exit), so the existing test suite runs unchanged
+  CHIT_SINGLE_HOUSEHOLD=1  serve "the latest household" when a request names none (local hub / pilot before accounts)
+  CHIT_PG_TEST=1     test mode: give every store path its own throw-away schema (dropped at exit) in the test database,
+                     so the existing test suite runs unchanged. It connects as the OWNER (which bypasses row-level
+                     security) unless CHIT_PG_TEST_ROLE=app; the isolation tests use PostgresHouseholdStore.with_role().
+
+Row-level security: every connection is told which household it serves (app.household_id) from the request scope, see
+EncryptedHouseholdStore.request_scope. A role that does not own the tables then sees nothing else.
 """
 from __future__ import annotations
 
@@ -82,9 +87,10 @@ class PostgresHouseholdStore(EncryptedHouseholdStore):
         self.path = None
         self.key_hex = None
         self.schema: str | None = None
+        self.single_household = os.environ.get("CHIT_SINGLE_HOUSEHOLD") == "1"
         if test:
-            self._url = _need("CHIT_PG_TEST_APP_URL")
             self._owner_url = _need("CHIT_PG_TEST_OWNER_URL")
+            self._url = _need("CHIT_PG_TEST_APP_URL") if os.environ.get("CHIT_PG_TEST_ROLE") == "app" else self._owner_url
             key = str(Path(path).resolve()) if path else os.urandom(8).hex()
             self.schema = "t_" + hashlib.sha1(key.encode()).hexdigest()[:16]
         else:
@@ -92,6 +98,7 @@ class PostgresHouseholdStore(EncryptedHouseholdStore):
             self._owner_url = os.environ.get("CHIT_DB_OWNER_URL")
         self._slots = threading.BoundedSemaphore(MAX_CONNECTIONS)
         self._initialize()
+        self._confined = self._detect_confined()
 
     @property
     def storage_label(self) -> str:
@@ -110,6 +117,9 @@ class PostgresHouseholdStore(EncryptedHouseholdStore):
             options = "-c search_path=%s" % self.schema if self.schema else None
             raw = psycopg.connect(self._url, autocommit=True, options=options)
             try:
+                # Session-level on purpose: every use gets its own connection. A pooled connection must RESET these first.
+                raw.execute("SELECT set_config('app.household_id', %s, false), set_config('app.single_household', %s, false)",
+                            (self.current_household() or "", "on" if self.single_household else "off"))
                 yield _Connection(raw)
             finally:
                 raw.close()
@@ -120,8 +130,59 @@ class PostgresHouseholdStore(EncryptedHouseholdStore):
             atexit.register(_drop_schema, self._owner_url, self.schema)
         if self._owner_url:
             pg.migrate(self._owner_url, schema=self.schema)
-            if self.schema:
-                pg.grant_app_role(self._owner_url, schema=self.schema)
+            pg.grant_app_role(self._owner_url, os.environ.get("CHIT_DB_APP_ROLE", "chit_app"), schema=self.schema or "public")
+
+
+    # --- row-level security plumbing ------------------------------------------------------------------------------
+    def _detect_confined(self) -> bool:
+        """True when this role does not own the tables, i.e. row-level security applies to it."""
+        with self._connection() as connection:
+            row = connection.execute(
+                "SELECT c.relowner = (SELECT oid FROM pg_roles WHERE rolname = current_user) FROM pg_class c "
+                "WHERE c.relname = 'households' AND c.relnamespace = current_schema()::regnamespace").fetchone()
+        return not (row and row[0])
+
+    def with_role(self, url: str) -> "PostgresHouseholdStore":
+        """The same database and schema through another role (the isolation tests connect as the application role)."""
+        clone = object.__new__(type(self))
+        clone.__dict__.update(self.__dict__)
+        clone._url = url
+        clone._confined = clone._detect_confined()
+        return clone
+
+    def _latest_via_function(self) -> "str | None":
+        with self._connection() as connection:
+            return connection.execute("SELECT chit_latest_household_id()").fetchone()[0]
+
+    def default_scope(self) -> "str | None":
+        return self._latest_via_function() if (self._confined and self.single_household) else None
+
+    def _bind_phone_credential(self, kind: str, hashed: str) -> None:
+        if not self._confined:
+            return
+        with self._connection() as connection:
+            self.bind_household(connection.execute("SELECT chit_household_for_phone_credential(?, ?)", (kind, hashed)).fetchone()[0])
+
+    # "Latest household" is a single-household idea. Confined, it means the household this request serves.
+    def latest_household_id(self) -> "str | None":
+        if not self._confined:
+            return super().latest_household_id()
+        return self.current_household() or (self._latest_via_function() if self.single_household else None)
+
+    def _in_latest(self, method):
+        if not self._confined or self.current_household():
+            return method()
+        household = self._latest_via_function() if self.single_household else None
+        if not household:
+            return None
+        with self.request_scope(household):
+            return method()
+
+    def latest_household_summary(self) -> "dict[str, Any] | None":
+        return self._in_latest(super().latest_household_summary)
+
+    def latest_household_calendar_sources(self) -> "dict[str, Any] | None":
+        return self._in_latest(super().latest_household_calendar_sources)
 
 
 def _need(name: str) -> str:

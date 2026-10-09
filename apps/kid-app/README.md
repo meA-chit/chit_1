@@ -35,3 +35,20 @@ Remove a phone, or switch the child's phone view off (signs out every phone), on
 Tabs appear only for sections a parent shares: **Today**, **Plan** (timetable, activities, coming up), **Homework**, **Stars**, **Grades**, **Health**; the avatar opens an "About me" sheet that lists what the parents share. Today changes what leads by time of day and holds the bag checklist. Full table, and what is still missing (pocket money and perks, push, age tiers, child preferences, German text), in `docs/modules/kids/submodules/kid-view/README.md`; the design and the build status of each item are in `docs/modules/kids/kid-experience.md`.
 
 Limits worth knowing before a demo: English strings only; writes are queued while offline and reads fall back to the last saved view; the bag time is fixed at 19:30; calendar events come from the calendars attached to the child (a parents' evening on the school calendar shows up too); tested in a desktop browser at phone and tablet sizes, not yet on a real iPhone or iPad.
+
+## Structure: independent of the web app (2026-10-09)
+The kid app imports nothing from the web app or its theme, and has its own stylesheet. It is meant to be rebuilt as a native app later, so the hub is the only shared thing:
+
+| File | Role |
+| --- | --- |
+| `index.html` | Page shell only |
+| `styles.css` | All styling and its own design tokens (edit freely; no sync with the web theme) |
+| `app.js` | Screens, state, offline write queue, appearance |
+| `data/api.js` | **Data layer**: the endpoint contract (documented at the top), device token and storage, `call()`, `sendOp()` |
+| `data/demo.js` | Built-in demo data, same shape as the server's `/view` |
+| `fonts/` | Space Grotesk and JetBrains Mono, served locally |
+
+A native client keeps the contract in `data/api.js` (and the shape of `/view`) and replaces everything else. The gateway serves exactly these files (`STATIC_ALLOW` in `core/server/chit_server/gateway.py`): add any new file there.
+
+## Look
+Dark by default, **Light** and **Match phone** as choices, and two palettes, **Classic** (cyan) and **Spectrum** (each tab has its own colour in the bottom bar). The child picks them under the avatar > Look; the choice is kept on that phone (`chitkids.appearance`). `?theme=light|dark` and `?palette=spectrum` override for demos. It looks like the web app but is maintained separately.

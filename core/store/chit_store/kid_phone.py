@@ -53,6 +53,9 @@ class KidPhone:
     PairingError = PairingError
 
     # ---------- enablement and sharing ----------
+    def _bind_phone_credential(self, kind: str, hashed: str) -> None:
+        """Hook: Postgres resolves the household a phone credential belongs to and binds it for this request. SQLite: nothing."""
+
     def _child_of(self, connection: Any, household_id: str, member_id: str) -> None:
         if not connection.execute("SELECT 1 FROM household_members WHERE id = ? AND household_id = ? AND role = 'child'",
                                   (member_id, household_id)).fetchone():
@@ -145,6 +148,7 @@ class KidPhone:
             column, presented = "secret_hash", _hash(str(secret))
         else:
             column, presented = "link_hash", _hash("".join(ch for ch in str(link or "").upper() if ch.isalnum()))
+        self._bind_phone_credential("pairing_secret" if secret else "pairing_link", presented)
         with self._connection() as connection:
             connection.execute("BEGIN IMMEDIATE")
             try:
@@ -189,6 +193,7 @@ class KidPhone:
         if not token:
             return None
         moment = _utc(now)
+        self._bind_phone_credential("device", _hash(token))
         with self._connection() as connection:
             row = connection.execute(
                 "SELECT d.id, d.household_id, d.member_id, d.last_seen_at FROM kid_phone_devices d "
@@ -226,6 +231,7 @@ class KidPhone:
     def exchange_phone_handoff(self, handoff: str, now: "datetime | None" = None) -> "str | None":
         """Burn a handoff and rotate the device's token: the new token is returned, the old one stops working."""
         moment = _utc(now)
+        self._bind_phone_credential("handoff", _hash(str(handoff)))
         with self._connection() as connection:
             connection.execute("BEGIN IMMEDIATE")
             try:

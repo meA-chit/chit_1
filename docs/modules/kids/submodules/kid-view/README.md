@@ -73,3 +73,6 @@ The design that follows from this audit and from [`docs/00-overview/market-resea
 
 ## Navigation (web, rework of 2026-10-08)
 One way in: the left rail picks the module; on Kids a parent picks the child, then a topic tab (Overview, School, Stars & chores, Homework, Grades, Health, Phone; the tab is in the URL as `?tab=`). **Edit** is a mode of a tab (School, Stars & chores, Grades): timetable, subjects, chores and goals are changed where they are viewed, and Done editing returns to the read-only view. A child viewing as themselves sees only their own day, stars and homework, with no tabs and no Edit. Not built: a "needs attention" card on Overview (homework due and tests are on the Homework tab).
+
+## Phone look (2026-10-09)
+The kid app follows the web app's themes (dark default, light, match phone; Classic or Spectrum palette), chosen by the child on their phone. Parents do not control it. The kid app is independent of the web app apart from the hub's API (own CSS, data layer in `apps/kid-app/data/api.js`), so it can be rebuilt natively later; see `apps/kid-app/README.md`.

@@ -106,7 +106,9 @@ class ChitHandler(BaseHTTPRequestHandler):
                           {name.lower(): value for name, value in self.headers.items()})
         ctx = Context(store=self.server.store, manifests=self.server.manifests, log=lambda message: self.log_error("%s", message),
                       read=self._reader())
-        status, payload = handler(ctx, request)
+        store = self.server.store
+        with store.request_scope(store.default_scope()):       # row-level security: this request serves one household
+            status, payload = handler(ctx, request)
         self._json(status, payload)
 
     def _reader(self):

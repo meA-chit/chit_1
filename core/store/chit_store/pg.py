@@ -63,4 +63,7 @@ def grant_app_role(owner_url: str, app_role: str = "chit_app", schema: str = "pu
         connection.execute(sql.SQL("GRANT USAGE ON ALL SEQUENCES IN SCHEMA {} TO {}").format(where, ident))
         # the app role never touches the migration bookkeeping
         connection.execute(sql.SQL("REVOKE ALL ON {}.schema_migrations FROM {}").format(where, ident))
+        for function in ("chit_household_for_phone_credential(text, text)", "chit_latest_household_id()"):
+            connection.execute(sql.SQL("GRANT EXECUTE ON FUNCTION {}.{} TO {}").format(
+                where, sql.SQL(function), ident))
         connection.commit()

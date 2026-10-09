@@ -17,7 +17,8 @@ from .router import Router
 DEVICE_PREFIX = "/api/kids/phone/device/"
 PORT = int(os.environ.get("CHIT_PHONE_PORT", "8766"))
 # The only files the gateway serves from apps/kid-app.
-STATIC_ALLOW = frozenset({"index.html", "sw.js", "manifest.webmanifest", "icon.svg", "icon-180.png", "icon-512.png"})
+STATIC_ALLOW = frozenset({"index.html", "styles.css", "app.js", "data/api.js", "data/demo.js", "sw.js", "manifest.webmanifest", "icon.svg", "icon-180.png", "icon-512.png",
+                         "fonts/space-grotesk-latin-wght-normal.woff2", "fonts/jetbrains-mono-latin-wght-normal.woff2"})
 HEADERS = {
     "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; "
                                "img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'",

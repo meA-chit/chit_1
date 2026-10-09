@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 import threading
+from contextvars import ContextVar
 from datetime import date, datetime, timezone
 import os
 from pathlib import Path
@@ -36,6 +37,9 @@ from .reminders import Reminders  # noqa: E402
 from .skips import Skips  # noqa: E402
 
 MIGRATIONS = Path(__file__).parent / "migrations"
+_SCOPE: "ContextVar[list | None]" = ContextVar("chit_household_scope", default=None)
+
+
 class EncryptedHouseholdStore(HouseholdDocuments, ChoreSeries, Reminders, Skips, EnergyConnections, MeterReadings, Kids, KidPhone, KidPrivacy, KidTasks, KidBag):
     """Encrypted SQLite persistence; access policy belongs to the application layer."""
 
@@ -50,6 +54,34 @@ class EncryptedHouseholdStore(HouseholdDocuments, ChoreSeries, Reminders, Skips,
     @property
     def storage_label(self) -> str:
         return "plain-sqlite-dev" if self.plain else "encrypted-sqlite"
+
+    # --- request scope (ADR-0015) --------------------------------------------------------------------------------
+    # The server opens a scope around each request and names the household it serves (from the session, later from the
+    # account). Credentials that identify a household before it is known (a kid phone's token) bind it inside the scope.
+    # Query code never sets it: store methods that take a household_id do not widen what the connection may see.
+    @contextmanager
+    def request_scope(self, household_id: "str | None" = None) -> Iterator[None]:
+        token = _SCOPE.set([household_id])
+        try:
+            yield
+        finally:
+            _SCOPE.reset(token)
+
+    def bind_household(self, household_id: "str | None") -> None:
+        box = _SCOPE.get()
+        if box is None:            # outside a request scope (tests, CLI) there is nothing to bind
+            return
+        if household_id and box[0] and box[0] != household_id:
+            raise PermissionError("this request already serves another household")   # a credential never re-scopes a request
+        box[0] = box[0] or household_id
+
+    def current_household(self) -> "str | None":
+        box = _SCOPE.get()
+        return box[0] if box else None
+
+    def default_scope(self) -> "str | None":
+        """Household to serve when the request names none. Only the single-household profile has one; SQLite needs none."""
+        return None
 
     def __init__(self, path: str | Path | None = None, key_hex: str | None = None, plain: bool | None = None):
         self.plain = plain if plain is not None else os.environ.get("CHIT_STORAGE") == "plain"
