@@ -16,5 +16,8 @@ Product-wide architecture decision records. Module-level decisions live in `docs
 | [0010](0010-dev-data-store-sqlite-runtime-with-json-seed-documents.md) | Dev/pilot store: SQLite at runtime, committed JSON household documents as seed/export | Accepted |
 | [0011](0011-energy-provider-connections.md) | Energy provider connections: server-side keys per household, verified before storing | Accepted |
 | [0012](0012-kid-phone-pairing-and-gateway.md) | Kid phone: parent-enabled QR + code pairing, device tokens, isolated phone gateway | Accepted |
+| [0013](0013-hosted-pilot-cloud-deployment-eu.md) | Hosted pilot: EU cloud deployment on GCP (`hosted` profile) | Proposed |
+| [0014](0014-hosted-identity-pairing-and-email-code.md) | Hosted identity: pairing for enrolment, email code for sign-in | Proposed |
+| [0015](0015-hosted-postgres-with-row-level-security.md) | Hosted storage: Postgres (Cloud SQL) with row-level security | Proposed |
 
 Pending decisions are tracked in [`docs/00-overview/open-decisions.md`](../00-overview/open-decisions.md). Supersede ADRs; do not rewrite history.
