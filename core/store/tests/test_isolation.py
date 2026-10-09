@@ -10,6 +10,8 @@ import os
 import tempfile
 import threading
 import unittest
+import urllib.error
+import urllib.request
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -23,6 +25,7 @@ if POSTGRES:
 
 SEED = json.loads((DEFAULT_SEED_DIR / "meyer-family.json").read_text())
 NOW = "2026-10-09T10:00:00+00:00"
+TOKENS = {"A": "tokenAAAA" + "a" * 36, "B": "tokenBBBB" + "b" * 36}      # shaped like real device tokens (the route checks the shape first)
 
 
 def tenant_column(table):
@@ -49,8 +52,21 @@ class IsolationTests(unittest.TestCase):
             "SELECT table_name FROM information_schema.tables WHERE table_schema = current_schema() "
             "AND table_type = 'BASE TABLE' AND table_name <> 'schema_migrations' ORDER BY 1")]
 
+        for household, name in ((cls.A, "Kid-A-Aaaa"), (cls.B, "Kid-B-Bbbb")):       # distinguishable in API payloads
+            cls._owner_rows("UPDATE household_members SET name = ? WHERE id = ? RETURNING id", (name, cls.members[household]["child"]))
+        from chit_server import gateway
+        from chit_server.app import build_router
+        from chit_server.registry import load_manifests
+        full = build_router(load_manifests())
+        full.routes[("GET", "/api/planner/calendar/agenda")] = lambda ctx, request: (200, {"state": "unavailable", "events": []})   # no network
+        cls.gateway = gateway.make_gateway(cls.app, load_manifests(), full, host="127.0.0.1", port=0)   # the REAL gateway, restricted role
+        cls.base = "http://127.0.0.1:%d" % cls.gateway.server_address[1]
+        threading.Thread(target=cls.gateway.serve_forever, daemon=True).start()
+
     @classmethod
     def tearDownClass(cls):
+        cls.gateway.shutdown()
+        cls.gateway.server_close()
         cls.temp.cleanup()
 
     # --- fixture ------------------------------------------------------------------------------------------------
@@ -94,7 +110,7 @@ class IsolationTests(unittest.TestCase):
             ("INSERT INTO kid_privacy(member_id, section, private, updated_at) VALUES (?, 'grades', 1, ?) ON CONFLICT DO NOTHING", (child, NOW)),
             ("INSERT INTO kid_phone_access(member_id, household_id, enabled, updated_at) VALUES (?, ?, 1, ?) ON CONFLICT DO NOTHING", (child, household, NOW)),
             ("INSERT INTO kid_phone_devices(id, household_id, member_id, token_hash, paired_at) VALUES (?, ?, ?, ?, ?)",
-             ("dev-" + s, household, child, _hash("token-" + s), NOW)),
+             ("dev-" + s, household, child, _hash(TOKENS[s]), NOW)),
             ("INSERT INTO kid_phone_handoffs(token_hash, device_id, expires_at) VALUES (?, ?, '2099-01-01T00:00:00+00:00')", (_hash("handoff-" + s), "dev-" + s)),
             ("INSERT INTO kid_phone_pairings(id, household_id, member_id, secret_hash, code_salt, code_hash, expires_at, created_at) VALUES (?, ?, ?, ?, 'salt', 'hash', '2099-01-01T00:00:00+00:00', ?)",
              ("pair-" + s, household, child, _hash("secret-" + s), NOW)),
@@ -268,7 +284,7 @@ class IsolationTests(unittest.TestCase):
 
     # --- credentials that identify a household before it is known ---------------------------------------------------
     def test_a_kid_phone_token_selects_exactly_its_own_household(self):
-        for token, household in (("token-A", self.A), ("token-B", self.B)):
+        for token, household in ((TOKENS["A"], self.A), (TOKENS["B"], self.B)):
             with self.app.request_scope(None):
                 device = self.app.phone_device_for_token(token)
                 self.assertEqual(device["household_id"], household)
@@ -278,7 +294,7 @@ class IsolationTests(unittest.TestCase):
 
     def test_an_unknown_token_gets_no_household_and_sees_nothing(self):
         with self.app.request_scope(None):
-            self.assertIsNone(self.app.phone_device_for_token("token-nobody"))
+            self.assertIsNone(self.app.phone_device_for_token("tokenNOBODY" + "n" * 34))
             self.assertIsNone(self.app.current_household())
             with self.app._connection() as connection:
                 self.assertEqual(connection.execute("SELECT count(*) FROM kid_phone_devices").fetchone()[0], 0)
@@ -286,8 +302,30 @@ class IsolationTests(unittest.TestCase):
     def test_a_token_cannot_move_a_request_that_already_serves_another_household(self):
         with self.app.request_scope(self.B):
             with self.assertRaises(PermissionError):
-                self.app.phone_device_for_token("token-A")
+                self.app.phone_device_for_token(TOKENS["A"])
             self.assertEqual(self.app.current_household(), self.B)
+
+    def _gateway_get(self, path, token=None):
+        request = urllib.request.Request(self.base + path, headers={"Authorization": "Bearer " + token} if token else {})
+        try:
+            with urllib.request.urlopen(request, timeout=15) as response:
+                return response.status, response.read().decode()
+        except urllib.error.HTTPError as error:
+            return error.code, error.read().decode()
+
+    def test_the_real_gateway_serves_each_kid_only_their_own_household(self):
+        for token, mine, theirs in ((TOKENS["A"], "Kid-A-Aaaa", "Kid-B-Bbbb"), (TOKENS["B"], "Kid-B-Bbbb", "Kid-A-Aaaa")):
+            status, body = self._gateway_get("/api/kids/phone/device/view", token)
+            self.assertEqual(status, 200, body)
+            self.assertIn(mine, body)
+            self.assertNotIn(theirs, body)
+        for token in (None, "tokenNOBODY" + "n" * 34, "x" * 40):
+            self.assertEqual(self._gateway_get("/api/kids/phone/device/view", token)[0], 401)
+        for _ in range(5):          # no scope lingers between requests: alternate and re-check
+            for token, mine, theirs in ((TOKENS["A"], "Kid-A-Aaaa", "Kid-B-Bbbb"), (TOKENS["B"], "Kid-B-Bbbb", "Kid-A-Aaaa")):
+                _, body = self._gateway_get("/api/kids/phone/device/view", token)
+                self.assertIn(mine, body)
+                self.assertNotIn(theirs, body)
 
     def test_the_lookup_functions_are_narrow_and_safe(self):
         rows = self._owner_rows("SELECT proname, prosecdef, array_to_string(proconfig, ',') FROM pg_proc "
