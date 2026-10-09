@@ -17,6 +17,9 @@ Schema changes are certain as features are added. A file per household turns eve
    - Each request runs in a transaction that sets `app.household_id` (from the session's membership, ADR-0014) with `SET LOCAL`. RLS policies allow only rows where `household_id = current_setting('app.household_id')`.
    - The application connects as a role that **does not own the tables and cannot bypass RLS**. Migrations run as a separate owner role.
    - Authentication tables (accounts, memberships, pairings, one-time codes, sessions, terms acceptance) live in a separate `auth` schema, not under tenant RLS, and are reachable only through the auth module.
+   - **Composite keys carry the tenant.** Any primary or unique key that identifies a tenant row includes `household_id` (the audit found `planner_skips` keyed by `(kind, item_id, day)` only, which would let two households collide; it becomes `(household_id, kind, item_id, day)`).
+   - **Lookups before the household is known** (kid device tokens, pairing codes, email-code redemption) cannot run under RLS, because `app.household_id` is not set yet. They go through a narrow `auth`-schema lookup table (token hash to household and role) or a `SECURITY DEFINER` function, and the result then sets `app.household_id` for the rest of the request.
+   - The full per-table list (which tables lack `household_id` and what they reference) is in [`docs/core/postgres-port-audit.md`](../core/postgres-port-audit.md).
 3. **Port behind the existing store interface** (`chit_store`). Replace SQLite specifics: `?` to the driver's placeholder, `rowid` ordering to an explicit ordering column or identity, the two trigger sets to constraints or PL/pgSQL (owner rules also enforced in application code), SQLite date functions to Postgres equivalents, and drop SQLCipher (Cloud SQL encrypts at rest; application-level secrets such as energy credentials still need their own encryption before that module is enabled).
 4. **Migrations.** Keep the numbered SQL runner, add a Postgres advisory lock so two instances never migrate at once, run migrations as a deploy step, and use **expand-then-contract** (add, dual-write, backfill, switch, drop) for any change that is not backward compatible.
 5. **Local development and CI run real Postgres** (Docker Compose; testcontainers or a service container in CI). Tests do not substitute SQLite for Postgres.
@@ -32,7 +35,8 @@ Schema changes are certain as features are added. A file per household turns eve
 - **ORM rewrite (for example SQLAlchemy).** Larger change than needed for the pilot. May be revisited; the store interface keeps this open.
 
 ## Consequences
-- A port of roughly 3 to 5 focused days with tests (estimate; not every query was read). Risk areas: ordering by `rowid`, triggers, date arithmetic, and any dynamic SQL.
+- **Concurrency changes.** SQLite with a global lock and `BEGIN IMMEDIATE` serialises every write, so read-then-write code is safe today by accident. On Postgres each such block (about 25 sites, notably pairing-code redemption and attempt counting) must be made atomic with `UPDATE ... RETURNING`, `SELECT ... FOR UPDATE`, or unique constraints. See the audit.
+- A port of roughly 3 to 5 focused days with tests (estimate from the audit in `docs/core/postgres-port-audit.md`; the concurrency review and the RLS retrofit are the parts most likely to run over). Risk areas: ordering by `rowid`, triggers, date arithmetic, and any dynamic SQL.
 - RLS requires the `household_id` audit above; it overlaps with open decision 15 (data class per table).
 - Per-request transaction and `SET LOCAL` add small overhead and require connection handling that never leaks the setting between requests (use `SET LOCAL` inside a transaction only, and test it).
 - ADR-0004 (SQLCipher) and ADR-0010 (SQLite runtime) continue to describe the local profile only.
