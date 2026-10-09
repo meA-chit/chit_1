@@ -21,7 +21,13 @@ export async function api<T>(path: string, init?: RequestInit): Promise<T> {
     headers: { Accept: 'application/json', ...(init?.body ? { 'Content-Type': 'application/json' } : {}), ...init?.headers },
   });
   const body = await response.json().catch(() => ({}));
-  if (!response.ok) throw new ApiError(response.status, (body as { error?: string }).error ?? response.statusText);
+  if (!response.ok) {
+    const code = (body as { error?: string }).error;
+    // Hosted profile (ADR-0014): no session, new Terms to accept, or no household chosen yet -> the sign-in page deals with it.
+    const signInNeeded = code === 'auth_required' || code === 'terms_required' || code === 'household_required';
+    if (signInNeeded && !window.location.pathname.startsWith('/auth/')) window.location.assign('/auth/');
+    throw new ApiError(response.status, code ?? response.statusText);
+  }
   return body as T;
 }
 

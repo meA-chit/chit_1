@@ -10,10 +10,11 @@ MAX_REQUEST_BYTES = 1_048_576
 
 
 class HTTPError(Exception):
-    def __init__(self, status: int, message: str):
+    def __init__(self, status: int, message: str, extra: "dict[str, Any] | None" = None):
         super().__init__(message)
         self.status = status
         self.message = message
+        self.extra = extra or {}      # machine-readable fields sent next to "error" (the sign-in screens read them)
 
 
 @dataclass
@@ -25,6 +26,8 @@ class Request:
     body: bytes = b""
     params: dict[str, str] = field(default_factory=dict)
     headers: dict[str, str] = field(default_factory=dict)   # lower-case names
+    client: str = ""                                         # caller's address (rate limits only; never stored raw)
+    session: Any = None                                      # the signed-in account's session, when sign-in is on
 
     def json(self) -> Any:
         if self.content_type != "application/json":
@@ -44,6 +47,8 @@ class Context:
     # Public read APIs of other modules (docs/core/cross-module-contracts.md, rule 1): read("/api/planner/calendar/agenda") calls the owner's
     # GET route in-process and returns its payload. Only what the owner lists in its contracts.md may be read this way.
     read: "Callable[[str, dict | None], dict] | None" = None
+    # Extra response headers a route wants sent (the sign-in routes set the session cookie here).
+    response_headers: "list[tuple[str, str]]" = field(default_factory=list)
 
 
 Handler = Callable[[Context, Request], "tuple[int, dict[str, Any]]"]

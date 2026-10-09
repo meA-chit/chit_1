@@ -28,6 +28,12 @@ NOW = "2026-10-09T10:00:00+00:00"
 TOKENS = {"A": "tokenAAAA" + "a" * 36, "B": "tokenBBBB" + "b" * 36}      # shaped like real device tokens (the route checks the shape first)
 
 
+# People and access, not household content (ADR-0014): read and written only by chit_store.accounts, before any household is
+# chosen. Anything else without row-level security is a mistake, so adding a table means deciding which list it belongs to.
+ACCOUNT_TABLES = {"auth_accounts", "auth_memberships", "auth_pairings", "auth_enrolments", "auth_email_codes", "auth_sessions",
+                  "auth_terms_acceptances", "auth_events"}
+
+
 def tenant_column(table):
     return "id" if table == "households" else "household_id"
 
@@ -48,9 +54,11 @@ class IsolationTests(unittest.TestCase):
         cls.members = {}
         for household in (cls.A, cls.B):
             cls._populate(household, "A" if household == cls.A else "B")
-        cls.tables = [row[0] for row in cls._owner_rows(
+        every = [row[0] for row in cls._owner_rows(
             "SELECT table_name FROM information_schema.tables WHERE table_schema = current_schema() "
             "AND table_type = 'BASE TABLE' AND table_name <> 'schema_migrations' ORDER BY 1")]
+        cls.account_tables = [t for t in every if t in ACCOUNT_TABLES]
+        cls.tables = [t for t in every if t not in ACCOUNT_TABLES]      # household content: every one of these must be isolated
 
         for household, name in ((cls.A, "Kid-A-Aaaa"), (cls.B, "Kid-B-Bbbb")):       # distinguishable in API payloads
             cls._owner_rows("UPDATE household_members SET name = ? WHERE id = ? RETURNING id", (name, cls.members[household]["child"]))
@@ -148,6 +156,13 @@ class IsolationTests(unittest.TestCase):
         policies = {r[0] for r in self._owner_rows("SELECT tablename FROM pg_policies WHERE schemaname = current_schema()")}
         self.assertEqual(set(self.tables) - secured, set(), "tables without row-level security")
         self.assertEqual(set(self.tables) - policies, set(), "tables without a policy")
+
+    def test_only_the_account_tables_are_outside_row_level_security(self):
+        self.assertEqual(set(self.account_tables), ACCOUNT_TABLES)
+        unprotected = {r[0] for r in self._owner_rows(
+            "SELECT c.relname FROM pg_class c WHERE c.relnamespace = current_schema()::regnamespace AND c.relkind = 'r' "
+            "AND NOT c.relrowsecurity AND c.relname <> 'schema_migrations'")}
+        self.assertEqual(unprotected, ACCOUNT_TABLES)
 
     def test_the_application_role_does_not_own_or_bypass_anything(self):
         with self.app._connection() as connection:
@@ -330,7 +345,7 @@ class IsolationTests(unittest.TestCase):
     def test_the_lookup_functions_are_narrow_and_safe(self):
         rows = self._owner_rows("SELECT proname, prosecdef, array_to_string(proconfig, ',') FROM pg_proc "
                                 "WHERE pronamespace = current_schema()::regnamespace AND proname LIKE 'chit_%household%' AND prosecdef")
-        self.assertEqual({r[0] for r in rows}, {"chit_household_for_phone_credential", "chit_latest_household_id"})
+        self.assertEqual({r[0] for r in rows}, {"chit_household_for_phone_credential", "chit_latest_household_id", "chit_households_for_account"})
         for name, _, config in rows:
             self.assertIn("search_path=", config, "%s must pin its search_path" % name)
         with self.app._connection() as connection:       # in a multi-household deployment "latest household" answers nothing

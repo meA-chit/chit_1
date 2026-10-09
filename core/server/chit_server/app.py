@@ -7,7 +7,7 @@ import os
 from pathlib import Path
 from urllib.parse import urlsplit
 
-from . import registry
+from . import auth_gate, registry
 from .router import MAX_REQUEST_BYTES, Context, HTTPError, Request, Router, parse_query
 
 # ADR-0007: loopback only until the identity ADR lands. Do not make this configurable without it.
@@ -82,7 +82,7 @@ class ChitHandler(BaseHTTPRequestHandler):
             else:
                 raise HTTPError(405, "Method not allowed")
         except HTTPError as error:
-            self._json(error.status, {"error": error.message})
+            self._json(error.status, {"error": error.message, **error.extra})
         except Exception as error:  # never leak internals to the client
             self.log_error("unhandled %s: %s", type(error).__name__, error)
             self._json(500, {"error": "Internal error"})
@@ -103,13 +103,21 @@ class ChitHandler(BaseHTTPRequestHandler):
                 raise HTTPError(413, "Request body must be between 1 byte and 1 MiB")
             body = self.rfile.read(length)
         request = Request(method, path, parse_query(query), self.headers.get_content_type(), body, params,
-                          {name.lower(): value for name, value in self.headers.items()})
+                          {name.lower(): value for name, value in self.headers.items()}, client=self._client_ip())
         ctx = Context(store=self.server.store, manifests=self.server.manifests, log=lambda message: self.log_error("%s", message),
                       read=self._reader())
         store = self.server.store
-        with store.request_scope(store.default_scope()):       # row-level security: this request serves one household
+        auth = getattr(self.server, "auth", None)
+        household = auth_gate.gate(auth, request, path, method) if auth else store.default_scope()
+        with store.request_scope(household):                    # row-level security: this request serves one household
             status, payload = handler(ctx, request)
-        self._json(status, payload)
+        self._json(status, payload, ctx.response_headers)
+
+    def _client_ip(self) -> str:
+        peer = self.client_address[0]
+        hops = int(getattr(self.server, "trusted_proxy_hops", 0))
+        forwarded = [part.strip() for part in self.headers.get("X-Forwarded-For", "").split(",") if part.strip()]
+        return forwarded[-hops] if hops and len(forwarded) >= hops else peer
 
     def _reader(self):
         """In-process GET of a public read API. Resolves in the hub's full router even when this listener (the phone gateway) serves less."""
@@ -155,11 +163,13 @@ class ChitHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(content)
 
-    def _json(self, status: int, content: dict) -> None:
+    def _json(self, status: int, content: dict, headers: "list[tuple[str, str]] | None" = None) -> None:
         body = json.dumps(content).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
+        for name, value in headers or ():
+            self.send_header(name, value)
         for name, value in {**SECURITY_HEADERS, **getattr(self.server, "extra_headers", {})}.items():
             self.send_header(name, value)
         self.end_headers()
@@ -172,12 +182,18 @@ class ChitHandler(BaseHTTPRequestHandler):
         super().log_message("%s", message)
 
 
-def make_server(store, host: str = HOST, port: int = PORT) -> ThreadingHTTPServer:
+def make_server(store, host: str = HOST, port: int = PORT, auth=None) -> ThreadingHTTPServer:
+    """`auth` (an auth_gate.AuthGate) turns sign-in on: every route but the public ones then needs a session (ADR-0014)."""
     server = ThreadingHTTPServer((host, port), ChitHandler)
     server.daemon_threads = True
     server.store = store
     server.manifests = registry.load_manifests()
     server.router = build_router(server.manifests)
+    server.auth = auth
+    server.trusted_proxy_hops = auth.settings.trusted_proxy_hops if auth else 0
+    if auth:
+        from . import auth_routes
+        auth_routes.register(server.router, auth)
     return server
 
 
@@ -189,7 +205,9 @@ def main() -> None:
         from .seed import seed_all  # dev convenience, ADR-0010
 
         print("Empty development database seeded: %s" % seed_all(store))
-    server = make_server(store)
+    auth = auth_gate.from_env(store)
+    server = make_server(store, auth=auth)
+    print("Sign-in: %s" % ("ON (ADR-0014)" if auth else "off (single-household local hub)"))
     print("Chit hub: http://%s:%d  (loopback only, ADR-0007)" % (HOST, PORT))
     from . import gateway
 
