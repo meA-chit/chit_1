@@ -52,7 +52,7 @@ class KidBag:
             raise ValueError("key is required")
         with self._connection() as connection:
             if ticked:
-                connection.execute("INSERT OR IGNORE INTO kid_bag_ticks(member_id, day, key, ticked_at) VALUES (?, ?, ?, ?)",
+                connection.execute("INSERT INTO kid_bag_ticks(member_id, day, key, ticked_at) VALUES (?, ?, ?, ?) ON CONFLICT DO NOTHING",
                                    (member_id, day.isoformat(), key, _now()))
             else:
                 connection.execute("DELETE FROM kid_bag_ticks WHERE member_id = ? AND day = ? AND key = ?", (member_id, day.isoformat(), key))

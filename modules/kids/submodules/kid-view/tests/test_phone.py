@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 import json
+import os
 from pathlib import Path
 import sqlite3
 import tempfile
@@ -119,7 +120,12 @@ class PairingTests(PhoneBase):
     def test_nothing_secret_is_stored_in_clear(self):
         pairing, device = self.pair()
         handoff = self.store.create_phone_handoff(device["device_id"], T0)
-        dump = "\n".join(sqlite3.connect(self.db).iterdump())
+        if os.environ.get("CHIT_STORE_BACKEND") == "postgres":
+            with self.store._connection() as connection:
+                dump = "\n".join(str(row) for table in ("kid_phone_devices", "kid_phone_pairings", "kid_phone_handoffs")
+                                 for row in connection.execute("SELECT * FROM " + table).fetchall())
+        else:
+            dump = "\n".join(sqlite3.connect(self.db).iterdump())
         for secret in (pairing["secret"], pairing["code"], device["token"], handoff):
             self.assertNotIn(secret, dump)
 

@@ -14,14 +14,20 @@ PG_MIGRATIONS = Path(__file__).parent / "pg_migrations"
 MIGRATION_LOCK_ID = 7_341_902
 
 
-def connect(url: str, autocommit: bool = False) -> "psycopg.Connection":
-    return psycopg.connect(url, autocommit=autocommit)
+def connect(url: str, autocommit: bool = False, schema: str | None = None) -> "psycopg.Connection":
+    """Open a connection; with `schema`, the connection's search_path is that schema only (used for test schemas)."""
+    options = "-c search_path=%s" % schema if schema else None
+    return psycopg.connect(url, autocommit=autocommit, options=options)
 
 
-def migrate(url: str) -> list[str]:
-    """Apply pending migrations from pg_migrations/ in order, each in its own transaction. Returns the versions applied."""
+def migrate(url: str, schema: str | None = None) -> list[str]:
+    """Apply pending migrations from pg_migrations/ in order, each in its own transaction. Returns the versions applied.
+    With `schema`, that schema is created if needed and holds every table (test isolation); default is public."""
     applied_now: list[str] = []
-    with connect(url) as connection:
+    if schema:
+        with connect(url, autocommit=True) as setup:
+            setup.execute(sql.SQL("CREATE SCHEMA IF NOT EXISTS {}").format(sql.Identifier(schema)))
+    with connect(url, schema=schema) as connection:
         connection.execute("SELECT pg_advisory_lock(%s)", (MIGRATION_LOCK_ID,))
         try:
             connection.execute(
@@ -47,14 +53,14 @@ def migrate(url: str) -> list[str]:
     return applied_now
 
 
-def grant_app_role(owner_url: str, app_role: str = "chit_app") -> None:
+def grant_app_role(owner_url: str, app_role: str = "chit_app", schema: str = "public") -> None:
     """Give the application role data access only: no DDL, no ownership. Safe to repeat."""
-    ident = sql.Identifier(app_role)
+    ident, where = sql.Identifier(app_role), sql.Identifier(schema)
     with connect(owner_url) as connection:
-        connection.execute(sql.SQL("GRANT USAGE ON SCHEMA public TO {}").format(ident))
+        connection.execute(sql.SQL("GRANT USAGE ON SCHEMA {} TO {}").format(where, ident))
         connection.execute(sql.SQL(
-            "GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO {}").format(ident))
-        connection.execute(sql.SQL("GRANT USAGE ON ALL SEQUENCES IN SCHEMA public TO {}").format(ident))
+            "GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA {} TO {}").format(where, ident))
+        connection.execute(sql.SQL("GRANT USAGE ON ALL SEQUENCES IN SCHEMA {} TO {}").format(where, ident))
         # the app role never touches the migration bookkeeping
-        connection.execute(sql.SQL("REVOKE ALL ON schema_migrations FROM {}").format(ident))
+        connection.execute(sql.SQL("REVOKE ALL ON {}.schema_migrations FROM {}").format(where, ident))
         connection.commit()

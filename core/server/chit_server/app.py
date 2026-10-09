@@ -27,7 +27,7 @@ def build_router(manifests: dict) -> Router:
 
     @router.get("/api/health")
     def health(ctx: Context, request: Request):
-        return 200, {"status": "ready", "storage": "plain-sqlite-dev" if ctx.store.plain else "encrypted-sqlite"}
+        return 200, {"status": "ready", "storage": ctx.store.storage_label}
 
     @router.get("/api/modules")
     def modules(ctx: Context, request: Request):

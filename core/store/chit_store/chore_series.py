@@ -144,7 +144,7 @@ class ChoreSeries:
                     raise LookupError("chore does not exist in this household")
                 if done:
                     connection.execute(
-                        "INSERT OR IGNORE INTO chore_completions(series_id, day, completed_by, completed_at) VALUES (?, ?, ?, ?)",
+                        "INSERT INTO chore_completions(series_id, day, completed_by, completed_at) VALUES (?, ?, ?, ?) ON CONFLICT DO NOTHING",
                         (series_id, day.isoformat(), completed_by, _now()))
                 else:
                     connection.execute("DELETE FROM chore_completions WHERE series_id = ? AND day = ?",

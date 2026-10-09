@@ -7,9 +7,11 @@ import unittest
 
 from chit_store import store as store_module
 from chit_store import EncryptedHouseholdStore
+from chit_store.testing import sqlite_only
 
 
 class SubjectsFromPlanMigrationTests(unittest.TestCase):
+    @sqlite_only
     def test_old_manual_subjects_and_grades_are_removed_and_the_plan_becomes_the_subjects(self):
         with tempfile.TemporaryDirectory() as temp:
             old_migrations = Path(temp) / "migrations"

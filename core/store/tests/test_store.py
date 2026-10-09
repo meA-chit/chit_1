@@ -6,6 +6,7 @@ from unittest.mock import patch
 
 from sqlcipher3 import dbapi2 as encrypted_sqlite
 from chit_store import EncryptedHouseholdStore
+from chit_store.testing import INTEGRITY_ERRORS, sqlite_only
 
 
 TEST_KEY = "4c" * 32
@@ -20,6 +21,7 @@ class EncryptedHouseholdStoreTests(unittest.TestCase):
     def tearDown(self):
         self.temp_dir.cleanup()
 
+    @sqlite_only
     def test_database_is_encrypted_and_requires_the_key(self):
         self.store.create_household("Birch family", "Avery")
         with self.assertRaises(sqlite3.DatabaseError):
@@ -31,6 +33,7 @@ class EncryptedHouseholdStoreTests(unittest.TestCase):
             self.store.list_household(self._household_id())["household"]["id"]
         )["household"]["name"], "Birch family")
 
+    @sqlite_only
     def test_key_is_required_and_must_be_32_bytes_hex(self):
         missing_key_path = Path(self.temp_dir.name) / "missing-key.db"
         with patch.dict("os.environ", {"CHIT_DB_KEY_HEX": ""}):
@@ -72,9 +75,9 @@ class EncryptedHouseholdStoreTests(unittest.TestCase):
         first = self.store.create_household("First", "Avery")
         child = self.store.add_member(first["household_id"], "child", "Riley")
         second = self.store.create_household("Second", "Jordan")
-        with self.assertRaises(encrypted_sqlite.IntegrityError):
+        with self.assertRaises(INTEGRITY_ERRORS):
             self.store.set_household_owner(first["household_id"], child)
-        with self.assertRaises(encrypted_sqlite.IntegrityError):
+        with self.assertRaises(INTEGRITY_ERRORS):
             self.store.set_household_owner(first["household_id"], second["owner_member_id"])
         self.assertEqual(self.store.list_household(first["household_id"])["household"]["owner_member_id"], first["owner_member_id"])
 
@@ -89,7 +92,7 @@ class EncryptedHouseholdStoreTests(unittest.TestCase):
         self.assertEqual(snapshot["calendar_sources"][0]["access_mode"], "read_only")
         self.assertEqual(snapshot["calendar_sources"][0]["member_ids"], [child])
         other = self.store.create_household("Other", "Morgan")
-        with self.assertRaises(encrypted_sqlite.IntegrityError):
+        with self.assertRaises(INTEGRITY_ERRORS):
             self.store.add_calendar_source(
                 household["household_id"], "Invalid mapping", "Work",
                 "https://calendar.example/work.ics", [other["owner_member_id"]],

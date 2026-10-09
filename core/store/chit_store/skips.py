@@ -21,7 +21,7 @@ class Skips:
                     raise LookupError("%s does not exist in this household" % kind)
                 if skipped:
                     connection.execute(
-                        "INSERT OR IGNORE INTO planner_skips(household_id, kind, item_id, day, created_at) VALUES (?, ?, ?, ?, ?)",
+                        "INSERT INTO planner_skips(household_id, kind, item_id, day, created_at) VALUES (?, ?, ?, ?, ?) ON CONFLICT DO NOTHING",
                         (household_id, kind, item_id, day.isoformat(), _now()))
                 else:
                     connection.execute("DELETE FROM planner_skips WHERE kind = ? AND item_id = ? AND day = ?",

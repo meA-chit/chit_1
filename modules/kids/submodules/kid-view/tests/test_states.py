@@ -140,11 +140,8 @@ class StateTests(unittest.TestCase):
         self.assertTrue(self.task()["dismissed"])
         with self.assertRaises(HTTPError):
             learning.update_task(self.ctx, req(body={"dismissed": "no"}, params={"id": task["id"]}))
-        import sqlite3
-        connection = sqlite3.connect(self.store.path)
-        connection.execute("UPDATE kid_tasks SET dismissed_at = ? WHERE id = ?", ((datetime.now(timezone.utc) - timedelta(days=30)).isoformat(), task["id"]))
-        connection.commit()
-        connection.close()
+        with self.store._connection() as connection:       # backend-neutral: works on SQLite and Postgres
+            connection.execute("UPDATE kid_tasks SET dismissed_at = ? WHERE id = ?", ((datetime.now(timezone.utc) - timedelta(days=30)).isoformat(), task["id"]))
         self.assertNotIn(task["id"], [t["id"] for t in self.view()["homework"]["tasks"]])      # dismissed a month ago: out of the list
 
 

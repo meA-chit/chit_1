@@ -6,6 +6,7 @@ import unittest
 from urllib.parse import urlsplit
 
 from chit_store import EncryptedHouseholdStore
+from chit_store.testing import sqlite_only
 from chit_store.cli import DEFAULT_SEED_DIR, export_household, seed_households
 
 SEED = json.loads((DEFAULT_SEED_DIR / "meyer-family.json").read_text())
@@ -19,6 +20,7 @@ class HouseholdDocumentTests(unittest.TestCase):
     def tearDown(self):
         self.temp.cleanup()
 
+    @sqlite_only
     def test_plain_mode_is_refused_in_production(self):
         from unittest.mock import patch
         with patch.dict("os.environ", {"CHIT_ENV": "production"}):

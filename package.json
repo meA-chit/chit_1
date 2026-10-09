@@ -15,6 +15,7 @@
     "check:isolation": "node scripts/check-isolation.mjs",
     "hub": "PYTHONPATH=core/server:core/store python3 -m chit_server",
     "test:py": "scripts/test-py.sh",
+    "test:py:pg": "scripts/test-py-pg.sh",
     "check": "npm run check:isolation && npm run typecheck && npm test && npm run test:py",
     "hub:dev": "CHIT_STORAGE=plain PYTHONPATH=core/server:core/store python3 -m chit_server",
     "dev:all": "scripts/dev-all.sh",

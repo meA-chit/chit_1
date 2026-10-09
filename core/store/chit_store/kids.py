@@ -75,7 +75,7 @@ class Kids:
             if enabled and not row[0]:
                 raise ValueError("a star chore needs an assignee, so the star has an owner")
             if enabled:
-                connection.execute("INSERT OR IGNORE INTO kid_star_chores(series_id) VALUES (?)", (series_id,))
+                connection.execute("INSERT INTO kid_star_chores(series_id) VALUES (?) ON CONFLICT DO NOTHING", (series_id,))
             else:
                 connection.execute("DELETE FROM kid_star_chores WHERE series_id = ?", (series_id,))
 
@@ -210,7 +210,9 @@ class Kids:
         connection.execute("UPDATE kid_subjects SET name = ? WHERE member_id = ? AND lower(name) = lower(?)", (new, member_id, old))
         connection.execute("UPDATE kid_school_slots SET title = ? WHERE member_id = ? AND kind = 'lesson' AND lower(title) = lower(?)", (new, member_id, old))
         connection.execute("UPDATE kid_tasks SET subject = ? WHERE member_id = ? AND lower(subject) = lower(?)", (new, member_id, old))
-        connection.execute("UPDATE OR IGNORE kid_bag_items SET subject = ? WHERE member_id = ? AND lower(subject) = lower(?)", (new, member_id, old))
+        connection.execute("UPDATE kid_bag_items SET subject = ? WHERE member_id = ? AND lower(subject) = lower(?) "
+                           "AND NOT EXISTS (SELECT 1 FROM kid_bag_items o WHERE o.member_id = kid_bag_items.member_id "
+                           "AND o.subject = ? AND o.label = kid_bag_items.label)", (new, member_id, old, new))   # skip items the new name already has
 
     def _free_code(self, connection: Any, member_id: str, code: str, own_id: "str | None") -> None:
         if connection.execute("SELECT 1 FROM kid_subjects WHERE member_id = ? AND archived = 0 AND lower(code) = lower(?) AND id IS NOT ?", (member_id, code, own_id)).fetchone():
@@ -251,7 +253,9 @@ class Kids:
                 raise ValueError("a subject can only be merged into another subject of the same child")
             connection.execute("UPDATE kid_school_slots SET title = ? WHERE member_id = ? AND kind = 'lesson' AND lower(title) = lower(?)", (target_name, member_id, source_name))
             connection.execute("UPDATE kid_tasks SET subject = ? WHERE member_id = ? AND lower(subject) = lower(?)", (target_name, member_id, source_name))
-            connection.execute("UPDATE OR IGNORE kid_bag_items SET subject = ? WHERE member_id = ? AND lower(subject) = lower(?)", (target_name, member_id, source_name))
+            connection.execute("UPDATE kid_bag_items SET subject = ? WHERE member_id = ? AND lower(subject) = lower(?) "
+                               "AND NOT EXISTS (SELECT 1 FROM kid_bag_items o WHERE o.member_id = kid_bag_items.member_id "
+                               "AND o.subject = ? AND o.label = kid_bag_items.label)", (target_name, member_id, source_name, target_name))
             connection.execute("DELETE FROM kid_bag_items WHERE member_id = ? AND lower(subject) = lower(?)", (member_id, source_name))   # items the kept subject already had
             connection.execute("UPDATE kid_grades SET subject_id = ? WHERE subject_id = ?", (target_id, source_id))
             connection.execute("DELETE FROM kid_subjects WHERE id = ?", (source_id,))
@@ -482,7 +486,7 @@ class Kids:
             if was_given and not now_given:
                 connection.execute("UPDATE kid_meds SET supply = supply + 1 WHERE id = ? AND supply IS NOT NULL", (med_id,))
             elif now_given and not was_given:
-                connection.execute("UPDATE kid_meds SET supply = MAX(supply - 1, 0) WHERE id = ? AND supply IS NOT NULL", (med_id,))
+                connection.execute("UPDATE kid_meds SET supply = CASE WHEN supply > 1 THEN supply - 1 ELSE 0 END WHERE id = ? AND supply IS NOT NULL", (med_id,))
 
     def list_meds(self, household_id: str, member_id: str, since: str) -> "list[dict[str, Any]]":
         with self._connection() as connection:

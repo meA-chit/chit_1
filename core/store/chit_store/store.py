@@ -39,6 +39,18 @@ MIGRATIONS = Path(__file__).parent / "migrations"
 class EncryptedHouseholdStore(HouseholdDocuments, ChoreSeries, Reminders, Skips, EnergyConnections, MeterReadings, Kids, KidPhone, KidPrivacy, KidTasks, KidBag):
     """Encrypted SQLite persistence; access policy belongs to the application layer."""
 
+    def __new__(cls, *args: Any, **kwargs: Any):
+        # CHIT_STORE_BACKEND=postgres swaps in the Postgres backend (ADR-0015); SQLite stays the default and standby.
+        if cls is EncryptedHouseholdStore and os.environ.get("CHIT_STORE_BACKEND") == "postgres":
+            from .pg_store import PostgresHouseholdStore
+
+            return super().__new__(PostgresHouseholdStore)
+        return super().__new__(cls)
+
+    @property
+    def storage_label(self) -> str:
+        return "plain-sqlite-dev" if self.plain else "encrypted-sqlite"
+
     def __init__(self, path: str | Path | None = None, key_hex: str | None = None, plain: bool | None = None):
         self.plain = plain if plain is not None else os.environ.get("CHIT_STORAGE") == "plain"
         if self.plain and os.environ.get("CHIT_ENV") == "production":
